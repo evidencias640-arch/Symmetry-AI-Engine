@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V10.3 — Análisis Biométrico y Estético</title>
+<title>SYMMETRY AI ENGINE PRO V10.4 — Análisis Biométrico y Estético</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V10.3 - Fix de Controles Móvil)
+  ESTILOS BASE Y VARIABLES (V10.4 - Z-Index Fix)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
@@ -30,46 +30,25 @@
     will-change: transform, opacity; 
   }
   #main{position:relative;width:100%;height:100vh;overflow:hidden;}
-
-  /*
-  =======================================================
-  VIDEO, CANVAS Y SCANNER
-  =======================================================
-  */
+  
+  /* Placeholder y Webcam (Z-index bajo) */
   #webcam-feed,#capture-canvas{
     position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
+    z-index: 1; /* Aseguramos que estén detrás de los controles y HUD */
+  }
+  #placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.9);z-index: 5; /* Necesita un z-index más bajo que los controles/HUD para desaparecer */
+    text-align:center;
   }
   #capture-canvas{
     box-shadow: 0 0 15px rgba(0,255,255,0.5) inset;
     border: 1px solid rgba(0,255,255,0.3);
   }
-  /* Animación de Escaneo */
-  @keyframes scan-line {
-    0% { transform: translateY(-100%) }
-    100% { transform: translateY(100%) }
-  }
-  .scanner-active::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      to bottom,
-      rgba(0, 255, 255, 0) 0%,
-      rgba(0, 255, 255, 0.4) 50%,
-      rgba(0, 255, 255, 0) 100%
-    );
-    opacity: 0.5;
-    animation: scan-line 3s infinite alternate ease-in-out;
-    pointer-events: none;
-    z-index: 5;
-  }
 
   /*
   =======================================================
-  HUD (ESCRITORIO)
+  HUD (ESCRITORIO - Z-INDEX ALTO)
   =======================================================
   */
   #results{
@@ -81,11 +60,10 @@
     padding:16px;
     border-radius:8px;
     font-size:14px;
-    z-index:10;
+    z-index:25; /* ALTO Z-INDEX: Aseguramos visibilidad */
     backdrop-filter:blur(15px);
     box-shadow: var(--ia-glow);
     max-width: 380px;
-    transition: all 0.3s ease;
   }
   .metric-label{
     font-family: Orbitron, Inter, Arial;
@@ -104,7 +82,6 @@
     margin-top: 4px;
     color: var(--ia-light);
     text-shadow: var(--ia-glow);
-    transition: transform 0.1s;
   }
   #report-details {
     margin-top: 15px;
@@ -112,25 +89,29 @@
     border-top: 1px dashed rgba(0,255,255,0.2);
   }
   .detail-line { margin-bottom: 5px; }
-  .processing-anim {
-    color: var(--ia);
-    font-weight: 800;
-    animation: pulsating-glow 1.5s infinite alternate;
-  }
+  
+  /* Animación de Procesamiento */
   @keyframes pulsating-glow {
     0% { opacity: 0.6; }
     50% { opacity: 1; text-shadow: var(--ia-glow); }
     100% { opacity: 0.6; }
   }
+  .processing-anim {
+    color: var(--ia);
+    font-weight: 800;
+    animation: pulsating-glow 1.5s infinite alternate;
+  }
 
   /*
   =======================================================
-  CONTROLES / BOTONES (ESCRITORIO)
+  CONTROLES / BOTONES (ESCRITORIO - Z-INDEX MÁXIMO)
   =======================================================
   */
   #controls{
     position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-    display:flex;gap:10px;z-index:20;flex-wrap:wrap;justify-content:center;
+    display:flex;gap:10px;
+    z-index:30; /* MÁXIMO Z-INDEX: Debería ser visible siempre */
+    flex-wrap:wrap;justify-content:center;
     width: 95%; 
     max-width: 600px;
   }
@@ -151,9 +132,6 @@
     transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
     will-change: transform;
   }
-  .btn:hover:not(:disabled){
-    transform: translateY(-2px) scale(1.01);
-  }
   .primary{
     background:linear-gradient(90deg,var(--ia),var(--ia-light));
     color:#000;
@@ -161,37 +139,38 @@
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+
   /*
   =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA - FIX ABSOLUTO) 📱
+  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA) 📱
   =======================================================
   */
   @media(max-width:600px){
     /* Posición y Centrado del HUD (MOVIDO MÁS ARRIBA) */
     #results{
       top: auto;
-      bottom: 80px; /* Separado del borde inferior para evitar superposición */
+      bottom: 80px; 
       right: 50%;
       transform: translateX(-50%);
       width: 98%;
       padding: 10px;
       max-width: 98%;
     }
-    .score-val{font-size:24px;} /* Fuente de score ligeramente más pequeña */
+    .score-val{font-size:24px;} 
     .metric-label{font-size: 0.7em; margin-top: 6px;}
     .detail-line { font-size: 10px; }
 
     /* Controles MÓVIL (ULTRA-COMPACTOS Y ADHERIDOS) */
     #controls{
-      bottom: 2px; /* Adherido al borde inferior */
+      bottom: 2px; 
       gap: 3px; 
       width: 100%; 
       box-sizing: border-box; 
       padding: 0 5px; 
     }
     .btn{
-      padding: 5px 3px; /* Padding ultra-compacto */
-      font-size: 9px; /* Fuente miníma legible */
+      padding: 5px 3px; 
+      font-size: 9px; 
       min-width: unset;
       flex-grow: 1;
       height: auto; 
@@ -208,8 +187,8 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.3 — MÓDULO INACTIVO</h2>
-    <p style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.4 — MÓDULO INACTIVO</h2>
+    <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
   
   <div id="critical-warning" style="display:none;"></div>
@@ -246,7 +225,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V10.3 - Final)
+JAVASCRIPT/FACE-API.JS LÓGICA (V10.4 - Final)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -254,6 +233,8 @@ const MODELS_URL='./models';
 const video=document.getElementById('webcam-feed');
 const canvas=document.getElementById('capture-canvas');
 const ctx=canvas.getContext('2d',{willReadFrequently:true});
+const placeholder=document.getElementById('placeholder');
+const placeholderMsg=document.getElementById('placeholder-msg');
 const countEl=document.getElementById('count');
 const scoreEl=document.getElementById('score');
 const progressBar=document.querySelector('#progress>div');
@@ -275,15 +256,15 @@ const criticalWarningEl = document.getElementById('critical-warning');
 
 let running=false,raf=null,captured=null, lastDet = null;
 
-// TRADUCCIONES Y DATOS DE SIMULACIÓN
+// TRADUCCIONES Y DATOS DE SIMULACIÓN (Mantenido)
 const EXPR_TRADS = {
     'neutral': 'Neutralidad', 'happy': 'Satisfacción', 'sad': 'Melancolía',
     'angry': 'Ira', 'fearful': 'Temor', 'disgusted': 'Disgusto', 'surprised': 'Sorpresa'
 };
 const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela'];
-const CIVIL_STATUS = ['Solter@', 'En Relación', 'Casad@'];
+const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
 
-//=== Init models (Se cargan todos los modelos al inicio)
+//=== Init models 
 async function loadModels(){
   btnStart.textContent = 'Cargando IA...';
   await Promise.all([
@@ -297,17 +278,21 @@ async function loadModels(){
 }
 window.addEventListener('load',loadModels);
 
-//=== Start camera
+//=== Start camera (Añadimos mensaje de solicitud de permiso)
 btnStart.onclick=async()=>{
   try{
+    placeholderMsg.textContent = 'Solicitando permiso de cámara al sistema...';
     const stream=await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject=stream; await video.play();
-    document.getElementById('placeholder').style.display='none';
+    placeholder.style.display='none';
     btnStart.style.display='none'; btnCapture.disabled=false;
     resizeCanvas(); running=true; loop();
     canvas.classList.add('scanner-active');
     resetHUDLive();
-  }catch(e){showWarning('ERROR CÁMARA: No se pudo acceder. Asegúrese de tener permisos.');}
+  }catch(e){
+    placeholderMsg.textContent = 'ERROR CÁMARA: No se pudo acceder. Vuelva a intentar o revise los permisos.';
+    showWarning('ERROR CÁMARA: No se pudo acceder. Asegúrese de tener permisos.');
+  }
 };
 
 //=== Resize canvas
@@ -317,7 +302,7 @@ function resizeCanvas(){
 }
 window.addEventListener('resize',resizeCanvas);
 
-//=== Live detection loop
+//=== Live detection loop (Mantenido)
 async function loop(){
   if(!running)return;
   resizeCanvas();
@@ -349,22 +334,18 @@ async function loop(){
   raf=requestAnimationFrame(loop);
 }
 
-//=== NUEVA FUNCIÓN: Alerta Visual
+//=== Alerta Visual (Mantenido)
 function showWarning(message) {
-    // Código de la alerta (mantenido del V10.2)
     const criticalWarningEl = document.getElementById('critical-warning');
     criticalWarningEl.textContent = message;
     criticalWarningEl.style.display = 'block';
-    criticalWarningEl.classList.add('warning-flash');
+    // Se elimina la animación de glitch para simplificar
     setTimeout(() => {
-        criticalWarningEl.classList.remove('warning-flash');
-        setTimeout(() => {
-             criticalWarningEl.style.display = 'none';
-        }, 500); 
-    }, 1500);
+        criticalWarningEl.style.display = 'none';
+    }, 2500);
 }
 
-//=== Capture image
+//=== Capture image (Mantenido)
 btnCapture.onclick=()=>{
   if(parseInt(countEl.textContent) === 0 || !lastDet){
     showWarning('⚠️ ERROR CRÍTICO: ROSTRO NO RECONOCIDO. POSICIÓNESE FRENTE AL SENSOR.'); 
@@ -384,7 +365,7 @@ btnCapture.onclick=()=>{
   progressBar.style.width='5%';
 };
 
-//=== Analyze captured (Animación y Fix)
+//=== Analyze captured (Mantenido)
 btnAnalyze.onclick=async()=>{
   if(!captured)return;
   btnAnalyze.disabled=true;
@@ -399,18 +380,15 @@ btnAnalyze.onclick=async()=>{
 
   await simulateAnalysisDelay();
 
-  // Detección final (con Edad y Género)
   const dets=await faceapi.detectAllFaces(canvas,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
-  // Redibujar la imagen congelada
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const img=new Image(); 
   img.src=captured; await new Promise(r=>img.onload=r);
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
   const resized=faceapi.resizeResults(dets,{width:canvas.width,height:canvas.height});
   
-  // Dibujar resultados finales y etiquetar
   faceapi.draw.drawDetections(canvas,resized, {boxColor: 'var(--accent-success)', lineWidth: 3});
   faceapi.draw.drawFaceLandmarks(canvas,resized);
   faceapi.draw.drawFaceExpressions(canvas,resized, 0.05);
@@ -428,7 +406,6 @@ btnAnalyze.onclick=async()=>{
   updateProgressColor(symmetryScore);
   updateScoreFeedback(symmetryScore);
   
-  // Actualizar todas las métricas con valores finales
   beautyScoreEl.textContent = beautyScoreNumber.toFixed(2) + '%';
   ageScoreEl.textContent = `${Math.round(finalDet.age)} años (Género: ${finalDet.gender === 'male' ? 'Masc.' : 'Fem.'})`;
   civilStatusEl.textContent = simulatedCivilStatus;
@@ -442,7 +419,7 @@ btnAnalyze.onclick=async()=>{
   btnDownload.disabled=false;
 };
 
-//=== Retry (Reanudar Webcam)
+//=== Retry (Mantenido)
 btnRetry.onclick=()=>{
   running=true; video.play();
   btnCapture.style.display='inline-block';
@@ -456,13 +433,13 @@ btnRetry.onclick=()=>{
   raf=requestAnimationFrame(loop);
 };
 
-//=== Download capture
+//=== Download capture (Mantenido)
 btnDownload.onclick=()=>{
   if(!captured)return;
   const a=document.createElement('a');
   const finalImage = canvas.toDataURL('image/png');
   a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V10.3_REPORTE.png';
+  a.download='SYMMETRY_ANALYSIS_V10.4_REPORTE.png';
   a.click();
 };
 
@@ -490,7 +467,6 @@ function calcSymmetry(det){
 }
 
 function calcBeautyScore(isf){return isf;} 
-
 function simulateNationality(beautyScore){
     const index = Math.floor(Math.random() * NATIONALITIES.length);
     let nationality = NATIONALITIES[index];
@@ -499,11 +475,9 @@ function simulateNationality(beautyScore){
     }
     return nationality + ' (' + (Math.random() * 20 + 75).toFixed(1) + '% Confianza)';
 }
-
 function simulateCivilStatus(expressions){
     const dominant = Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][0];
     let status = CIVIL_STATUS[0]; 
-    
     if (dominant === 'happy' || dominant === 'neutral') {
         const rand = Math.random();
         if (rand < 0.4) status = CIVIL_STATUS[1]; 
@@ -522,21 +496,17 @@ function updateScoreFeedback(score){
     scoreFeedbackEl.textContent = feedback;
     scoreFeedbackEl.style.color = color;
 }
-
 function updateEmotionDisplay(expressions, fullReport = false){
   const sorted=Object.entries(expressions).sort((a,b)=>b[1]-a[1]);
   const dominant = sorted[0][0];
   const dominantPercent = (sorted[0][1]*100).toFixed(1);
-
   exprDominantEl.textContent = `${EXPR_TRADS[dominant]} (${dominantPercent}%)`;
-  
   if(fullReport){
       exprAllEl.textContent = 'DETALLE (' + sorted.length + ' Métricas): ' + sorted.map(e=>EXPR_TRADS[e[0]]+': '+(e[1]*100).toFixed(0)+'%').join(' | ');
   } else {
       exprAllEl.textContent = 'Detalle de emociones disponible tras Análisis Profesional...';
   }
 }
-
 function resetHUDLive(isRetry = false){
   scoreAnimate('—');
   progressBar.style.width='4%';
@@ -549,7 +519,6 @@ function resetHUDLive(isRetry = false){
   civilStatusEl.textContent = '—';
   nationalityEl.textContent = '—';
 }
-
 function resetHUDAnalysisError(){
     scoreAnimate('E-01');
     updateProgressColor(0);
@@ -562,7 +531,6 @@ function resetHUDAnalysisError(){
     civilStatusEl.textContent = '—';
     nationalityEl.textContent = '—';
 }
-
 function scoreAnimate(val){
   scoreEl.style.transform='scale(0.8)';
   setTimeout(()=>{
@@ -570,14 +538,12 @@ function scoreAnimate(val){
     scoreEl.style.transform='scale(1)';
   },160);
 }
-
 function updateProgressColor(score){
   let color = 'var(--accent-error)';
   if(score >= 80){color = 'var(--accent-success)';} 
   else if(score >= 65){color = 'var(--accent-warning)';}
   progressBar.style.background=color;
 }
-
 async function simulateAnalysisDelay(){
     const delay = 3000;
     await new Promise(r => setTimeout(r, delay));
