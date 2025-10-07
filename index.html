@@ -1,285 +1,528 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SYMMETRY AI ENGINE PRO V4 — Facial Analytics</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SYMMETRY AI ENGINE PRO V4 — Capture & Analyze</title>
 
-  <!-- TailwindCSS -->
+  <!-- Tailwind (visual) -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Estilo visual IA -->
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Inter:wght@100..900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;400;600&display=swap');
 
-    :root {
-      --ia-color: #00ffff;
-      --ia-color-light: #66ffff;
-      --bg-color: #0d1117;
-      --module-color: #161b22;
-      --error-color: #ff3366;
-    }
-
-    body {
-      font-family: 'Inter', sans-serif;
-      background-color: var(--bg-color);
-      color: #C9D1D9;
-      min-height: 100vh;
-      background-image: radial-gradient(circle at top right, rgba(0,255,255,0.08) 0%, transparent 60%),
-                        radial-gradient(circle at bottom left, rgba(0,100,255,0.06) 0%, transparent 60%);
-      overflow-x: hidden;
+    :root{
+      --ia:#00ffff;
+      --ia-2:#66ffff;
+      --bg:#0d1117;
+      --muted:#9aa4b2;
+      --error:#ff3366;
     }
 
-    h1, h2, h3 {
-      font-family: 'Orbitron', sans-serif;
-      text-shadow: 0 0 5px rgba(0,255,255,0.5);
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:linear-gradient(180deg,#071018 0%, #0d1117 60%);
+      color:#cfeff2;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:16px;
     }
 
-    .ia-glow-border {
-      border: 1px solid var(--ia-color);
-      box-shadow: 0 0 15px rgba(0,255,255,0.7), inset 0 0 5px rgba(0,255,255,0.3);
-      background-color: var(--module-color);
-      transition: all 0.3s ease;
-    }
-    .ia-glow-border:hover {
-      box-shadow: 0 0 25px var(--ia-color-light), inset 0 0 10px var(--ia-color-light);
-      transform: translateY(-2px);
+    h1,h2{font-family:Orbitron,Inter,Arial}
+    .ia-border{
+      border:1px solid rgba(0,255,255,0.15);
+      box-shadow:0 6px 30px rgba(0,255,255,0.04), inset 0 0 10px rgba(0,255,255,0.02);
+      background:linear-gradient(180deg, rgba(10,18,25,0.6), rgba(7,11,18,0.5));
     }
 
-    /* Cámara y canvas */
-    .capture-container {
-      position: relative;
-      background-color: #1a1a33;
-      border: 3px solid var(--ia-color);
-      box-shadow: 0 0 20px rgba(0,255,255,0.5);
-      overflow: hidden;
+    /* capture area */
+    .capture-wrap{position:relative; overflow:hidden; border-radius:14px}
+    #webcam-feed, #capture-canvas{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+      position:absolute; top:0; left:0;
+    }
+    #capture-canvas{z-index:2; pointer-events:none}
+    #webcam-feed{z-index:1}
+
+    /* placeholder overlay */
+    #placeholder-message{
+      position:absolute; z-index:3; inset:0;
+      display:flex; align-items:center; justify-content:center; flex-direction:column;
+      gap:8px; text-align:center; padding:18px;
+      background:linear-gradient(180deg, rgba(2,6,10,0.55), rgba(7,11,18,0.45));
+      color:var(--ia);
     }
 
-    #webcam-feed, #capture-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
+    /* controls */
+    .controls{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px}
+    .btn{
+      background:#071826; color:var(--ia); border:1px solid rgba(0,255,255,0.08);
+      padding:12px 18px; border-radius:12px; font-weight:600; cursor:pointer;
+      transition:transform .14s ease, box-shadow .14s ease, background .14s ease;
+      box-shadow:0 6px 18px rgba(0,255,255,0.03);
+    }
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:linear-gradient(90deg,var(--ia),var(--ia-2)); color:#032024; font-weight:800}
+    .btn.ghost{background:transparent; border:1px dashed rgba(255,255,255,0.03); color:#cfeff2}
+
+    /* progress bar */
+    .progress-wrap{height:10px; background:rgba(255,255,255,0.03); border-radius:999px; overflow:hidden}
+    .progress-bar{height:100%; width:0%; background:linear-gradient(90deg,var(--ia),var(--ia-2)); transition:width .4s cubic-bezier(.2,.7,.2,1)}
+
+    /* results card */
+    .results {
+      margin-top:12px; padding:14px; border-radius:12px; background:linear-gradient(180deg, rgba(3,6,10,0.55), rgba(7,11,18,0.6));
+      box-shadow:0 8px 30px rgba(0,0,0,0.5); border:1px solid rgba(0,255,255,0.04);
     }
 
-    .scan-animation {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      overflow: hidden;
-      display: none;
-      border: 4px dashed rgba(0,255,255,0.4);
+    /* animated score */
+    .score {
+      font-family:Orbitron,Inter,Arial; font-weight:800; font-size:40px; color:#fff;
+      text-shadow:0 6px 30px rgba(0,255,255,0.06);
+      transform-origin:center; transition:transform .8s cubic-bezier(.2,.7,.2,1);
     }
-    .scan-line {
-      position: absolute;
-      width: 100%; height: 6px;
-      background: linear-gradient(to right, transparent, var(--ia-color-light), transparent);
-      box-shadow: 0 0 20px var(--ia-color-light);
-      animation: scan-move 1.5s infinite linear;
-      opacity: 0.8;
+
+    /* mobile superlarge face for <300px */
+    @media (max-width:300px){
+      #capture-canvas, #webcam-feed {
+        transform:scale(1.25);
+        transform-origin:center center;
+      }
+      .btn{padding:10px 12px; font-size:13px}
+      .score{font-size:30px}
     }
-    @keyframes scan-move {
-      0% { transform: translateY(-100%); }
-      100% { transform: translateY(100%); }
-    }
+
+    /* small animation helpers */
+    .fade-in{animation:fadeIn .3s ease both}
+    @keyframes fadeIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:none}}
   </style>
 </head>
+<body>
 
-<body class="min-h-screen p-4 md:p-8">
+  <main class="max-w-4xl mx-auto">
+    <header class="text-center mb-8">
+      <h1 class="text-4xl md:text-5xl font-extrabold">SYMMETRY <span style="color:var(--ia-2)">AI</span> ENGINE</h1>
+      <p class="text-sm text-muted mt-2" style="color:var(--muted)">Capture → Freeze → Analyze — Pro Mode</p>
+    </header>
 
-  <!-- ENCABEZADO -->
-  <header class="text-center mb-16">
-    <h1 class="text-6xl md:text-8xl font-extrabold text-white tracking-tighter">
-      <span class="text-5xl text-cyan-400">SYMMETRY</span> <span class="text-cyan-600">AI</span> ENGINE
-    </h1>
-    <p class="mt-4 text-xl text-gray-400 font-light tracking-widest">
-      | Módulo de Calibración Opto-Electrónica | Protocolo Δ-CRONO v4.1 |
-    </p>
-  </header>
-
-  <main class="max-w-7xl mx-auto space-y-16">
-
-    <!-- ESTADO DE NÚCLEO -->
-    <section class="p-6 rounded-xl ia-glow-border bg-gray-900/60">
-      <h2 class="text-2xl font-bold mb-4 text-cyan-300">ESTADO DEL NÚCLEO I.A.</h2>
-      <div id="loading-container" class="mb-6">
-        <p class="text-cyan-400 font-medium mb-2 flex items-center">
-          <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-cyan-400"
-               xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.37 0 0 5.37 0 12h4zm2 5.29A7.96 7.96 0 014 12H0c0 3.04 1.13 5.82 3 7.94l3-2.65z"/>
-          </svg>
-          <span id="loading-status" class="ml-2 font-bold text-white">Inicializando IA Core...</span>
-        </p>
-      </div>
-    </section>
-
-    <!-- ANÁLISIS VISUAL -->
-    <section id="analisis" class="p-8 md:p-10 rounded-3xl border-4 border-cyan-700/50 bg-gray-900/70 shadow-inner shadow-cyan-900/50">
-      <h2 class="text-3xl font-bold mb-8 text-center text-cyan-400 uppercase tracking-widest">FLUJO DE PROCESAMIENTO IFA</h2>
-
-      <div class="grid lg:grid-cols-4 gap-8">
-        <!-- Etapas -->
-        <div class="lg:col-span-1 space-y-4">
-          <div class="ia-glow-border p-4 rounded-lg bg-gray-800/50">
-            <p class="font-bold text-cyan-400 text-lg">01. CAPTURA ÓPTICA</p>
-            <p class="text-gray-400 text-sm">Fuente activa: <span id="source-status" class="text-white font-semibold">PENDIENTE</span>.</p>
-          </div>
-          <div class="ia-glow-border p-4 rounded-lg opacity-50 bg-gray-800/50">
-            <p class="font-bold text-cyan-400 text-lg">02. SEGMENTACIÓN DNN</p>
-            <p class="text-gray-400 text-sm">Ejecución de detección facial con landmarks y expresiones.</p>
-          </div>
-          <div class="ia-glow-border p-4 rounded-lg opacity-50 bg-gray-800/50">
-            <p class="font-bold text-cyan-400 text-lg">03. CÁLCULO ÁUREO φ</p>
-            <p class="text-gray-400 text-sm">Evaluación de simetría bilateral y armonía facial.</p>
-          </div>
-          <div class="ia-glow-border p-4 rounded-lg opacity-50 bg-gray-800/50">
-            <p class="font-bold text-cyan-400 text-lg">04. CONSOLIDACIÓN</p>
-            <p class="text-gray-400 text-sm">Generación de informe y métricas IFA.</p>
-          </div>
-        </div>
-
-        <!-- Visualización -->
-        <div class="lg:col-span-3">
-          <div id="capture-area" class="capture-container w-full aspect-video rounded-xl shadow-2xl">
+    <!-- capture panel -->
+    <section class="ia-border p-4 md:p-6 rounded-xl">
+      <div class="grid md:grid-cols-3 gap-4">
+        <!-- left: capture viewport -->
+        <div class="md:col-span-2">
+          <div id="capture-area" class="capture-wrap aspect-[16/9] ia-border">
             <video id="webcam-feed" autoplay muted playsinline></video>
             <canvas id="capture-canvas"></canvas>
 
-            <!-- Animación -->
-            <div id="scan-animation" class="scan-animation">
-              <div class="scan-line"></div>
-            </div>
-
-            <!-- Mensaje -->
-            <div id="placeholder-message"
-                 class="absolute inset-0 flex flex-col items-center justify-center text-center p-8 text-gray-500 bg-gray-900/80">
-              <svg class="w-16 h-16 mb-4 text-cyan-500 animate-pulse" fill="none" stroke="currentColor"
-                   viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                      d="M9.75 17L12 19.25L14.25 17M12 19.25V4M20 12C20 16.4183 16.4183 20 12 20C7.58 20 4 16.4183 4 12C4 7.58 7.58 4 12 4"/>
-              </svg>
-              <p class="text-2xl font-bold text-cyan-500 mb-2">SUBSISTEMA INACTIVO</p>
-              <p class="text-base">Active la cámara para iniciar el protocolo de análisis IA.</p>
+            <div id="placeholder-message">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h1l.72-1.08A2 2 0 0 1 9.72 3h4.56a2 2 0 0 1 1.99 1.92L17.28 5H19a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <strong style="font-size:16px">SUBSISTEMA INACTIVO</strong>
+              <span style="color:var(--muted); font-size:13px">Active la cámara y presione <em>CAPTURAR ROSTRO</em>.</span>
             </div>
           </div>
 
-          <!-- Botones -->
-          <div class="flex flex-wrap justify-center gap-6 mt-8">
-            <button id="capture-btn"
-              class="px-8 py-4 bg-gray-800 text-cyan-400 font-bold rounded-xl ia-glow-border hover:bg-cyan-900/50 transition transform hover:scale-[1.02]">
-              📸 CAPTURAR ROSTRO
-            </button>
-            <button id="retry-btn"
-              class="px-8 py-4 bg-gray-800 text-cyan-400 font-bold rounded-xl ia-glow-border hover:bg-cyan-900/50 transition transform hover:scale-[1.02]">
-              🔄 REINICIAR
-            </button>
+          <div class="controls mt-4">
+            <button id="btn-start-live" class="btn">🔴 Iniciar Cámara</button>
+            <button id="capture-btn" class="btn primary" disabled>📸 CAPTURAR ROSTRO</button>
+            <button id="analyze-btn" class="btn" style="display:none">⚙️ ANALIZAR / PROCESAR</button>
+            <button id="download-btn" class="btn ghost" style="display:none">⬇️ DESCARGAR</button>
+            <button id="btn-retry" class="btn" style="display:none">🔄 VOLVER A LIVE</button>
           </div>
 
-          <p id="result-message" class="text-center mt-6 text-lg font-semibold text-gray-300"></p>
+          <div class="mt-3" id="live-status" style="color:var(--muted); font-size:13px">Estado: <span id="status-text">apagado</span></div>
+        </div>
+
+        <!-- right: results -->
+        <div class="md:col-span-1">
+          <div class="results">
+            <div class="flex items-center justify-between">
+              <div>
+                <div style="font-size:12px; color:var(--muted)">RESULTADO</div>
+                <div id="score" class="score">—</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:12px; color:var(--muted)">DETECCIONES</div>
+                <div id="det-count" style="font-weight:700; font-size:20px">0</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <div style="font-size:12px; color:var(--muted); margin-bottom:6px">Barra de proceso</div>
+              <div class="progress-wrap"><div id="progress" class="progress-bar"></div></div>
+            </div>
+
+            <div id="expressions" style="margin-top:12px; font-size:13px; color:var(--muted)">
+              No analizado
+            </div>
+
+            <div id="analysis-log" style="margin-top:12px; font-size:12px; color:var(--muted)"></div>
+          </div>
         </div>
       </div>
     </section>
 
+    <!-- Alert panel -->
+    <div id="alert-message" class="fixed inset-0 hidden items-center justify-center p-4 z-50">
+      <div class="bg-[#071018] p-4 rounded-md border border-1" style="border-left:4px solid var(--error); max-width:520px">
+        <div style="color:var(--error); font-weight:700">ERROR</div>
+        <div id="alert-text" style="color:#fff; margin-top:8px"></div>
+        <div style="margin-top:12px; text-align:right">
+          <button onclick="document.getElementById('alert-message').classList.add('hidden')" class="btn">OK</button>
+        </div>
+      </div>
+    </div>
+
   </main>
 
-  <!-- Panel de error -->
-  <div id="alert-message"
-       class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50">
-    <div class="bg-gray-900 p-8 rounded-lg shadow-2xl max-w-lg w-full border-l-4 border-red-500 ia-glow-border"
-         style="border-color: var(--error-color); box-shadow: 0 0 15px var(--error-color), inset 0 0 5px rgba(255, 51, 102, 0.5);">
-      <p class="text-red-400 font-extrabold text-2xl mb-4 uppercase">ERROR CRÍTICO DEL SISTEMA</p>
-      <p id="alert-text" class="text-gray-300 mb-6 font-mono"></p>
-      <button onclick="document.getElementById('alert-message').classList.add('hidden')"
-              class="w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 tracking-wider transition">
-        DESCARTE DE ERROR
-      </button>
-    </div>
-  </div>
+  <!-- face-api local script (must be present in same folder) -->
+  <script src="./face-api.min.js"></script>
 
-<script src="./face-api.min.js"></script>
+  <script>
+  // ============================
+  // CONFIG / ELEMENTS
+  // ============================
+  const MODELS_URL = './models';
+  const vid = document.getElementById('webcam-feed');
+  const canvas = document.getElementById('capture-canvas');
+  const ctx = canvas.getContext('2d');
 
-<script>
-const MODELS_URL = './models';
-const video = document.getElementById('webcam-feed');
-const canvas = document.getElementById('capture-canvas');
-const ctx = canvas.getContext('2d');
-const result = document.getElementById('result-message');
-const capture = document.getElementById('capture-btn');
-const retry = document.getElementById('retry-btn');
-const alertBox = document.getElementById('alert-message');
-const alertText = document.getElementById('alert-text');
-const placeholder = document.getElementById('placeholder-message');
+  const btnStart = document.getElementById('btn-start-live');
+  const captureBtn = document.getElementById('capture-btn');
+  const analyzeBtn = document.getElementById('analyze-btn');
+  const downloadBtn = document.getElementById('download-btn');
+  const btnRetry = document.getElementById('btn-retry');
 
-let animationId = null;
-let running = false;
+  const placeholder = document.getElementById('placeholder-message');
+  const statusText = document.getElementById('status-text');
+  const progressBar = document.getElementById('progress');
+  const scoreEl = document.getElementById('score');
+  const detCount = document.getElementById('det-count');
+  const expressionsEl = document.getElementById('expressions');
+  const logEl = document.getElementById('analysis-log');
 
-function showAlert(m){alertText.textContent=m;alertBox.classList.remove('hidden');}
+  const alertBox = document.getElementById('alert-message');
+  const alertText = document.getElementById('alert-text');
 
-async function loadModels(){
-  await Promise.all([
-    faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL)
-  ]);
-  startVideo();
-}
+  let stream = null;
+  let rafId = null;
+  let running = false;
+  let capturedImageDataUrl = null;
+  let lastDetections = [];
 
-function startVideo(){
-  navigator.mediaDevices.getUserMedia({video:true})
-  .then(stream=>{
-    video.srcObject=stream;
-    video.onloadedmetadata=()=>{
-      video.play();
-      placeholder.style.display='none';
-      canvas.width=video.videoWidth;
-      canvas.height=video.videoHeight;
-      running=true;
-      loop();
-    };
-  })
-  .catch(e=>showAlert('No se puede usar la cámara: '+e.message));
-}
+  function showAlert(msg){
+    alertText.textContent = msg;
+    alertBox.classList.remove('hidden');
+  }
 
-async function loop(){
-  if(!running) return;
-  const size={width:video.videoWidth,height:video.videoHeight};
-  faceapi.matchDimensions(canvas,size);
-  const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options()).withFaceLandmarks().withFaceExpressions();
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  const r=faceapi.resizeResults(det,size);
-  faceapi.draw.drawDetections(canvas,r);
-  faceapi.draw.drawFaceLandmarks(canvas,r);
-  faceapi.draw.drawFaceExpressions(canvas,r);
-  result.textContent=det.length?'✅ Rostro detectado':'❌ Ningún rostro detectado';
-  result.style.color=det.length?'#00ffb3':'#ff6666';
-  animationId=requestAnimationFrame(loop);
-}
+  // ============================
+  // LOAD MODELS (local)
+  // ============================
+  async function loadModels() {
+    try {
+      statusText.textContent = 'Cargando modelos...';
+      await Promise.all([
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
+        faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
+        faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL)
+      ]);
+      statusText.textContent = 'Modelos listos';
+      btnStart.disabled = false;
+    } catch (e) {
+      console.error(e);
+      showAlert('No se pudieron cargar los modelos: ' + e.message);
+    }
+  }
 
-// 👉 Captura real (pausa video y análisis)
-capture.addEventListener('click',()=>{
-  if(!running){showAlert('No hay video activo');return;}
-  running=false;
-  cancelAnimationFrame(animationId);
-  video.pause();                     // detiene la cámara
-  ctx.drawImage(video,0,0,canvas.width,canvas.height); // frame congelado
-  result.textContent='📸 Imagen capturada (análisis detenido)';
-  result.style.color='#00ffff';
-});
+  // ============================
+  // START CAMERA / LIVE LOOP
+  // ============================
+  async function startCamera(){
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+      vid.srcObject = stream;
+      await vid.play();
 
-// 👉 Reinicia
-retry.addEventListener('click',()=>{
-  result.textContent='Reiniciando...';
-  result.style.color='#ccc';
-  video.play();
-  running=true;
-  loop();
-});
+      // hide placeholder
+      placeholder.style.display = 'none';
+      statusText.textContent = 'Live: conectado';
+      captureBtn.disabled = false;
+      btnStart.disabled = true;
+      btnRetry.style.display = 'none';
+      analyzeBtn.style.display = 'none';
+      downloadBtn.style.display = 'none';
 
-window.addEventListener('load',loadModels);
-</script>
+      resizeCanvasToVideo();
+      running = true;
+      requestAnimationFrame(liveLoop);
+    } catch(err) {
+      console.error(err);
+      showAlert('No se pudo acceder a la cámara: ' + err.message);
+    }
+  }
 
+  function resizeCanvasToVideo(){
+    // Ajusta tamaño real del canvas tomando en cuenta pantallas pequeñas <300
+    const vw = vid.videoWidth || vid.clientWidth || 640;
+    const vh = vid.videoHeight || vid.clientHeight || 360;
+    // Si pantalla muy pequeña, vamos a escalar para que el rostro se vea grande
+    const screenW = window.innerWidth;
+    let targetW = vw;
+    if(screenW < 300){
+      targetW = Math.min(vw, Math.max(screenW * 0.95, 240)); // asegúrate tamaño visible
+    } else {
+      targetW = Math.min(vw, 960);
+    }
+    // Mantener aspecto proporcional
+    const ratio = vh / vw;
+    canvas.width = Math.round(targetW);
+    canvas.height = Math.round(targetW * ratio);
+    // also set CSS height to fill parent
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+  }
 
+  async function liveLoop(){
+    if(!running) return;
+    try {
+      resizeCanvasToVideo();
+
+      // detection on video (fast)
+      const detections = await faceapi.detectAllFaces(vid, new faceapi.SsdMobilenetv1Options({minConfidence:0.5}))
+                        .withFaceLandmarks().withFaceExpressions();
+
+      // clear and draw current frame and overlays
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // draw video frame scaled to canvas
+      ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+      // map detection coordinates to current canvas size
+      const displaySize = { width: vid.videoWidth, height: vid.videoHeight };
+      const resized = faceapi.resizeResults(detections, { width: canvas.width, height: canvas.height });
+
+      // draw overlays using face-api draw utilities (but use our canvas ctx)
+      faceapi.draw.drawDetections(canvas, resized);
+      faceapi.draw.drawFaceLandmarks(canvas, resized);
+      faceapi.draw.drawFaceExpressions(canvas, resized);
+
+      // feedback
+      detCount.textContent = detections.length;
+      lastDetections = resized;
+
+      // subtle progress animation when face present
+      if(detections.length > 0){
+        progressBar.style.width = '24%';
+      } else {
+        progressBar.style.width = '4%';
+      }
+
+    } catch (e){
+      console.warn('liveLoop error', e);
+    }
+    rafId = requestAnimationFrame(liveLoop);
+  }
+
+  // ============================
+  // CAPTURE (freeze frame) -> show analyze button
+  // ============================
+  captureBtn.addEventListener('click', ()=>{
+    if(!vid.srcObject){
+      showAlert('Primero inicia la cámara.');
+      return;
+    }
+    // stop the live loop but keep stream active (pause video playback to freeze)
+    running = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    vid.pause();
+
+    // draw final frozen frame into canvas (canvas already autosized)
+    resizeCanvasToVideo();
+    ctx.drawImage(vid, 0, 0, canvas.width, canvas.height);
+
+    // store data url for download / analyze
+    capturedImageDataUrl = canvas.toDataURL('image/png');
+
+    // adjust controls
+    analyzeBtn.style.display = 'inline-block';
+    downloadBtn.style.display = 'inline-block';
+    btnRetry.style.display = 'inline-block';
+    captureBtn.disabled = true;
+    statusText.textContent = 'Imagen capturada';
+    progressBar.style.width = '40%';
+    scoreElAnimate('--');
+    expressionsEl.textContent = 'Listo para analizar';
+    logEl.textContent = 'Presione "ANALIZAR / PROCESAR" para realizar el análisis profesional.';
+  });
+
+  // ============================
+  // ANALYZE: run accurate analysis on captured image
+  // ============================
+  analyzeBtn.addEventListener('click', async ()=>{
+    if(!capturedImageDataUrl){
+      showAlert('No hay imagen capturada para analizar.');
+      return;
+    }
+    // UI start
+    analyzeBtn.disabled = true;
+    progressBar.style.width = '6%';
+    logEl.textContent = '';
+    statusText.textContent = 'Analizando...';
+    expressionsEl.textContent = 'Calculando...';
+
+    // animate progress to feel "professional"
+    await animateProgressSequence([15, 40, 70, 95]);
+
+    try {
+      // run detection & landmarks & expressions ON the canvas (captured image)
+      const dets = await faceapi.detectAllFaces(canvas, new faceapi.SsdMobilenetv1Options({minConfidence:0.5}))
+                      .withFaceLandmarks().withFaceExpressions();
+
+      // clear & redraw the capture (keep overlays)
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // draw image back
+      const img = new Image();
+      img.src = capturedImageDataUrl;
+      await new Promise(r => img.onload = r);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const resized = faceapi.resizeResults(dets, { width: canvas.width, height: canvas.height });
+      faceapi.draw.drawDetections(canvas, resized);
+      faceapi.draw.drawFaceLandmarks(canvas, resized);
+      faceapi.draw.drawFaceExpressions(canvas, resized);
+
+      // update results
+      detCount.textContent = dets.length;
+      if(dets.length === 0){
+        scoreElAnimate('—');
+        expressionsEl.textContent = 'No se detectó rostro en la captura.';
+        logEl.textContent = 'Intente otra captura con mejor iluminación y centrado.';
+        progressBar.style.width = '100%';
+        analyzeBtn.disabled = false;
+        statusText.textContent = 'Analizado: 0 rostros';
+        return;
+      }
+
+      // compute a simple "IFA-like" score (simetría aproximada)
+      const score = computeItaScore(dets[0]);
+      scoreElAnimate(score.toFixed(2));
+
+      // expressions probabilities
+      const expr = dets[0].expressions || {};
+      expressionsEl.innerHTML = '<strong>Expresiones:</strong><br/>' + Object.entries(expr)
+        .map(([k,v]) => `${k}: ${(v*100).toFixed(0)}%`).join('<br/>');
+
+      progressBar.style.width = '100%';
+      logEl.textContent = 'Análisis completado con éxito.';
+      statusText.textContent = 'Analizado';
+
+    } catch(e){
+      console.error(e);
+      showAlert('Error durante el análisis: ' + e.message);
+      logEl.textContent = 'Fallo en la etapa de análisis.';
+    } finally {
+      analyzeBtn.disabled = false;
+    }
+  });
+
+  // progress animation helper
+  async function animateProgressSequence(steps){
+    for(const p of steps){
+      progressBar.style.width = p + '%';
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
+  // compute a simple "symmetry" score using landmarks (0..100)
+  function computeItaScore(detection){
+    try {
+      const lm = detection.landmarks;
+      // average distance left eye to nose vs right eye to nose (normalized)
+      const leftEye = centroid(lm.getLeftEye());
+      const rightEye = centroid(lm.getRightEye());
+      const nose = centroid(lm.getNose());
+      const mouth = centroid(lm.getMouth());
+
+      const dL = distance(leftEye, nose);
+      const dR = distance(rightEye, nose);
+      const eyeBalance = 1 - Math.abs(dL - dR) / Math.max(dL,dR);
+
+      // mouth symmetry with respect to nose
+      const dM = Math.abs(mouth.x - nose.x);
+      const faceWidth = distance(lm.getLeftCheek ? centroid(lm.getLeftCheek()) : leftEye, lm.getRightCheek ? centroid(lm.getRightCheek()) : rightEye);
+      const mouthBalance = 1 - Math.min(1, dM / (faceWidth*0.2 || 1));
+
+      // combined score
+      const raw = (eyeBalance * 0.6 + mouthBalance * 0.4) * 100;
+      return Math.max(0, Math.min(100, raw));
+    } catch(e){
+      return 0;
+    }
+  }
+  function centroid(points){
+    const n = points.length;
+    const s = points.reduce((acc,p)=>({x:acc.x+p.x, y:acc.y+p.y}), {x:0,y:0});
+    return {x:s.x/n, y:s.y/n};
+  }
+  function distance(a,b){
+    const dx = a.x - b.x, dy = a.y - b.y;
+    return Math.sqrt(dx*dx + dy*dy);
+  }
+
+  // display score with small animation
+  function scoreElAnimate(val){
+    scoreEl = document.getElementById('score');
+    scoreEl.style.transform = 'scale(0.88)';
+    setTimeout(()=>{ scoreEl.textContent = val; scoreEl.style.transform = 'scale(1)'; }, 160);
+  }
+
+  // download captured PNG
+  downloadBtn.addEventListener('click', ()=>{
+    if(!capturedImageDataUrl){
+      showAlert('No hay captura para descargar.');
+      return;
+    }
+    const a = document.createElement('a');
+    a.href = capturedImageDataUrl;
+    a.download = 'captura_symmetry.png';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+
+  // retry / go back to live
+  btnRetry.addEventListener('click', ()=>{
+    // resume video playback and live loop
+    if(vid.srcObject){
+      vid.play();
+      running = true;
+      captureBtn.disabled = false;
+      analyzeBtn.style.display = 'none';
+      downloadBtn.style.display = 'none';
+      btnRetry.style.display = 'none';
+      statusText.textContent = 'Live: conectado';
+      progressBar.style.width = '4%';
+      requestAnimationFrame(liveLoop);
+    } else {
+      statusText.textContent = 'Sin cámara';
+    }
+  });
+
+  // initial sequence
+  window.addEventListener('load', async ()=>{
+    // try to load models; enable start when ready
+    await loadModels();
+  });
+
+  // enable start button
+  btnStart.addEventListener('click', startCamera);
+
+  // responsive: adjust canvas on resize
+  window.addEventListener('resize', ()=>{ if(vid && vid.srcObject) resizeCanvasToVideo(); });
+
+  </script>
 </body>
 </html>
