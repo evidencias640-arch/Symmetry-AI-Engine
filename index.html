@@ -198,10 +198,8 @@
     </div>
   </div>
 
-  <!-- Librería local face-api.js -->
-  <script src="./face-api.min.js"></script>
+<script src="./face-api.min.js"></script>
 
-  <!-- Núcleo JS -->
 <script>
   const MODELS_URL = './models';
   const video = document.getElementById('webcam-feed');
@@ -211,18 +209,19 @@
   const retryBtn = document.getElementById('retry-btn');
   const resultMessage = document.getElementById('result-message');
   const loadingStatus = document.getElementById('loading-status');
+  const placeholder = document.getElementById('placeholder-message');
   const alertBox = document.getElementById('alert-message');
   const alertText = document.getElementById('alert-text');
 
+  let streamActive = false;
   let detecting = false;
-  let lastDetections = [];
 
   function showAlert(msg) {
     alertText.textContent = msg;
     alertBox.classList.remove('hidden');
   }
 
-  // Carga modelos IA
+  // 🚀 Carga modelos IA
   async function loadModels() {
     try {
       loadingStatus.textContent = 'Cargando modelos IA locales...';
@@ -231,96 +230,87 @@
         faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
         faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL)
       ]);
-      loadingStatus.textContent = '✅ Modelos cargados correctamente';
+      loadingStatus.textContent = '✅ Modelos IA cargados correctamente';
       startVideo();
     } catch (e) {
       console.error(e);
-      showAlert('Error cargando modelos locales: ' + e.message);
+      showAlert('Error cargando modelos: ' + e.message);
     }
   }
 
-  // Inicia cámara
+  // 🎥 Inicia cámara
   function startVideo() {
-    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
+    navigator.mediaDevices.getUserMedia({ video: true })
       .then(stream => {
         video.srcObject = stream;
+        streamActive = true;
         video.onloadedmetadata = () => {
           video.play();
-          detectLoop(); // inicia análisis continuo
+          placeholder.style.display = 'none'; // 👈 Quita el mensaje “subsistema inactivo”
+          resizeCanvas();
+          detectLoop();
         };
       })
       .catch(err => showAlert('Error al acceder a la cámara: ' + err.message));
   }
 
-  // Bucle fluido de detección con requestAnimationFrame
+  // 🔧 Ajusta tamaño del canvas a video
+  function resizeCanvas() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+  }
+
+  // 🔁 Detección continua fluida
   async function detectLoop() {
-    if (!detecting) {
-      detecting = true;
-      const displaySize = { width: video.videoWidth, height: video.videoHeight };
-      faceapi.matchDimensions(canvas, displaySize);
+    if (detecting) return;
+    detecting = true;
 
-      const analyzeFrame = async () => {
-        try {
-          // Detección facial (fluida)
-          const detections = await faceapi
-            .detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
-            .withFaceLandmarks()
-            .withFaceExpressions();
+    const displaySize = { width: video.videoWidth, height: video.videoHeight };
+    faceapi.matchDimensions(canvas, displaySize);
 
-          // Limpia y redibuja resultados
-          context.clearRect(0, 0, canvas.width, canvas.height);
-          const resized = faceapi.resizeResults(detections, displaySize);
-          faceapi.draw.drawDetections(canvas, resized);
-          faceapi.draw.drawFaceLandmarks(canvas, resized);
-          faceapi.draw.drawFaceExpressions(canvas, resized);
+    const analyzeFrame = async () => {
+      try {
+        const detections = await faceapi
+          .detectAllFaces(video, new faceapi.SsdMobilenetv1Options())
+          .withFaceLandmarks()
+          .withFaceExpressions();
 
-          // Feedback
-          if (detections.length > 0) {
-            lastDetections = resized;
-            resultMessage.textContent = '✅ Rostro detectado correctamente';
-            resultMessage.style.color = '#00ffb3';
-          } else {
-            resultMessage.textContent = '❌ Ningún rostro detectado';
-            resultMessage.style.color = '#ff6666';
-          }
-        } catch (err) {
-          console.warn('Error en frame:', err);
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        const resized = faceapi.resizeResults(detections, displaySize);
+        faceapi.draw.drawDetections(canvas, resized);
+        faceapi.draw.drawFaceLandmarks(canvas, resized);
+        faceapi.draw.drawFaceExpressions(canvas, resized);
+
+        if (detections.length > 0) {
+          resultMessage.textContent = '✅ Rostro detectado correctamente';
+          resultMessage.style.color = '#00ffb3';
+        } else {
+          resultMessage.textContent = '❌ Ningún rostro detectado';
+          resultMessage.style.color = '#ff6666';
         }
-
-        // Loop sin congelar
-        requestAnimationFrame(analyzeFrame);
-      };
-
-      analyzeFrame();
-    }
+      } catch (err) {
+        console.warn('Error en frame:', err);
+      }
+      requestAnimationFrame(analyzeFrame);
+    };
+    analyzeFrame();
   }
 
-  // Captura la imagen actual
+  // 📸 Captura imagen visible del video
   function captureImage() {
-    try {
-      // Crea un nuevo canvas temporal para guardar la imagen
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = video.videoWidth;
-      tempCanvas.height = video.videoHeight;
-      const tempCtx = tempCanvas.getContext('2d');
-      tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
-
-      // Muestra la imagen capturada en el canvas principal
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      // Feedback visual
-      resultMessage.textContent = '📸 Imagen capturada y lista para análisis';
-      resultMessage.style.color = '#00ffff';
-
-      // Opcional: puedes guardar la imagen como base64 si quieres enviarla o usarla
-      // const capturedData = tempCanvas.toDataURL('image/png');
-      // console.log('Imagen capturada (base64):', capturedData);
-    } catch (e) {
-      showAlert('Error al capturar imagen: ' + e.message);
+    if (!streamActive) {
+      showAlert('No hay cámara activa para capturar.');
+      return;
     }
+
+    resizeCanvas(); // asegura dimensiones correctas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    resultMessage.textContent = '📸 Imagen capturada correctamente';
+    resultMessage.style.color = '#00ffff';
   }
 
-  // Reinicia flujo
+  // 🔄 Reinicia cámara
   function retryCapture() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     resultMessage.textContent = 'Reiniciando cámara...';
@@ -340,5 +330,6 @@
     }
   });
 </script>
+
 </body>
 </html>
