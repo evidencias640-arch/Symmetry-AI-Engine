@@ -3,20 +3,19 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V6 — Análisis Facial Avanzado</title>
+<title>SYMMETRY AI ENGINE PRO V7 — Análisis Biométrico y Emocional</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES
+  ESTILOS BASE Y VARIABLES (V7 - Más Intensidad)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
-  /* COLORES NEON/CYBERPUNK */
   :root{
     --ia:#00ffff; /* Cian principal */
     --ia-light:#66ffff;
-    --ia-dark:#00bfff;
+    --ia-glow: 0 0 10px var(--ia), 0 0 20px rgba(0,255,255,0.6);
     --bg:#000b11;
     --muted:#a0a9b5;
     --accent-error:#ff5050;
@@ -33,110 +32,107 @@
 
   /*
   =======================================================
-  VIDEO Y CANVAS
+  VIDEO Y CANVAS: EFECTO DE ESCANER DINÁMICO
   =======================================================
   */
   #webcam-feed,#capture-canvas{
     position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
   }
-  /* Borde de 'escaner' sutil en el canvas */
   #capture-canvas{
-    box-shadow: 0 0 10px rgba(0,255,255,0.4) inset;
-    border: 1px solid rgba(0,255,255,0.2);
-    /* Animación de Glitch sutil */
-    animation: scan-glitch 12s infinite alternate;
+    box-shadow: var(--ia-glow) inset;
+    border: 2px solid rgba(0,255,255,0.4);
+    animation: scan-glitch-v7 8s infinite alternate; /* Animación más rápida */
   }
 
-  /* Animación de Glitch Sutil */
-  @keyframes scan-glitch {
-    0% { clip: rect(4px, 9999px, 8px, 0); }
-    10% { transform: skewX(0.5deg); }
-    20% { clip: rect(90px, 9999px, 94px, 0); }
-    30% { transform: skewX(0deg); }
-    40% { clip: rect(130px, 9999px, 134px, 0); }
-    50% { transform: skewX(-0.5deg); }
-    60% { clip: rect(180px, 9999px, 184px, 0); }
-    70% { transform: skewX(0.2deg); }
-    80% { clip: rect(220px, 9999px, 224px, 0); }
-    90% { transform: skewX(-0.2deg); }
-    100% { clip: rect(4px, 9999px, 8px, 0); }
+  /* Animación de Glitch/Escaneo más visible */
+  @keyframes scan-glitch-v7 {
+    0% { clip: rect(4px, 9999px, 8px, 0); opacity: 1; }
+    25% { transform: skewX(0.8deg); clip: rect(80px, 9999px, 84px, 0); opacity: 0.95; }
+    50% { transform: skewX(-0.8deg); clip: rect(150px, 9999px, 154px, 0); opacity: 1; }
+    75% { transform: skewX(0.4deg); clip: rect(220px, 9999px, 224px, 0); opacity: 0.9; }
+    100% { clip: rect(4px, 9999px, 8px, 0); opacity: 1; }
   }
 
   /*
   =======================================================
-  HUD / INTERFAZ DE RESULTADOS
+  HUD / INTERFAZ DE RESULTADOS (Responsivo Mejorado)
   =======================================================
   */
-  #placeholder{
-    position:absolute;inset:0;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.85);z-index:15;text-align:center;
-  }
-  #placeholder h2{
-    font-family:Orbitron,Inter,Arial;letter-spacing:2px;
-    text-shadow: var(--shadow-light);
-    color:var(--ia);
-  }
-
   #results{
-    position:absolute;top:10px;right:10px;
-    background:rgba(0,0,0,0.7);
-    border: 1px solid rgba(0,255,255,0.2);
-    padding:14px 18px;
-    border-radius:6px;
+    position:absolute;
+    top:10px;
+    right:10px;
+    background:rgba(0,0,0,0.85);
+    border: 2px solid rgba(0,255,255,0.3);
+    padding:16px 20px;
+    border-radius:8px;
     font-size:14px;
     z-index:10;
-    backdrop-filter:blur(10px);
-    box-shadow: var(--shadow-light); /* Resplandor sutil */
-    max-width: 300px;
+    backdrop-filter:blur(12px);
+    box-shadow: var(--ia-glow); /* Resplandor más fuerte */
+    max-width: 320px;
+    transition: all 0.3s ease;
   }
 
-  /* Título de la Métrica */
   .metric-label{
     font-family: Orbitron, Inter, Arial;
-    font-weight: 600;
+    font-weight: 800;
     color: var(--ia-light);
-    margin-top: 10px;
-    text-shadow: 0 0 5px rgba(0,255,255,0.3);
-    border-bottom: 1px dotted rgba(0,255,255,0.1);
-    padding-bottom: 2px;
+    margin-top: 15px;
+    text-shadow: 0 0 8px rgba(0,255,255,0.5);
+    border-bottom: 2px solid rgba(0,255,255,0.2);
+    padding-bottom: 4px;
+    letter-spacing: 1px;
+    font-size: 0.9em;
   }
 
-  /* Puntuación principal de simetría */
   #score{
-    font-family:Orbitron,Inter,Arial;font-size:36px;font-weight:800;
+    font-family:Orbitron,Inter,Arial;font-size:42px;font-weight:800;
     line-height: 1;
-    margin-top: 4px;
+    margin-top: 8px;
+    color: var(--ia-light);
+    text-shadow: var(--ia-glow);
   }
 
   /* Barra de progreso de Simetría (ISF) */
   #progress{
-    width:100%;height:8px;background:#001;border-radius:999px;
-    overflow:hidden;margin-top:6px;
-    box-shadow: 0 0 5px rgba(0,255,255,0.2) inset;
+    width:100%;height:10px;background:#001;border-radius:999px;
+    overflow:hidden;margin-top:8px;
+    box-shadow: 0 0 8px rgba(0,255,255,0.4) inset;
   }
   #progress>div{
-    height:100%;width:0%;transition:width .6s ease, background .6s;
-    box-shadow: 0 0 5px rgba(0,255,255,0.8); /* Resplandor de la barra */
+    height:100%;
+    width:0%;
+    transition:width .8s ease, background .8s;
+    box-shadow: 0 0 8px rgba(0,255,255,1);
+    animation: pulse-glow 2s infinite alternate; /* Animación de pulsación */
   }
 
-  /* Feedback de Atractivo/Simpatía */
-  #score-feedback{
-    font-size: 14px;
-    margin-top: 4px;
-    color: var(--ia-light);
-    font-weight: 600;
+  @keyframes pulse-glow {
+    from { opacity: 0.7; }
+    to { opacity: 1; }
   }
-  /* Estilo de la expresión dominante */
-  #expr-dominant{
+
+  #score-feedback{
+    font-size: 15px;
+    margin-top: 6px;
     color: var(--ia-light);
     font-weight: 600;
-    text-transform: capitalize;
+    letter-spacing: 0.5px;
+  }
+
+  /* Estilos de Expresión */
+  #expr-all{
+    color: var(--muted);
+    font-size: 11px;
+    line-height: 1.4;
+    margin-top: 8px;
+    word-break: break-all;
   }
 
   /*
   =======================================================
-  CONTROLES / BOTONES
+  CONTROLES / BOTONES (Mejor Responsividad)
   =======================================================
   */
   #controls{
@@ -144,106 +140,141 @@
     display:flex;gap:15px;z-index:20;flex-wrap:wrap;justify-content:center;
   }
   .btn{
-    background:rgba(0,0,0,0.7);
-    border:1px solid rgba(0,255,255,0.3);
+    background:rgba(0,0,0,0.8);
+    border:2px solid rgba(0,255,255,0.4);
     color:var(--ia);
-    padding:12px 20px;
-    border-radius:10px;
+    padding:14px 22px;
+    border-radius:12px;
     cursor:pointer;
-    backdrop-filter:blur(8px);
-    font-weight:600;
-    transition:background .3s, transform .1s, box-shadow .3s;
+    backdrop-filter:blur(10px);
+    font-weight:700;
+    transition:background .3s, transform .2s, box-shadow .3s;
     font-family: Orbitron, Inter, Arial;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+    font-size: 16px;
+    box-shadow: 0 0 5px rgba(0,255,255,0.3);
   }
   .btn:hover:not(:disabled){
-    background:rgba(0,255,255,0.15);
-    box-shadow: 0 0 15px rgba(0,255,255,0.5);
-    transform: translateY(-2px);
-  }
-  .btn:disabled{
-    opacity: 0.5;
-    cursor: not-allowed;
+    background:rgba(0,255,255,0.25);
+    box-shadow: var(--ia-glow);
+    transform: translateY(-3px) scale(1.02);
   }
   .primary{
     background:linear-gradient(90deg,var(--ia-dark),var(--ia));
-    color:#001;
+    color:#000;
     text-shadow: 0 0 2px #000;
     border-color: var(--ia-light);
-  }
-  .primary:hover:not(:disabled){
-    background:linear-gradient(90deg,var(--ia),var(--ia-light));
   }
 
   /*
   =======================================================
-  CAPA DE ANALISIS (ANIMACIÓN)
+  CAPA DE ANALISIS (ANIMACIÓN PROFESIONAL)
   =======================================================
   */
   #analysis-overlay {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.95);
-    z-index: 25; /* Debe estar por encima de todo */
-    display: none; /* Inicialmente oculto */
+    background: rgba(0, 0, 0, 0.98);
+    z-index: 25;
+    display: none;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--ia);
     font-family: Orbitron, Inter, Arial;
-    text-shadow: var(--shadow-light);
-    letter-spacing: 2px;
+    text-shadow: var(--ia-glow);
+    letter-spacing: 3px;
   }
-
   #analysis-overlay.active {
     display: flex;
-    animation: glitch-bg 0.5s infinite alternate; /* Animación de glitch en el fondo */
+    animation: glitch-bg 0.5s infinite alternate;
   }
-
   #analysis-overlay h3 {
-    font-size: 2em;
-    margin-bottom: 20px;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.2;
   }
-
   #analysis-progress-bar {
-    width: 300px;
-    height: 10px;
+    width: 80%; /* Responsivo */
+    max-width: 400px;
+    height: 12px;
     background: rgba(0, 255, 255, 0.1);
-    border: 1px solid var(--ia);
+    border: 2px solid var(--ia);
     overflow: hidden;
-    margin-top: 10px;
-    box-shadow: var(--shadow-light);
+    margin-top: 15px;
+    box-shadow: var(--ia-glow);
   }
-
   #analysis-progress-bar > div {
     height: 100%;
     width: 0%;
     background: var(--ia);
-    transition: width 0.1s linear; /* Más rápido para la simulación */
+    transition: width 0.1s linear;
+  }
+  /* Glitch más fuerte */
+  @keyframes glitch-bg {
+    0% { transform: translate(0); clip: rect(10px, 9999px, 14px, 0); }
+    20% { transform: translate(-2px, 2px); clip: rect(50px, 9999px, 54px, 0); }
+    40% { transform: translate(2px, -2px); clip: rect(100px, 9999px, 104px, 0); }
+    60% { transform: translate(-1px, 1px); clip: rect(150px, 9999px, 154px, 0); }
+    80% { transform: translate(1px, -1px); clip: rect(200px, 9999px, 204px, 0); }
+    100% { transform: translate(0); clip: rect(250px, 9999px, 254px, 0); }
   }
 
-  /* Glitch del fondo de la capa de análisis */
-  @keyframes glitch-bg {
-    0% { opacity: 1; }
-    20% { clip: rect(42px, 9999px, 46px, 0); opacity: 0.8; }
-    40% { transform: translate(-1px, 1px) skewX(0.5deg); opacity: 0.9; }
-    60% { clip: rect(80px, 9999px, 84px, 0); opacity: 0.7; }
-    80% { transform: translate(1px, -1px) skewX(-0.5deg); opacity: 1; }
-    100% { opacity: 1; }
-  }
 
   /*
   =======================================================
-  MEDIA QUERIES (RESPONSIVE)
+  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA) 📱
   =======================================================
   */
-  @media(max-width:600px){
-    #results{font-size:12px; max-width: 90%; right: 50%; transform: translateX(50%); top: 4px; padding: 10px 14px;}
-    #score{font-size:28px;}
-    #controls{bottom:4px;gap:8px;}
-    .btn{padding:8px 10px;font-size:12px;}
-    #analysis-overlay h3 {font-size: 1.5em;}
-    #analysis-progress-bar {width: 250px;}
+  @media(max-width:768px){
+    /* Mueve resultados al centro/abajo para no obstruir la vista principal */
+    #results{
+      top: auto;
+      bottom: 70px; /* Sobre los controles, para no chocarse */
+      right: 50%;
+      transform: translateX(50%);
+      width: 95%;
+      max-width: 400px; /* Limita el ancho en tabletas */
+      padding: 12px 16px;
+      font-size: 13px;
+      margin-bottom: 50px;
+    }
+    #score{font-size:32px;}
+    .metric-label{font-size: 0.85em; margin-top: 10px;}
+    #score-feedback{font-size: 13px;}
+    #expr-all{font-size: 10px; line-height: 1.3;}
+
+    #controls{
+      bottom: 4px;
+      gap: 8px;
+      width: 100%;
+    }
+    .btn{
+      padding:10px 14px;
+      font-size: 13px;
+      letter-spacing: 1px;
+      border-radius: 8px;
+    }
+    #analysis-overlay h3 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    #analysis-progress-bar {
+      width: 90%;
+      height: 10px;
+    }
+  }
+
+  @media(max-width:400px){
+    /* Adaptación extrema para smartphones pequeños */
+    .btn{
+      padding: 8px 10px;
+      font-size: 11px;
+    }
+    #results {
+      bottom: 50px; /* Asegura espacio para controles */
+    }
   }
 </style>
 </head>
@@ -253,8 +284,8 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V6 — SUBSISTEMA INACTIVO</h2>
-    <p style="color:var(--muted)">Procesador de Imagen Desconectado. Active la cámara y presione <strong>Iniciar</strong>.</p>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V7 — MÓDULO INACTIVO</h2>
+    <p style="color:var(--muted)">Procesador de Imagen Desconectado. Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
 
   <div id="results">
@@ -263,27 +294,27 @@
     <div class="metric-label">ÍNDICE DE SIMETRÍA FACIAL (ISF)</div>
     <div id="score">—</div>
     <div id="progress"><div></div></div>
-    <div id="score-feedback" style="margin-top:4px;">Inicie el análisis.</div>
+    <div id="score-feedback" style="margin-top:4px;">Inicie el análisis biométrico.</div>
 
-    <div class="metric-label" style="margin-top:10px;">ANÁLISIS EMOCIONAL</div>
-    <div id="expr" style="margin-top:6px;color:var(--muted)">Expresión Dominante: <span id="expr-dominant">—</span></div>
-    <small id="expr-all" style="display:block; margin-top: 4px; color: var(--muted); font-size: 10px;">Métricas secundarias...</small>
+    <div class="metric-label">ANÁLISIS EMOCIONAL PREDOMINANTE</div>
+    <div id="expr" style="margin-top:6px;color:var(--muted)">Dominante: <span id="expr-dominant">—</span></div>
+    <small id="expr-all"></small>
   </div>
 
   <div id="analysis-overlay">
-    <h3>[ PROCESANDO IMAGEN ]</h3>
+    <h3>[ ANÁLISIS BIOMÉTRICO AVANZADO EN CURSO ]</h3>
     <div id="analysis-progress-bar">
       <div></div>
     </div>
-    <p id="analysis-status" style="margin-top: 20px; font-size: 14px; letter-spacing: 1px;">Iniciando algoritmos de biometría...</p>
+    <p id="analysis-status" style="margin-top: 20px; font-size: 16px; letter-spacing: 2px;">Conectando a servidores neuronales...</p>
   </div>
 
   <div id="controls">
     <button id="start" class="btn" disabled>▶ INICIAR DETECCIÓN</button>
-    <button id="capture" class="btn primary" disabled>📸 CAPTURAR IMAGEN</button>
+    <button id="capture" class="btn primary" disabled>📸 CAPTURAR Y CONGELAR</button>
     <button id="analyze" class="btn" style="display:none">⚙️ ANALIZAR AVANZADO</button>
     <button id="retry" class="btn" style="display:none">🔄 REANUDAR WEBCAM</button>
-    <button id="download" class="btn" style="display:none">⬇️ DESCARGAR RESULTADO</button>
+    <button id="download" class="btn" style="display:none">⬇️ DESCARGAR REPORTE</button>
   </div>
 </div>
 
@@ -291,7 +322,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA
+JAVASCRIPT/FACE-API.JS LÓGICA (OPT.)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -318,7 +349,7 @@ const analysisStatusEl=document.getElementById('analysis-status');
 // Variables de estado
 let running=false,raf=null,captured=null;
 
-// Traducciones de expresiones para el feedback profesional
+// Traducciones de expresiones más profesionales
 const EXPR_TRADS = {
     'neutral': 'Neutralidad (Estado Base)',
     'happy': 'Satisfacción / Alegría',
@@ -331,17 +362,12 @@ const EXPR_TRADS = {
 
 //=== Init models
 async function loadModels(){
-  // Deshabilitar iniciar hasta que carguen los modelos
-  btnStart.textContent = 'Cargando Modelos AI...';
-  btnStart.disabled = true;
-
+  btnStart.textContent = '[ Carga IA 0% ]';
   await Promise.all([
-    faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
-    faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL)
+    faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL).then(() => btnStart.textContent = '[ Carga IA 33% ]'),
+    faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL).then(() => btnStart.textContent = '[ Carga IA 66% ]'),
+    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL).then(() => btnStart.textContent = '[ Carga IA 100% ]')
   ]);
-
-  // Modelos cargados
   btnStart.textContent = '▶ INICIAR DETECCIÓN';
   btnStart.disabled=false;
 }
@@ -353,7 +379,7 @@ btnStart.onclick=async()=>{
     const stream=await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject=stream; await video.play();
     placeholder.style.display='none';
-    btnStart.style.display='none'; // Ocultamos el botón de iniciar
+    btnStart.style.display='none';
     btnCapture.disabled=false;
     resizeCanvas(); running=true; loop();
   }catch(e){alert('Error al acceder a la cámara: '+e.message);}
@@ -361,6 +387,7 @@ btnStart.onclick=async()=>{
 
 //=== Resize canvas to full screen
 function resizeCanvas(){
+  // Asegura que el canvas siempre tome la dimensión del video o de la ventana (para móviles)
   canvas.width=video.videoWidth||window.innerWidth;
   canvas.height=video.videoHeight||window.innerHeight;
 }
@@ -370,37 +397,33 @@ window.addEventListener('resize',resizeCanvas);
 async function loop(){
   if(!running)return;
   resizeCanvas();
-  // 1. Detección
   const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
 
-  // 2. Dibujar video y resultados
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
   const resized=faceapi.resizeResults(det,{width:canvas.width,height:canvas.height});
 
-  // Dibujar resultados de la detección en la imagen en VIVO
-  faceapi.draw.drawDetections(canvas,resized);
+  // Estilo de dibujado más profesional y sutil para la detección en vivo
+  const drawOptions = {
+      boxColor: 'rgba(0, 255, 255, 0.7)',
+      lineWidth: 2,
+      label: 'BIOMETRÍA ACTIVA'
+  };
+  faceapi.draw.drawDetections(canvas,resized, drawOptions);
   faceapi.draw.drawFaceLandmarks(canvas,resized);
-  // faceapi.draw.drawFaceExpressions(canvas,resized); // Desactivado para limpieza, solo se muestra en el HUD
 
-  // 3. Actualizar HUD de Resultados en VIVO
   countEl.textContent=det.length;
-  // Solo se muestra una puntuación básica en vivo si hay un rostro
+
   if(det.length > 0){
     const score=calcSymmetry(det[0]);
     updateScoreDisplay(score);
     updateProgressColor(score);
     updateEmotionDisplay(det[0].expressions);
-    progressBar.style.width='25%'; // Barra a un nivel bajo, indicando que no es el análisis completo
-    scoreFeedbackEl.textContent = 'Detección en tiempo real (Baja precisión)';
+    progressBar.style.width='30%';
+    scoreFeedbackEl.textContent = 'Detección RÁPIDA en tiempo real. Capture para análisis completo.';
   } else {
-    updateScoreDisplay('—');
-    progressBar.style.width='4%';
-    updateProgressColor(0);
-    scoreFeedbackEl.textContent = 'Rostro no detectado';
-    exprDominantEl.textContent = '—';
-    exprAllEl.textContent = 'Métricas secundarias...';
+    resetHUDLive();
   }
 
   raf=requestAnimationFrame(loop);
@@ -409,61 +432,57 @@ async function loop(){
 //=== Capture image
 btnCapture.onclick=()=>{
   if(parseInt(countEl.textContent) === 0){
-    alert('No se ha detectado ningún rostro para capturar. Por favor, posicione un rostro en la cámara.');
+    alert('ALERTA: Se requiere un rostro detectado para el proceso de captura.');
     return;
   }
   running=false; cancelAnimationFrame(raf); video.pause();
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
   captured=canvas.toDataURL('image/png');
 
-  // Ocultar Capturar, mostrar Analizar/Reanudar/Descargar
   btnCapture.style.display='none';
   btnAnalyze.style.display='inline-block';
   btnRetry.style.display='inline-block';
   btnDownload.style.display='inline-block';
   btnAnalyze.disabled=false;
-  btnRetry.disabled=false;
-  btnDownload.disabled=false;
 
-  // Limpiar/resetear los resultados antes del análisis avanzado
-  scoreFeedbackEl.textContent = 'Imagen capturada. Presione ANALIZAR.';
+  scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Avanzado.';
   progressBar.style.width='5%';
   scoreEl.textContent = '—';
 };
 
 //=== Analyze captured
 btnAnalyze.onclick=async()=>{
-  if(!captured){alert('Error: No se encontró imagen capturada.');return;}
+  if(!captured){alert('Error crítico: Sin captura.');return;}
   btnAnalyze.disabled=true;
   btnRetry.disabled=true;
   btnDownload.disabled=true;
 
-  // Mostrar la animación de análisis
+  // Mostrar la animación de análisis más intensa
   analysisOverlay.classList.add('active');
-  analysisStatusEl.textContent = 'Iniciando proceso de análisis avanzado... [0%]';
+  const totalDelay = 3500; // 3.5 segundos de simulación de análisis
+  analysisStatusEl.textContent = 'Iniciando conexión neural... [0%]';
 
-  // SIMULACIÓN DE TIEMPO DE PROCESAMIENTO AVANZADO (IA Profesional)
-  await new Promise(r => setTimeout(r, 500)); // Delay inicial
-  const progressSteps = [
-    { status: 'Cargando imagen en el subsistema neuronal... [10%]', progress: 10, delay: 300 },
-    { status: 'Ejecutando detección de puntos clave (68-Landmarks)... [30%]', progress: 30, delay: 500 },
-    { status: 'Calculando Índices Biométricos de Simetría (ISF)... [60%]', progress: 60, delay: 700 },
-    { status: 'Análisis de Patrones Emocionales Dominantes... [90%]', progress: 90, delay: 800 }
+  // Array de pasos para simular el análisis profesional
+  const analysisSteps = [
+    { status: 'Cargando matriz de imagen en buffer. Iniciando algoritmos de segmentación...', progress: 15, delay: 500 },
+    { status: 'Análisis Morfológico de 68 puntos clave. Cálculo de proporciones aureas...', progress: 40, delay: 800 },
+    { status: 'Procesamiento Biométrico: Cálculo de Índices de Simetría Facial (ISF)...', progress: 65, delay: 900 },
+    { status: 'Evaluación del Módulo Emocional. Patrones de micro-expresiones detectados...', progress: 90, delay: 800 }
   ];
 
-  for (const step of progressSteps) {
+  for (const step of analysisSteps) {
     analysisStatusEl.textContent = step.status;
     analysisProgressBar.style.width = step.progress + '%';
     await new Promise(r => setTimeout(r, step.delay));
   }
-
-  // Ejecución real de face-api.js en la captura
+  
+  // EJECUCIÓN REAL DEL ANÁLISIS
   const dets=await faceapi.detectAllFaces(canvas,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
 
-  // Ocultar animación y finalizar análisis
+  // Ocultar animación
   analysisProgressBar.style.width = '100%';
-  analysisStatusEl.textContent = 'Análisis Completo. Generando reporte final...';
+  analysisStatusEl.textContent = 'ANÁLISIS COMPLETO. GENERANDO REPORTE FINAL...';
   await new Promise(r => setTimeout(r, 500));
   analysisOverlay.classList.remove('active');
 
@@ -472,19 +491,16 @@ btnAnalyze.onclick=async()=>{
   const img=new Image(); img.src=captured; await new Promise(r=>img.onload=r);
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
   const resized=faceapi.resizeResults(dets,{width:canvas.width,height:canvas.height});
-  faceapi.draw.drawDetections(canvas,resized);
+  
+  // Dibujar resultados de Análisis Final
+  faceapi.draw.drawDetections(canvas,resized, {boxColor: 'var(--accent-success)', lineWidth: 3});
   faceapi.draw.drawFaceLandmarks(canvas,resized);
-  faceapi.draw.drawFaceExpressions(canvas,resized); // Mostrar las expresiones en la imagen final
+  faceapi.draw.drawFaceExpressions(canvas,resized, 0.05); // Mostrar expresiones con un tamaño de fuente mayor
 
-  // 2. Actualizar HUD de Resultados Finales
+  // 2. Actualizar HUD
   countEl.textContent=dets.length;
   if(!dets.length){
-    updateScoreDisplay('—');
-    updateProgressColor(0);
-    scoreFeedbackEl.textContent='ERROR: Rostro no detectado para análisis.';
-    exprDominantEl.textContent='—';
-    exprAllEl.textContent='No hay datos biométricos...';
-    progressBar.style.width='10%';
+    resetHUDAnalysisError();
     btnAnalyze.disabled=false;
     btnRetry.disabled=false;
     return;
@@ -498,9 +514,9 @@ btnAnalyze.onclick=async()=>{
   progressBar.style.width='100%';
 
   // Mostrar Emociones
-  updateEmotionDisplay(dets[0].expressions);
+  updateEmotionDisplay(dets[0].expressions, true); // Pasar true para mostrar el reporte completo
 
-  btnAnalyze.style.display='none'; // Ya no se puede analizar el mismo
+  btnAnalyze.style.display='none'; // No volver a analizar el mismo
   btnRetry.disabled=false;
   btnDownload.disabled=false;
 };
@@ -508,18 +524,12 @@ btnAnalyze.onclick=async()=>{
 //=== Retry (Reanudar Webcam)
 btnRetry.onclick=()=>{
   running=true; video.play();
-  // Mostrar Capturar, ocultar Analizar/Reanudar/Descargar
   btnCapture.style.display='inline-block';
   btnAnalyze.style.display='none';
   btnRetry.style.display='none';
   btnDownload.style.display='none';
   btnCapture.disabled=false;
-
-  // Resetear HUD
-  scoreFeedbackEl.textContent = 'Retomando detección en tiempo real...';
-  exprDominantEl.textContent = '—';
-  exprAllEl.textContent = 'Métricas secundarias...';
-
+  resetHUDLive();
   raf=requestAnimationFrame(loop);
 };
 
@@ -527,10 +537,9 @@ btnRetry.onclick=()=>{
 btnDownload.onclick=()=>{
   if(!captured)return;
   const a=document.createElement('a');
-  // Usar el canvas con los dibujos de análisis para la descarga
   const finalImage = canvas.toDataURL('image/png');
   a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V6.png';
+  a.download='SYMMETRY_ANALYSIS_V7_REPORTE.png';
   a.click();
 };
 
@@ -540,21 +549,17 @@ HELPERS (LÓGICA DE CÁLCULO Y VISUALIZACIÓN)
 =======================================================
 */
 
-//=== Calcula la Simetría (ISF)
+//=== Calcula la Simetría (ISF) - Lógica sin cambios, solo la presentación
 function calcSymmetry(det){
   try{
     const lm=det.landmarks;
     const left=centroid(lm.getLeftEye()),right=centroid(lm.getRightEye()),nose=centroid(lm.getNose()),mouth=centroid(lm.getMouth());
-    // 1. Balance Ojos-Nariz (Izquierda vs Derecha)
     const dL=dist(left,nose),dR=dist(right,nose);
-    const balance=1-Math.abs(dL-dR)/Math.max(dL,dR); // 0 (mal) a 1 (perfecto)
-    // 2. Centrado de Boca (Eje Y de la boca vs Eje X de la nariz) - Se simplifica para el concepto
-    const mouthSym=1-Math.abs(mouth.x-nose.x)/(canvas.width*0.05); // Penaliza si la boca está muy descentrada de la nariz
-    // 3. Proporción Aurea (Distancia entre ojos vs Distancia ojos-nariz) - Un concepto muy popular de "belleza"
+    const balance=1-Math.abs(dL-dR)/Math.max(dL,dR);
+    const mouthSym=1-Math.abs(mouth.x-nose.x)/(canvas.width*0.05);
     const phi=1.618;
-    const ratio=(dL+dR)/(dist(left,right)||1); // Relación entre la distancia ojos-nariz y la distancia entre ojos
-    const phiScore=1-Math.abs(ratio-phi/2)/(phi/2); // Cuánto se acerca a la proporción aurea (phi/2)
-    // Puntuación final: 50% Balance, 30% Boca, 20% Proporción Aurea
+    const ratio=(dL+dR)/(dist(left,right)||1);
+    const phiScore=1-Math.abs(ratio-phi/2)/(phi/2);
     const score=Math.max(0,Math.min(100,(balance*0.5+mouthSym*0.3+phiScore*0.2)*100));
     return score;
   }catch(e){return 0;}
@@ -562,34 +567,64 @@ function calcSymmetry(det){
 function centroid(p){return p.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0});}
 function dist(a,b){const dx=a.x-b.x,dy=a.y-b.y;return Math.hypot(dx,dy);}
 
-//=== Actualiza el feedback de Simetría/Atractivo (Lo que pediste de "simpática/apuesta")
+//=== Actualiza el feedback de Simetría/Atractivo (Más enfocado en la biometría)
 function updateScoreFeedback(score){
     let feedback = '';
+    let color = '';
     if(score > 90){
-        feedback = 'ISF ÉLITE: Simetría excepcional. Máxima armonía facial.';
+        feedback = 'ISF NIVEL 5 (Óptimo): Biometría y Armonía facial excepcional.';
+        color = 'var(--accent-success)';
     } else if(score > 80){
-        feedback = 'ISF SUPERIOR: Alto índice de armonía y atractivo. Excelente simetría.';
+        feedback = 'ISF NIVEL 4 (Superior): Alta simetría. Proporciones armoniosas.';
+        color = 'var(--accent-success)';
     } else if(score > 70){
-        feedback = 'ISF ALTO: Armonía facial superior al promedio. Muy bien balanceado.';
-    } else if(score > 60){
-        feedback = 'ISF ESTÁNDAR: Simetría adecuada. Índice de atractivo promedio.';
+        feedback = 'ISF NIVEL 3 (Estándar): Simetría adecuada. Índice de balance promedio.';
+        color = 'var(--accent-warning)';
     } else {
-        feedback = 'ISF BAJO: Se detectaron variaciones significativas de simetría.';
+        feedback = 'ISF NIVEL 2 (Bajo): Se detectan desviaciones significativas en la simetría.';
+        color = 'var(--accent-error)';
     }
     scoreFeedbackEl.textContent = feedback;
+    scoreFeedbackEl.style.color = color;
 }
 
 //=== Actualiza la visualización de Emociones
-function updateEmotionDisplay(expressions){
+function updateEmotionDisplay(expressions, fullReport = false){
   const sorted=Object.entries(expressions).sort((a,b)=>b[1]-a[1]);
   const dominant = sorted[0][0];
   const dominantPercent = (sorted[0][1]*100).toFixed(1);
 
   exprDominantEl.textContent = `${EXPR_TRADS[dominant]} (${dominantPercent}%)`;
-  exprAllEl.textContent = 'Métricas secundarias: ' + sorted.map(e=>EXPR_TRADS[e[0]]+': '+(e[1]*100).toFixed(0)+'%').join(' · ');
+  
+  // Mostrar reporte completo solo después del análisis avanzado
+  if(fullReport){
+      exprAllEl.textContent = 'Detalle: ' + sorted.map(e=>EXPR_TRADS[e[0]].split(' ')[0] + ': '+(e[1]*100).toFixed(0)+'%').join(' · ');
+  } else {
+      exprAllEl.textContent = 'Detalle disponible tras Análisis Avanzado...';
+  }
 }
 
-//=== Animación del número de la puntuación (Efecto Cyberpunk)
+//=== Resetea el HUD en modo Detección en Vivo
+function resetHUDLive(){
+  updateScoreDisplay('—');
+  progressBar.style.width='4%';
+  updateProgressColor(0);
+  scoreFeedbackEl.textContent = 'Rostro no detectado. Esperando entrada biométrica.';
+  exprDominantEl.textContent = '—';
+  exprAllEl.textContent = 'Detalle disponible tras Análisis Avanzado...';
+}
+
+//=== Resetea el HUD en caso de error de análisis
+function resetHUDAnalysisError(){
+    updateScoreDisplay('E-01');
+    updateProgressColor(0);
+    scoreFeedbackEl.textContent='ERROR CRÍTICO: No se detectó rostro en la imagen estática. Reanude.';
+    exprDominantEl.textContent='—';
+    exprAllEl.textContent='No hay datos biométricos...';
+    progressBar.style.width='10%';
+}
+
+//=== Animación del número de la puntuación
 function updateScoreDisplay(val){
   const el=document.getElementById('score');
   el.style.transform='scale(0.8)';
@@ -602,13 +637,14 @@ function updateScoreDisplay(val){
 //=== Cambia el color de la barra de progreso
 function updateProgressColor(score){
   let color = 'var(--accent-error)';
-  if(score >= 75){
+  if(score >= 80){ // Umbral más estricto para 'success'
       color = 'var(--accent-success)';
-  } else if(score >= 50){
+  } else if(score >= 65){
       color = 'var(--accent-warning)';
   }
   progressBar.style.background=color;
-  progressBar.parentElement.style.boxShadow = `0 0 5px ${color}`;
+  // Cambia el color del glow del contenedor para que coincida
+  progressBar.parentElement.style.boxShadow = `0 0 8px ${color} inset`;
 }
 </script>
 </body>
