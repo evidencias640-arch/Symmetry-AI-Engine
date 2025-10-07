@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V9 — Análisis Biométrico y Estético</title>
+<title>SYMMETRY AI ENGINE PRO V10 — Análisis Biométrico y Estético</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V9 - Ultra-Responsivo y Alertas)
+  ESTILOS BASE Y VARIABLES (V10 - Máxima Responsividad y Fluidez)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
   :root{
     --ia:#00ffff; /* Cian principal */
     --ia-light:#66ffff;
-    --ia-glow: 0 0 10px var(--ia), 0 0 20px rgba(0,255,255,0.6);
+    --ia-glow: 0 0 12px var(--ia), 0 0 25px rgba(0,255,255,0.7);
     --bg:#000b11;
     --muted:#a0a9b5;
     --accent-error:#ff5050;
@@ -27,6 +27,8 @@
   body,html{
     margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     color:#e6f9ff;font-family:Inter,Arial,sans-serif;overflow:hidden;
+    /* Optimización de rendimiento para animaciones fluidas */
+    will-change: transform, opacity; 
   }
   #main{position:relative;width:100%;height:100vh;overflow:hidden;}
 
@@ -68,70 +70,46 @@
 
   /*
   =======================================================
-  ALERTA CRÍTICA (NUEVA FUNCIÓN)
+  ALERTA CRÍTICA Y HUD
   =======================================================
   */
   #critical-warning {
     position: absolute;
     top: 50%;
     left: 50%;
-    /* 100% RESPONSIVO: Aseguramos el centrado */
     transform: translate(-50%, -50%); 
     background: rgba(180, 0, 0, 0.9);
-    color: white;
     padding: 20px 40px;
     border: 3px solid var(--accent-error);
-    border-radius: 8px;
     z-index: 30;
     font-size: 1.5em;
     font-family: Orbitron, Inter, Arial;
-    text-shadow: 0 0 5px #000;
     box-shadow: 0 0 20px var(--accent-error);
     opacity: 0;
-    transition: opacity 0.2s, transform 0.2s;
+    transition: opacity 0.2s;
     text-align: center;
-    pointer-events: none; /* No bloquear clics */
-    max-width: 90%; /* Responsividad máxima */
-    line-height: 1.2;
+    pointer-events: none;
+    max-width: 90%; 
   }
   .warning-flash {
-    /* Animación de flash 3 veces */
     animation: flash-glitch 0.4s 3 alternate; 
     opacity: 1 !important;
     transform: translate(-50%, -50%) scale(1.05) !important;
   }
-  @keyframes flash-glitch {
-    0% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
-    50% { background: rgba(180, 0, 0, 0.9); border-color: red; }
-    100% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
-  }
-  /* Ajuste de fuente para la alerta en móvil */
-  @media(max-width:600px){
-    #critical-warning {
-      font-size: 1.2em;
-      padding: 15px 25px;
-    }
-  }
 
-
-  /*
-  =======================================================
-  HUD / INTERFAZ DE RESULTADOS
-  =======================================================
-  */
   #results{
     position:absolute;
     top:10px;
     right:10px;
-    background:rgba(0,0,0,0.85);
+    background:rgba(0,0,0,0.9);
     border: 2px solid rgba(0,255,255,0.3);
     padding:16px;
     border-radius:8px;
     font-size:14px;
     z-index:10;
-    backdrop-filter:blur(12px);
+    backdrop-filter:blur(15px); /* Blur más fuerte */
     box-shadow: var(--ia-glow);
-    max-width: 320px;
+    max-width: 380px; /* Un poco más ancho para albergar las métricas */
     transition: all 0.3s ease;
   }
   .metric-label{
@@ -158,16 +136,17 @@
     padding-top: 10px;
     border-top: 1px dashed rgba(0,255,255,0.2);
   }
+  .detail-line { margin-bottom: 5px; }
 
   /*
   =======================================================
-  CONTROLES / BOTONES (RESPONSIVE)
+  CONTROLES / BOTONES (RESPONSIVO Y FLUIDO)
   =======================================================
   */
   #controls{
     position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
     display:flex;gap:10px;z-index:20;flex-wrap:wrap;justify-content:center;
-    width: 95%; /* 100% RESPONSIVO */
+    width: 95%; 
     max-width: 600px;
   }
   .btn{
@@ -184,7 +163,11 @@
     font-family: Inter, Arial;
     letter-spacing: 0.5px;
     font-size: 14px;
-    box-shadow: 0 0 5px rgba(0,255,255,0.3);
+    transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
+    will-change: transform;
+  }
+  .btn:hover:not(:disabled){
+    transform: translateY(-2px) scale(1.01);
   }
 
   /*
@@ -193,34 +176,38 @@
   =======================================================
   */
   @media(max-width:600px){
-    /* Mueve resultados al centro/abajo */
+    /* Posición y Centrado del HUD */
     #results{
       top: auto;
-      bottom: 60px; /* Separación de los controles */
+      bottom: 60px;
       right: 50%;
       transform: translateX(50%);
       width: 95%;
-      padding: 12px;
-      margin-bottom: 5px; /* Pequeño ajuste para el borde */
+      padding: 10px;
+      max-width: 95%;
     }
-    .score-val{font-size:28px;}
-    .metric-label{font-size: 0.8em; margin-top: 8px;}
-    
+    .score-val{font-size:26px;}
+    .metric-label{font-size: 0.75em; margin-top: 6px;}
+    .detail-line { font-size: 11px; }
+
+    /* Controles más compactos */
     #controls{
       bottom: 4px;
       gap: 5px;
       width: 98%;
     }
     .btn{
-      padding: 10px 8px;
-      font-size: 12px;
+      padding: 8px 6px;
+      font-size: 11px;
       min-width: unset;
       flex-grow: 1;
     }
     #start { flex-grow: 2; }
-    #controls button:nth-child(3),
-    #controls button:nth-child(4),
-    #controls button:nth-child(5) { min-width: unset; flex-grow: 1; }
+    /* Ajuste de la alerta en móvil */
+    #critical-warning {
+      font-size: 1.1em;
+      padding: 10px 20px;
+    }
   }
 </style>
 </head>
@@ -230,8 +217,8 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V9 — MÓDULO INACTIVO</h2>
-    <p style="color:var(--muted)">Procesador de Imagen Desconectado. Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10 — MÓDULO INACTIVO</h2>
+    <p style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
   
   <div id="critical-warning" style="display:none;"></div>
@@ -239,23 +226,26 @@
   <div id="results">
     <div><b>DETECCIONES ACTIVAS:</b> <span id="count">0</span></div>
 
-    <div class="metric-label">ÍNDICE DE SIMETRÍA (ISF)</div>
+    <div class="metric-label">ÍNDICE DE SIMETRÍA FACIAL (ISF)</div>
     <div id="score" class="score-val">—</div>
     <div id="progress"><div style="width: 4%;"></div></div>
     <div id="score-feedback" style="font-size:12px; margin-top:4px;">Inicie el análisis biométrico.</div>
 
     <div id="report-details">
-      <div style="margin-bottom: 5px;"><span class="metric-label" style="border:none;">EMOCIÓN DOMINANTE:</span> <span id="expr-dominant" style="color:var(--ia-light); font-weight:600;">—</span></div>
-      <div id="beauty-score-line" style="display:none;"><span class="metric-label" style="border:none;">PUNT. ESTÉTICA (PROPORCIÓN ÁUREA):</span> <span id="beauty-score" class="score-val" style="font-size:16px;">—</span></div>
-      <div id="nationality-line" style="display:none;"><span class="metric-label" style="border:none;">PAÍS DE PERFIL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:600;">—</span></div>
-      <small id="expr-all" style="display:block; margin-top: 4px; color: var(--muted); font-size: 10px;">Métricas secundarias...</small>
+      <div class="detail-line"><span class="metric-label" style="border:none;">PUNT. ESTÉTICA (PROPORCIÓN ÁUREA):</span> <span id="beauty-score" class="score-val" style="font-size:16px; color: var(--accent-warning);">—</span></div>
+      <div class="detail-line"><span class="metric-label" style="border:none;">EDAD APROX. (IA):</span> <span id="age-score" style="color:var(--ia-light); font-weight:600;">—</span></div>
+      <div class="detail-line"><span class="metric-label" style="border:none;">ESTADO CIVIL (SIMULADO):</span> <span id="civil-status" style="color:var(--accent-error); font-weight:600;">—</span></div>
+      <div class="detail-line"><span class="metric-label" style="border:none;">PAÍS DE PERFIL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:600;">—</span></div>
+      
+      <div class="detail-line" style="margin-top: 10px;"><span class="metric-label" style="border:none;">EMOCIÓN DOMINANTE:</span> <span id="expr-dominant" style="color:var(--ia-light); font-weight:600;">—</span></div>
+      <small id="expr-all" style="display:block; margin-top: 4px; color: var(--muted); font-size: 10px;">Detalle de emociones...</small>
     </div>
   </div>
 
   <div id="controls">
     <button id="start" class="btn">▶ INICIAR DETECCIÓN</button>
     <button id="capture" class="btn primary" disabled>📸 CAPTURAR Y CONGELAR</button>
-    <button id="analyze" class="btn" style="display:none">⚙️ ANALIZAR AVANZADO</button>
+    <button id="analyze" class="btn" style="display:none">⚙️ ANALIZAR PROFESIONAL</button>
     <button id="retry" class="btn" style="display:none">🔄 REANUDAR WEBCAM</button>
     <button id="download" class="btn" style="display:none">⬇️ DESCARGAR REPORTE</button>
   </div>
@@ -265,7 +255,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V9)
+JAVASCRIPT/FACE-API.JS LÓGICA (V10)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -277,20 +267,22 @@ const countEl=document.getElementById('count');
 const scoreEl=document.getElementById('score');
 const progressBar=document.querySelector('#progress>div');
 const scoreFeedbackEl=document.getElementById('score-feedback');
+// Nuevas Métricas
+const beautyScoreEl=document.getElementById('beauty-score');
+const ageScoreEl=document.getElementById('age-score');
+const civilStatusEl=document.getElementById('civil-status');
+const nationalityEl=document.getElementById('nationality');
 const exprDominantEl=document.getElementById('expr-dominant');
 const exprAllEl=document.getElementById('expr-all');
-const beautyScoreEl=document.getElementById('beauty-score');
-const beautyScoreLine=document.getElementById('beauty-score-line');
-const nationalityEl=document.getElementById('nationality');
-const nationalityLine=document.getElementById('nationality-line');
+
 const btnStart=document.getElementById('start');
 const btnCapture=document.getElementById('capture');
 const btnAnalyze=document.getElementById('analyze');
 const btnRetry=document.getElementById('retry');
 const btnDownload=document.getElementById('download');
-const criticalWarningEl = document.getElementById('critical-warning'); // Nuevo elemento de alerta
+const criticalWarningEl = document.getElementById('critical-warning');
 
-let running=false,raf=null,captured=null;
+let running=false,raf=null,captured=null, lastDet = null;
 
 // TRADUCCIONES Y DATOS DE SIMULACIÓN
 const EXPR_TRADS = {
@@ -298,14 +290,16 @@ const EXPR_TRADS = {
     'angry': 'Ira', 'fearful': 'Temor', 'disgusted': 'Disgusto', 'surprised': 'Sorpresa'
 };
 const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela'];
+const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
 
-//=== Init models
+//=== Init models (Añadimos la Red de Edad)
 async function loadModels(){
   btnStart.textContent = 'Cargando IA...';
   await Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
-    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL)
+    faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL),
+    faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL) // Añadido para Edad
   ]);
   btnStart.textContent = '▶ INICIAR DETECCIÓN';
   btnStart.disabled=false;
@@ -321,12 +315,12 @@ btnStart.onclick=async()=>{
     btnStart.style.display='none'; btnCapture.disabled=false;
     resizeCanvas(); running=true; loop();
     canvas.classList.add('scanner-active');
+    resetHUDLive();
   }catch(e){showWarning('ERROR CÁMARA: No se pudo acceder. Asegúrese de tener permisos.');}
 };
 
 //=== Resize canvas
 function resizeCanvas(){
-  // Aseguramos que el canvas tome las dimensiones del video O de la ventana (para evitar problemas en móvil si el video no carga bien)
   canvas.width=video.videoWidth||window.innerWidth;
   canvas.height=video.videoHeight||window.innerHeight;
 }
@@ -336,6 +330,7 @@ window.addEventListener('resize',resizeCanvas);
 async function loop(){
   if(!running)return;
   resizeCanvas();
+  // Detección en vivo: Solo Detección, Landmarks y Expresiones
   const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
 
@@ -347,13 +342,18 @@ async function loop(){
 
   countEl.textContent=det.length;
   if(det.length > 0){
-    const score=calcSymmetry(det[0]);
+    lastDet = det[0]; // Guarda la última detección para usarla en el análisis
+    const score=calcSymmetry(lastDet);
     scoreAnimate(score);
     updateProgressColor(score);
-    updateEmotionDisplay(det[0].expressions, false);
+    updateEmotionDisplay(lastDet.expressions, false);
     scoreFeedbackEl.textContent = 'ROSTRO DETECTADO. Detección Bi-Dimensional Activa.';
     progressBar.style.width='30%';
+    
+    // Simulación simple de Edad en vivo (más profesional en análisis)
+    ageScoreEl.textContent = 'Procesando...';
   } else {
+    lastDet = null;
     resetHUDLive();
   }
 
@@ -367,17 +367,15 @@ function showWarning(message) {
     criticalWarningEl.classList.add('warning-flash');
     setTimeout(() => {
         criticalWarningEl.classList.remove('warning-flash');
-        // Pequeño retraso para que se vea el efecto antes de ocultar
         setTimeout(() => {
              criticalWarningEl.style.display = 'none';
         }, 500); 
-    }, 1200);
+    }, 1500); // 1.5s de duración
 }
 
-//=== Capture image (Con la nueva Alerta)
+//=== Capture image
 btnCapture.onclick=()=>{
-  if(parseInt(countEl.textContent) === 0){
-    // REEMPLAZO DEL ALERT POR LA ALERTA VISUAL
+  if(parseInt(countEl.textContent) === 0 || !lastDet){
     showWarning('⚠️ ERROR CRÍTICO: ROSTRO NO RECONOCIDO. POSICIÓNESE FRENTE AL SENSOR.'); 
     return;
   }
@@ -391,20 +389,20 @@ btnCapture.onclick=()=>{
   btnRetry.style.display='inline-block';
   btnDownload.style.display='inline-block';
   btnAnalyze.disabled=false;
-
-  scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Avanzado.';
+  scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Profesional.';
   progressBar.style.width='5%';
 };
 
-//=== Analyze captured
+//=== Analyze captured (Ahora incluye Edad)
 btnAnalyze.onclick=async()=>{
   if(!captured)return;
   btnAnalyze.disabled=true;
   
   await simulateAnalysisDelay();
 
+  // Detección final (con Edad y Género)
   const dets=await faceapi.detectAllFaces(canvas,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
-    .withFaceLandmarks().withFaceExpressions();
+    .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const img=new Image(); 
@@ -412,6 +410,7 @@ btnAnalyze.onclick=async()=>{
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
   const resized=faceapi.resizeResults(dets,{width:canvas.width,height:canvas.height});
   
+  // Dibujar resultados finales y etiquetar
   faceapi.draw.drawDetections(canvas,resized, {boxColor: 'var(--accent-success)', lineWidth: 3});
   faceapi.draw.drawFaceLandmarks(canvas,resized);
   faceapi.draw.drawFaceExpressions(canvas,resized, 0.05);
@@ -419,19 +418,23 @@ btnAnalyze.onclick=async()=>{
   countEl.textContent=dets.length;
   if(!dets.length){resetHUDAnalysisError(); btnAnalyze.disabled=false; return;}
 
-  const symmetryScore=calcSymmetry(dets[0]);
+  const finalDet = dets[0];
+  const symmetryScore=calcSymmetry(finalDet);
   const beautyScore=calcBeautyScore(symmetryScore);
   const simulatedNationality = simulateNationality(beautyScore);
+  const simulatedCivilStatus = simulateCivilStatus(finalDet.expressions);
   
   scoreAnimate(symmetryScore.toFixed(2));
   updateProgressColor(symmetryScore);
   updateScoreFeedback(symmetryScore);
-  updateEmotionDisplay(dets[0].expressions, true);
   
-  beautyScoreEl.textContent = beautyScore.toFixed(2) + ' / 10.0';
+  // Actualizar todas las nuevas métricas
+  beautyScoreEl.textContent = beautyScore.toFixed(2) + '%';
+  ageScoreEl.textContent = `${Math.round(finalDet.age)} años (Género: ${finalDet.gender === 'male' ? 'Masc.' : 'Fem.'})`;
+  civilStatusEl.textContent = simulatedCivilStatus;
   nationalityEl.textContent = simulatedNationality;
-  beautyScoreLine.style.display = 'block';
-  nationalityLine.style.display = 'block';
+  updateEmotionDisplay(finalDet.expressions, true);
+  
   progressBar.style.width='100%';
 
   btnAnalyze.style.display='none';
@@ -458,13 +461,13 @@ btnDownload.onclick=()=>{
   const a=document.createElement('a');
   const finalImage = canvas.toDataURL('image/png');
   a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V9_REPORTE.png';
+  a.download='SYMMETRY_ANALYSIS_V10_REPORTE.png';
   a.click();
 };
 
 /*
 =======================================================
-LÓGICA DE CÁLCULO Y VISUALIZACIÓN (HELPERS)
+LÓGICA DE CÁLCULO Y SIMULACIÓN (HELPERS)
 =======================================================
 */
 function centroid(p){return p.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0});}
@@ -485,24 +488,39 @@ function calcSymmetry(det){
   }catch(e){return 0;}
 }
 
-function calcBeautyScore(isf){return (isf / 100) * 10;}
+// Calculo de belleza en porcentaje
+function calcBeautyScore(isf){return isf.toFixed(2);} 
 
 function simulateNationality(beautyScore){
     const index = Math.floor(Math.random() * NATIONALITIES.length);
     let nationality = NATIONALITIES[index];
-    if (beautyScore > 9.0) {
+    if (parseFloat(beautyScore) > 90) {
         nationality = 'Perfil ' + NATIONALITIES[Math.floor(Math.random() * 3)];
     }
-    return nationality + ' (' + (Math.random() * 20 + 75).toFixed(1) + '% de Confianza)';
+    return nationality + ' (' + (Math.random() * 20 + 75).toFixed(1) + '% Confianza)';
+}
+
+// Nuevo: Simulación de Estado Civil basada en expresiones
+function simulateCivilStatus(expressions){
+    const dominant = Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][0];
+    let status = CIVIL_STATUS[0]; // Soltero/a por defecto
+    
+    if (dominant === 'happy' || dominant === 'neutral') {
+        // Alta felicidad o neutralidad = Mayor probabilidad de estar en pareja o casado (Simulación)
+        const rand = Math.random();
+        if (rand < 0.4) status = CIVIL_STATUS[1]; // Novio
+        else if (rand < 0.7) status = CIVIL_STATUS[2]; // Casado
+    }
+    return status;
 }
 
 function updateScoreFeedback(score){
     let feedback = '';
     let color = '';
-    if(score > 90){feedback = 'ISF ÉLITE (Nivel A++): Armonía y Proporción Aurea Óptima.';color = 'var(--accent-success)';} 
-    else if(score > 80){feedback = 'ISF SUPERIOR (Nivel A+): Alta Simetría. Excelente Biometría.';color = 'var(--accent-success)';} 
-    else if(score > 70){feedback = 'ISF ESTÁNDAR (Nivel B): Simetría Adecuada. Balance Promedio.';color = 'var(--accent-warning)';} 
-    else {feedback = 'ISF BAJO (Nivel C): Se detectan desviaciones de la línea central.';color = 'var(--accent-error)';}
+    if(score > 90){feedback = 'ISF ÉLITE (A++): Armonía y Proporción Áurea Óptima.';color = 'var(--accent-success)';} 
+    else if(score > 80){feedback = 'ISF SUPERIOR (A+): Alta Simetría. Excelente Biometría.';color = 'var(--accent-success)';} 
+    else if(score > 70){feedback = 'ISF ESTÁNDAR (B): Simetría Adecuada. Balance Promedio.';color = 'var(--accent-warning)';} 
+    else {feedback = 'ISF BAJO (C): Se detectan desviaciones de la línea central.';color = 'var(--accent-error)';}
     scoreFeedbackEl.textContent = feedback;
     scoreFeedbackEl.style.color = color;
 }
@@ -517,7 +535,7 @@ function updateEmotionDisplay(expressions, fullReport = false){
   if(fullReport){
       exprAllEl.textContent = 'DETALLE (' + sorted.length + ' Métricas): ' + sorted.map(e=>EXPR_TRADS[e[0]]+': '+(e[1]*100).toFixed(0)+'%').join(' | ');
   } else {
-      exprAllEl.textContent = 'Métricas secundarias disponibles tras Análisis Avanzado...';
+      exprAllEl.textContent = 'Detalle de emociones disponible tras Análisis Profesional...';
   }
 }
 
@@ -527,9 +545,11 @@ function resetHUDLive(isRetry = false){
   updateProgressColor(0);
   scoreFeedbackEl.textContent = isRetry ? 'Reanudando detección en tiempo real...' : 'Rostro no detectado. Esperando entrada biométrica.';
   exprDominantEl.textContent = '—';
-  exprAllEl.textContent = 'Métricas secundarias disponibles tras Análisis Avanzado...';
-  beautyScoreLine.style.display = 'none';
-  nationalityLine.style.display = 'none';
+  exprAllEl.textContent = 'Detalle de emociones disponible tras Análisis Profesional...';
+  beautyScoreEl.textContent = '—';
+  ageScoreEl.textContent = '—';
+  civilStatusEl.textContent = '—';
+  nationalityEl.textContent = '—';
 }
 
 function resetHUDAnalysisError(){
@@ -539,8 +559,10 @@ function resetHUDAnalysisError(){
     exprDominantEl.textContent='—';
     exprAllEl.textContent='No hay datos biométricos...';
     progressBar.style.width='10%';
-    beautyScoreLine.style.display = 'none';
-    nationalityLine.style.display = 'none';
+    beautyScoreEl.textContent = '—';
+    ageScoreEl.textContent = '—';
+    civilStatusEl.textContent = '—';
+    nationalityEl.textContent = '—';
 }
 
 function scoreAnimate(val){
@@ -559,7 +581,7 @@ function updateProgressColor(score){
 }
 
 async function simulateAnalysisDelay(){
-    const delay = 2500;
+    const delay = 3000; // 3.0 segundos para simular el análisis profesional completo
     await new Promise(r => setTimeout(r, delay));
 }
 </script>
