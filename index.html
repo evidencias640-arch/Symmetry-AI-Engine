@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V10 — Análisis Biométrico y Estético</title>
+<title>SYMMETRY AI ENGINE PRO V10.2 — Análisis Biométrico y Estético</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V10 - Máxima Responsividad y Fluidez)
+  ESTILOS BASE Y VARIABLES (V10.2 - Fix de Botones)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
   :root{
-    --ia:#00ffff; /* Cian principal */
+    --ia:#00ffff;
     --ia-light:#66ffff;
     --ia-glow: 0 0 12px var(--ia), 0 0 25px rgba(0,255,255,0.7);
     --bg:#000b11;
@@ -27,7 +27,6 @@
   body,html{
     margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     color:#e6f9ff;font-family:Inter,Arial,sans-serif;overflow:hidden;
-    /* Optimización de rendimiento para animaciones fluidas */
     will-change: transform, opacity; 
   }
   #main{position:relative;width:100%;height:100vh;overflow:hidden;}
@@ -44,7 +43,7 @@
     box-shadow: 0 0 15px rgba(0,255,255,0.5) inset;
     border: 1px solid rgba(0,255,255,0.3);
   }
-  /* Animación de Escaneo (Aureola Azul) */
+  /* Animación de Escaneo */
   @keyframes scan-line {
     0% { transform: translateY(-100%) }
     100% { transform: translateY(100%) }
@@ -96,7 +95,23 @@
     opacity: 1 !important;
     transform: translate(-50%, -50%) scale(1.05) !important;
   }
-
+  @keyframes flash-glitch {
+    0% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
+    50% { background: rgba(180, 0, 0, 0.9); border-color: red; }
+    100% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
+  }
+  /* Estilo de la animación de "Procesando" */
+  @keyframes pulsating-glow {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; text-shadow: var(--ia-glow); }
+    100% { opacity: 0.6; }
+  }
+  .processing-anim {
+    color: var(--ia);
+    font-weight: 800;
+    animation: pulsating-glow 1.5s infinite alternate;
+  }
+  /* HUD */
   #results{
     position:absolute;
     top:10px;
@@ -107,9 +122,9 @@
     border-radius:8px;
     font-size:14px;
     z-index:10;
-    backdrop-filter:blur(15px); /* Blur más fuerte */
+    backdrop-filter:blur(15px);
     box-shadow: var(--ia-glow);
-    max-width: 380px; /* Un poco más ancho para albergar las métricas */
+    max-width: 380px;
     transition: all 0.3s ease;
   }
   .metric-label{
@@ -140,7 +155,7 @@
 
   /*
   =======================================================
-  CONTROLES / BOTONES (RESPONSIVO Y FLUIDO)
+  CONTROLES / BOTONES (ESCRITORIO)
   =======================================================
   */
   #controls{
@@ -169,19 +184,25 @@
   .btn:hover:not(:disabled){
     transform: translateY(-2px) scale(1.01);
   }
+  .primary{
+    background:linear-gradient(90deg,var(--ia),var(--ia-light));
+    color:#000;
+    border-color: var(--ia-light);
+  }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /*
   =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA) 📱
+  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA - FIX DE BOTONES) 📱
   =======================================================
   */
   @media(max-width:600px){
-    /* Posición y Centrado del HUD */
+    /* Posición y Centrado del HUD (para que no cubra los botones) */
     #results{
       top: auto;
-      bottom: 60px;
+      bottom: 55px; /* Ajuste para dar espacio a los botones ultra-compactos */
       right: 50%;
-      transform: translateX(50%);
+      transform: translateX(-50%);
       width: 95%;
       padding: 10px;
       max-width: 95%;
@@ -190,17 +211,21 @@
     .metric-label{font-size: 0.75em; margin-top: 6px;}
     .detail-line { font-size: 11px; }
 
-    /* Controles más compactos */
+    /* Controles MÓVIL (¡FIXED!) */
     #controls{
-      bottom: 4px;
-      gap: 5px;
-      width: 98%;
+      bottom: 2px; /* Adherido al borde inferior */
+      gap: 3px; /* Espacio mínimo entre botones */
+      width: 100%; /* Cubre el 100% del ancho */
+      box-sizing: border-box; 
+      padding: 0 5px; /* Pequeño padding lateral */
     }
     .btn{
-      padding: 8px 6px;
-      font-size: 11px;
+      padding: 6px 4px; /* Padding ultra-compacto (menos altura) */
+      font-size: 10px; /* Fuente más pequeña */
       min-width: unset;
       flex-grow: 1;
+      height: auto; 
+      line-height: 1.2;
     }
     #start { flex-grow: 2; }
     /* Ajuste de la alerta en móvil */
@@ -217,7 +242,7 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10 — MÓDULO INACTIVO</h2>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.2 — MÓDULO INACTIVO</h2>
     <p style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
   
@@ -247,7 +272,7 @@
     <button id="capture" class="btn primary" disabled>📸 CAPTURAR Y CONGELAR</button>
     <button id="analyze" class="btn" style="display:none">⚙️ ANALIZAR PROFESIONAL</button>
     <button id="retry" class="btn" style="display:none">🔄 REANUDAR WEBCAM</button>
-    <button id="download" class="btn" style="display:none">⬇️ DESCARGAR REPORTE</button>
+    <button id="download" class="btn" style="display:none" disabled>⬇️ DESCARGAR REPORTE</button>
   </div>
 </div>
 
@@ -255,7 +280,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V10)
+JAVASCRIPT/FACE-API.JS LÓGICA (V10.2 - Final)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -267,7 +292,7 @@ const countEl=document.getElementById('count');
 const scoreEl=document.getElementById('score');
 const progressBar=document.querySelector('#progress>div');
 const scoreFeedbackEl=document.getElementById('score-feedback');
-// Nuevas Métricas
+// Métricas
 const beautyScoreEl=document.getElementById('beauty-score');
 const ageScoreEl=document.getElementById('age-score');
 const civilStatusEl=document.getElementById('civil-status');
@@ -292,14 +317,14 @@ const EXPR_TRADS = {
 const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela'];
 const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
 
-//=== Init models (Añadimos la Red de Edad)
+//=== Init models (Se cargan todos los modelos al inicio)
 async function loadModels(){
   btnStart.textContent = 'Cargando IA...';
   await Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
     faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL),
-    faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL) // Añadido para Edad
+    faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL) 
   ]);
   btnStart.textContent = '▶ INICIAR DETECCIÓN';
   btnStart.disabled=false;
@@ -330,7 +355,6 @@ window.addEventListener('resize',resizeCanvas);
 async function loop(){
   if(!running)return;
   resizeCanvas();
-  // Detección en vivo: Solo Detección, Landmarks y Expresiones
   const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
 
@@ -342,16 +366,15 @@ async function loop(){
 
   countEl.textContent=det.length;
   if(det.length > 0){
-    lastDet = det[0]; // Guarda la última detección para usarla en el análisis
+    lastDet = det[0];
     const score=calcSymmetry(lastDet);
     scoreAnimate(score);
     updateProgressColor(score);
     updateEmotionDisplay(lastDet.expressions, false);
     scoreFeedbackEl.textContent = 'ROSTRO DETECTADO. Detección Bi-Dimensional Activa.';
     progressBar.style.width='30%';
-    
-    // Simulación simple de Edad en vivo (más profesional en análisis)
-    ageScoreEl.textContent = 'Procesando...';
+    beautyScoreEl.textContent = calcSymmetry(lastDet).toFixed(2) + '%';
+    ageScoreEl.textContent = 'Procesando...'; 
   } else {
     lastDet = null;
     resetHUDLive();
@@ -370,7 +393,7 @@ function showWarning(message) {
         setTimeout(() => {
              criticalWarningEl.style.display = 'none';
         }, 500); 
-    }, 1500); // 1.5s de duración
+    }, 1500);
 }
 
 //=== Capture image
@@ -380,7 +403,6 @@ btnCapture.onclick=()=>{
     return;
   }
   running=false; cancelAnimationFrame(raf); video.pause();
-  canvas.classList.remove('scanner-active');
   ctx.drawImage(video,0,0,canvas.width,canvas.height);
   captured=canvas.toDataURL('image/png');
 
@@ -389,21 +411,31 @@ btnCapture.onclick=()=>{
   btnRetry.style.display='inline-block';
   btnDownload.style.display='inline-block';
   btnAnalyze.disabled=false;
+  btnDownload.disabled=true;
   scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Profesional.';
   progressBar.style.width='5%';
 };
 
-//=== Analyze captured (Ahora incluye Edad)
+//=== Analyze captured (Animación y Fix)
 btnAnalyze.onclick=async()=>{
   if(!captured)return;
   btnAnalyze.disabled=true;
   
+  // Animación de Carga
+  scoreFeedbackEl.innerHTML = '<span class="processing-anim">ANALIZANDO DATOS BIOMÉTRICOS... ESPERE.</span>';
+  ageScoreEl.textContent = 'Calculando...';
+  civilStatusEl.textContent = 'Calculando...';
+  nationalityEl.textContent = 'Calculando...';
+  exprDominantEl.textContent = 'Calculando...';
+  progressBar.style.width='50%'; 
+
   await simulateAnalysisDelay();
 
   // Detección final (con Edad y Género)
   const dets=await faceapi.detectAllFaces(canvas,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
 
+  // Redibujar la imagen congelada
   ctx.clearRect(0,0,canvas.width,canvas.height);
   const img=new Image(); 
   img.src=captured; await new Promise(r=>img.onload=r);
@@ -420,16 +452,16 @@ btnAnalyze.onclick=async()=>{
 
   const finalDet = dets[0];
   const symmetryScore=calcSymmetry(finalDet);
-  const beautyScore=calcBeautyScore(symmetryScore);
-  const simulatedNationality = simulateNationality(beautyScore);
+  const beautyScoreNumber=calcBeautyScore(symmetryScore);
+  const simulatedNationality = simulateNationality(beautyScoreNumber);
   const simulatedCivilStatus = simulateCivilStatus(finalDet.expressions);
   
   scoreAnimate(symmetryScore.toFixed(2));
   updateProgressColor(symmetryScore);
   updateScoreFeedback(symmetryScore);
   
-  // Actualizar todas las nuevas métricas
-  beautyScoreEl.textContent = beautyScore.toFixed(2) + '%';
+  // Actualizar todas las métricas con valores finales
+  beautyScoreEl.textContent = beautyScoreNumber.toFixed(2) + '%';
   ageScoreEl.textContent = `${Math.round(finalDet.age)} años (Género: ${finalDet.gender === 'male' ? 'Masc.' : 'Fem.'})`;
   civilStatusEl.textContent = simulatedCivilStatus;
   nationalityEl.textContent = simulatedNationality;
@@ -450,6 +482,7 @@ btnRetry.onclick=()=>{
   btnRetry.style.display='none';
   btnDownload.style.display='none';
   btnCapture.disabled=false;
+  btnDownload.disabled=true;
   canvas.classList.add('scanner-active');
   resetHUDLive(true);
   raf=requestAnimationFrame(loop);
@@ -461,7 +494,7 @@ btnDownload.onclick=()=>{
   const a=document.createElement('a');
   const finalImage = canvas.toDataURL('image/png');
   a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V10_REPORTE.png';
+  a.download='SYMMETRY_ANALYSIS_V10.2_REPORTE.png';
   a.click();
 };
 
@@ -482,34 +515,32 @@ function calcSymmetry(det){
     const mouthSym=1-Math.abs(mouth.x-nose.x)/(canvas.width*0.05);
     const phi=1.618;
     const ratio=(dL+dR)/(dist(left,right)||1);
-    const phiScore=1-Math.abs(ratio-phi/2)/(phi/2);
+    const phiScore=1-Math.abs(ratio-ratio/phi)/(ratio/phi);
     const score=Math.max(0,Math.min(100,(balance*0.5+mouthSym*0.3+phiScore*0.2)*100));
     return score;
   }catch(e){return 0;}
 }
 
-// Calculo de belleza en porcentaje
-function calcBeautyScore(isf){return isf.toFixed(2);} 
+// FIX: Asegurado que devuelve un NÚMERO
+function calcBeautyScore(isf){return isf;} 
 
 function simulateNationality(beautyScore){
     const index = Math.floor(Math.random() * NATIONALITIES.length);
     let nationality = NATIONALITIES[index];
-    if (parseFloat(beautyScore) > 90) {
+    if (beautyScore > 90) {
         nationality = 'Perfil ' + NATIONALITIES[Math.floor(Math.random() * 3)];
     }
     return nationality + ' (' + (Math.random() * 20 + 75).toFixed(1) + '% Confianza)';
 }
 
-// Nuevo: Simulación de Estado Civil basada en expresiones
 function simulateCivilStatus(expressions){
     const dominant = Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][0];
-    let status = CIVIL_STATUS[0]; // Soltero/a por defecto
+    let status = CIVIL_STATUS[0]; 
     
     if (dominant === 'happy' || dominant === 'neutral') {
-        // Alta felicidad o neutralidad = Mayor probabilidad de estar en pareja o casado (Simulación)
         const rand = Math.random();
-        if (rand < 0.4) status = CIVIL_STATUS[1]; // Novio
-        else if (rand < 0.7) status = CIVIL_STATUS[2]; // Casado
+        if (rand < 0.4) status = CIVIL_STATUS[1]; 
+        else if (rand < 0.7) status = CIVIL_STATUS[2];
     }
     return status;
 }
@@ -581,7 +612,7 @@ function updateProgressColor(score){
 }
 
 async function simulateAnalysisDelay(){
-    const delay = 3000; // 3.0 segundos para simular el análisis profesional completo
+    const delay = 3000;
     await new Promise(r => setTimeout(r, delay));
 }
 </script>
