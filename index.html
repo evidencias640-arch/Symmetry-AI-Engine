@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V10.2 — Análisis Biométrico y Estético</title>
+<title>SYMMETRY AI ENGINE PRO V10.3 — Análisis Biométrico y Estético</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V10.2 - Fix de Botones)
+  ESTILOS BASE Y VARIABLES (V10.3 - Fix de Controles Móvil)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
@@ -69,49 +69,9 @@
 
   /*
   =======================================================
-  ALERTA CRÍTICA Y HUD
+  HUD (ESCRITORIO)
   =======================================================
   */
-  #critical-warning {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%); 
-    background: rgba(180, 0, 0, 0.9);
-    padding: 20px 40px;
-    border: 3px solid var(--accent-error);
-    z-index: 30;
-    font-size: 1.5em;
-    font-family: Orbitron, Inter, Arial;
-    box-shadow: 0 0 20px var(--accent-error);
-    opacity: 0;
-    transition: opacity 0.2s;
-    text-align: center;
-    pointer-events: none;
-    max-width: 90%; 
-  }
-  .warning-flash {
-    animation: flash-glitch 0.4s 3 alternate; 
-    opacity: 1 !important;
-    transform: translate(-50%, -50%) scale(1.05) !important;
-  }
-  @keyframes flash-glitch {
-    0% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
-    50% { background: rgba(180, 0, 0, 0.9); border-color: red; }
-    100% { background: rgba(255, 0, 0, 0.9); border-color: var(--accent-error); }
-  }
-  /* Estilo de la animación de "Procesando" */
-  @keyframes pulsating-glow {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; text-shadow: var(--ia-glow); }
-    100% { opacity: 0.6; }
-  }
-  .processing-anim {
-    color: var(--ia);
-    font-weight: 800;
-    animation: pulsating-glow 1.5s infinite alternate;
-  }
-  /* HUD */
   #results{
     position:absolute;
     top:10px;
@@ -152,6 +112,16 @@
     border-top: 1px dashed rgba(0,255,255,0.2);
   }
   .detail-line { margin-bottom: 5px; }
+  .processing-anim {
+    color: var(--ia);
+    font-weight: 800;
+    animation: pulsating-glow 1.5s infinite alternate;
+  }
+  @keyframes pulsating-glow {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; text-shadow: var(--ia-glow); }
+    100% { opacity: 0.6; }
+  }
 
   /*
   =======================================================
@@ -193,46 +163,42 @@
 
   /*
   =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA - FIX DE BOTONES) 📱
+  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA - FIX ABSOLUTO) 📱
   =======================================================
   */
   @media(max-width:600px){
-    /* Posición y Centrado del HUD (para que no cubra los botones) */
+    /* Posición y Centrado del HUD (MOVIDO MÁS ARRIBA) */
     #results{
       top: auto;
-      bottom: 55px; /* Ajuste para dar espacio a los botones ultra-compactos */
+      bottom: 80px; /* Separado del borde inferior para evitar superposición */
       right: 50%;
       transform: translateX(-50%);
-      width: 95%;
+      width: 98%;
       padding: 10px;
-      max-width: 95%;
+      max-width: 98%;
     }
-    .score-val{font-size:26px;}
-    .metric-label{font-size: 0.75em; margin-top: 6px;}
-    .detail-line { font-size: 11px; }
+    .score-val{font-size:24px;} /* Fuente de score ligeramente más pequeña */
+    .metric-label{font-size: 0.7em; margin-top: 6px;}
+    .detail-line { font-size: 10px; }
 
-    /* Controles MÓVIL (¡FIXED!) */
+    /* Controles MÓVIL (ULTRA-COMPACTOS Y ADHERIDOS) */
     #controls{
       bottom: 2px; /* Adherido al borde inferior */
-      gap: 3px; /* Espacio mínimo entre botones */
-      width: 100%; /* Cubre el 100% del ancho */
+      gap: 3px; 
+      width: 100%; 
       box-sizing: border-box; 
-      padding: 0 5px; /* Pequeño padding lateral */
+      padding: 0 5px; 
     }
     .btn{
-      padding: 6px 4px; /* Padding ultra-compacto (menos altura) */
-      font-size: 10px; /* Fuente más pequeña */
+      padding: 5px 3px; /* Padding ultra-compacto */
+      font-size: 9px; /* Fuente miníma legible */
       min-width: unset;
       flex-grow: 1;
       height: auto; 
-      line-height: 1.2;
+      line-height: 1.1;
+      border-radius: 6px;
     }
     #start { flex-grow: 2; }
-    /* Ajuste de la alerta en móvil */
-    #critical-warning {
-      font-size: 1.1em;
-      padding: 10px 20px;
-    }
   }
 </style>
 </head>
@@ -242,7 +208,7 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.2 — MÓDULO INACTIVO</h2>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.3 — MÓDULO INACTIVO</h2>
     <p style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
   
@@ -280,7 +246,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V10.2 - Final)
+JAVASCRIPT/FACE-API.JS LÓGICA (V10.3 - Final)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -315,7 +281,7 @@ const EXPR_TRADS = {
     'angry': 'Ira', 'fearful': 'Temor', 'disgusted': 'Disgusto', 'surprised': 'Sorpresa'
 };
 const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela'];
-const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
+const CIVIL_STATUS = ['Solter@', 'En Relación', 'Casad@'];
 
 //=== Init models (Se cargan todos los modelos al inicio)
 async function loadModels(){
@@ -385,6 +351,8 @@ async function loop(){
 
 //=== NUEVA FUNCIÓN: Alerta Visual
 function showWarning(message) {
+    // Código de la alerta (mantenido del V10.2)
+    const criticalWarningEl = document.getElementById('critical-warning');
     criticalWarningEl.textContent = message;
     criticalWarningEl.style.display = 'block';
     criticalWarningEl.classList.add('warning-flash');
@@ -494,7 +462,7 @@ btnDownload.onclick=()=>{
   const a=document.createElement('a');
   const finalImage = canvas.toDataURL('image/png');
   a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V10.2_REPORTE.png';
+  a.download='SYMMETRY_ANALYSIS_V10.3_REPORTE.png';
   a.click();
 };
 
@@ -521,7 +489,6 @@ function calcSymmetry(det){
   }catch(e){return 0;}
 }
 
-// FIX: Asegurado que devuelve un NÚMERO
 function calcBeautyScore(isf){return isf;} 
 
 function simulateNationality(beautyScore){
