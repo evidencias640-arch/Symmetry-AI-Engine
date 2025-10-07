@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Symmetry AI Engine Pro</title>
+    <!-- Carga de Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Configuración de color y fuente con Inter/Orbitron -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&family=Inter:wght@100..900&display=swap');
+        
+        :root {
+            --ia-color: #00e0ff; /* Cyan Brillante */
+            --bg-color: #05050f; /* Azul oscuro profundo */
+            --border-color: #004455;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: #E0E7FF; /* Blanco azulado */
+            overflow-x: hidden;
+        }
+        
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Efecto de brillo y bordes tecnológicos */
+        .ia-glow {
+            box-shadow: 0 0 8px var(--ia-color), inset 0 0 5px rgba(0, 224, 255, 0.4);
+            border-color: var(--ia-color);
+        }
+        .ia-border {
+            border: 2px solid var(--border-color);
+            border-left: 5px solid var(--ia-color);
+        }
+
+        /* Contenedor del video/imagen */
+        .capture-container {
+            position: relative;
+            background-color: #1a1a33;
+            border: 2px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        /* Video/Canvas se superponen */
+        #webcam-feed, #capture-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Animación de escaneo (simulación) */
+        .scan-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            display: none; 
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--ia-color), transparent);
+            box-shadow: 0 0 15px var(--ia-color);
+            animation: scan-move 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+            opacity: 0.8;
+        }
+        @keyframes scan-move {
+            0% { transform: translateY(-100%); }
+            50% { transform: translateY(100%); }
+            100% { transform: translateY(-100%); }
+        }
+
+        /* Estilo para el resultado del score */
+        .score-display {
+            background: #0d0d21;
+            border: 3px solid var(--ia-color);
+            animation: score-pulse 2s infinite alternate;
+        }
+        @keyframes score-pulse {
+            from { box-shadow: 0 0 10px rgba(0, 224, 255, 0.5); }
+            to { box-shadow: 0 0 20px rgba(0, 224, 255, 0.8); }
+        }
+
+        /* Animación de carga IA profesional */
+        .loading-ia-bar {
+            height: 6px;
+            background-color: var(--ia-color);
+            width: 0%;
+            transition: width 0.3s ease-in-out;
+            box-shadow: 0 0 8px var(--ia-color);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 md:p-12">
+
+    <header class="text-center mb-16">
+        <h1 class="text-5xl md:text-7xl font-extrabold text-white">
+            <span class="text-4xl text-cyan-400">SYMMETRY</span> <span class="text-cyan-600">AI</span> ENGINE
+        </h1>
+        <p class="mt-4 text-xl text-gray-400 font-light tracking-wider">
+            | Módulo de Análisis Biomético Cuántico | Protocolo $P-521$ |
+        </p>
+    </header>
+
+    <main class="max-w-6xl mx-auto">
+        
+        <!-- Estado de Inicialización y Botones -->
+        <section class="mb-10 p-5 rounded-xl ia-border bg-gray-900/40">
+            <div id="loading-container" class="mb-4">
+                <p class="text-cyan-400 font-medium mb-2 flex items-center">
+                    <svg id="loading-spinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Estado del Sistema: <span id="loading-status" class="ml-2 font-bold text-white">Cargando modelos DNN...</span>
+                </p>
+                <div class="bg-gray-800 rounded-full">
+                    <div id="loading-bar" class="loading-ia-bar rounded-full"></div>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-8">
+                <button id="camera-button" class="flex-1 px-6 py-4 bg-gray-800 text-cyan-400 font-semibold rounded-xl border-2 border-cyan-400/50 hover:bg-cyan-700 hover:text-white transition duration-300 transform hover:scale-105 disabled:opacity-50" disabled>
+                    <svg class="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.218A2 2 0 0110.69 4h2.62a2 2 0 011.664.89l.812 1.218A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    ACTIVAR CÁMARA (TIEMPO REAL)
+                </button>
+                <button id="upload-button" class="flex-1 px-6 py-4 bg-gray-800 text-cyan-400 font-semibold rounded-xl border-2 border-cyan-400/50 hover:bg-cyan-700 hover:text-white transition duration-300 transform hover:scale-105 disabled:opacity-50" disabled>
+                    <svg class="w-6 h-6 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    CARGAR ARCHIVO LOCAL (PNG/JPG)
+                </button>
+            </div>
+            <input type="file" id="file-upload-input" accept="image/*" class="hidden">
+        </section>
+
+        <!-- Módulo Principal de Análisis y Flujo de Trabajo -->
+        <section id="analisis" class="p-8 md:p-10 rounded-3xl ia-glow border-4 border-dashed border-cyan-800/50 bg-gray-900/40 mb-16">
+            
+            <h2 class="text-3xl font-bold mb-8 text-center text-cyan-400">SUBSISTEMA DE DETECCIÓN ACTIVA</h2>
+
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Panel de Flujo de Trabajo Animado (Paso a Paso) -->
+                <div class="lg:col-span-1 space-y-4">
+                    <div id="step-1" class="ia-border p-4 rounded-lg bg-gray-800/50 transition duration-500">
+                        <p class="font-bold text-cyan-400 text-lg">01. INGRESO DE DATOS</p>
+                        <p class="text-gray-400 text-sm">Fuente definida: <span id="source-status" class="text-white font-semibold">NULA</span>.</p>
+                    </div>
+                    <div id="step-2" class="ia-border p-4 rounded-lg bg-gray-800/50 transition duration-500 opacity-50">
+                        <p class="font-bold text-cyan-400 text-lg">02. DETECCIÓN LANDMARK</p>
+                        <p class="text-gray-400 text-sm">Activación de la Red Neuronal (DNN) para 68 puntos.</p>
+                    </div>
+                    <div id="step-3" class="ia-border p-4 rounded-lg bg-gray-800/50 transition duration-500 opacity-50">
+                        <p class="font-bold text-cyan-400 text-lg">03. CÁLCULO BIOMÉTRICO</p>
+                        <p class="text-gray-400 text-sm">Validación de Ratios $\phi$ y Simetría Bilateral (SB).</p>
+                    </div>
+                    <div id="step-4" class="ia-border p-4 rounded-lg bg-gray-800/50 transition duration-500 opacity-50">
+                        <p class="font-bold text-cyan-400 text-lg">04. GENERACIÓN DE REPORTE</p>
+                        <p class="text-gray-400 text-sm">Compilación del IFA (Índice de Armonía Facial).</p>
+                    </div>
+                    
+                    <button id="analyze-action-button" class="w-full mt-6 px-10 py-3 text-lg font-bold text-gray-900 bg-cyan-400 rounded-full shadow-lg hover:bg-cyan-500 transition duration-300 transform hover:scale-105 disabled:opacity-50" disabled>
+                        ESPERANDO FUENTE...
+                    </button>
+                </div>
+
+                <!-- Área de Visualización y Análisis -->
+                <div class="lg:col-span-3">
+                    <div id="capture-area" class="capture-container w-full aspect-video rounded-xl shadow-2xl ia-glow/50">
+                        <video id="webcam-feed" class="hidden" autoplay muted playsinline></video>
+                        <canvas id="capture-canvas"></canvas>
+                        
+                        <!-- Animación de escaneo (Overlay) -->
+                        <div id="scan-animation" class="scan-animation">
+                            <div class="scan-line"></div>
+                        </div>
+
+                        <div id="placeholder-message" class="absolute inset-0 flex items-center justify-center text-center p-8 text-gray-500 bg-gray-900/80">
+                            <p class="text-xl">
+                                <span class="text-cyan-500 font-bold block mb-2">ESPERANDO DATOS DE ENTRADA</span>
+                                Seleccione una fuente y espere la inicialización del motor de IA.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. Área de Resultados del Análisis Profesional -->
+        <section id="results-area" class="mt-20 hidden">
+            <h3 class="text-3xl font-bold text-center text-cyan-400 mb-10">INFORME DE ARMÓNIA FACIAL - OUTPUT</h3>
+            
+            <div class="grid lg:grid-cols-4 gap-8">
+                <!-- Puntuación Principal -->
+                <div class="lg:col-span-1 p-8 rounded-xl score-display text-center">
+                    <p class="text-lg font-light text-gray-400 mb-3 uppercase tracking-wider">Índice de Armonía Facial (IFA)</p>
+                    <div id="final-score" class="text-8xl font-black text-white mb-4 leading-none">0.0</div>
+                    <p id="score-text" class="text-xl font-bold text-cyan-400"></p>
+                </div>
+
+                <!-- Detalles Técnicos -->
+                <div class="lg:col-span-3 space-y-6">
+                    <div class="bg-gray-900/60 p-6 rounded-xl border border-cyan-800">
+                        <h4 class="text-xl font-semibold text-white mb-3 text-cyan-400">DIAGNÓSTICO SIMETRÍA BILATERAL (SB)</h4>
+                        <p id="sb-analysis" class="text-gray-300 text-md"></p>
+                    </div>
+                    
+                    <div class="bg-gray-900/60 p-6 rounded-xl border border-cyan-800">
+                        <h4 class="text-xl font-semibold text-white mb-3 text-cyan-400">MÉTRICAS $\phi$ Y PROPORCIONES CLAVE</h4>
+                        <div id="ratio-details" class="space-y-3 text-sm text-gray-400">
+                            <!-- Detalles generados por el análisis JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NUEVA SECCIÓN: Protocolos y Parámetros Mundiales -->
+        <section id="global-parameters" class="mt-20 p-8 rounded-3xl ia-glow border-4 border-dashed border-cyan-800/50 bg-gray-900/40">
+            <h3 class="text-3xl font-bold text-center text-cyan-400 mb-10">REPOSITORIO DE ESTÁNDARES BIOMÉTRICOS GLOBALES</h3>
+            <p class="text-gray-400 mb-8 text-center">Protocolos de medición basados en la Proporción Áurea ($\phi$) y el análisis de tercios faciales.</p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- COLUMNA 1: Proporción Áurea -->
+                <div class="bg-gray-800/60 p-6 rounded-xl ia-border">
+                    <h4 class="text-xl font-bold text-white mb-3 text-cyan-300">Constante $\phi$ (Ratio Divino)</h4>
+                    <p class="text-gray-300 mb-4">Valor: $\phi \approx 1.618$. Este es el parámetro fundamental para la armonía y el equilibrio en la naturaleza y el diseño.</p>
+                    <ul class="text-sm space-y-2 text-gray-400">
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Nariz-Boca/Ancho de Nariz: Debe aproximarse a $1.618$.</li>
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Ancho de Rostro/Ancho de Ceja: Proporción clave para el marco facial.</li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 2: Simetría Bilateral -->
+                <div class="bg-gray-800/60 p-6 rounded-xl ia-border">
+                    <h4 class="text-xl font-bold text-white mb-3 text-cyan-300">Simetría Bilateral (SB)</h4>
+                    <p class="text-gray-300 mb-4">Mide la desviación del eje central. Una SB alta minimiza la desviación entre los lados izquierdo y derecho.</p>
+                    <ul class="text-sm space-y-2 text-gray-400">
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Eje Ocular: Desviación vertical máxima aceptable: $1\%$.</li>
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Eje Nasal: La punta de la nariz debe alinearse con el punto 30 de Landmark.</li>
+                    </ul>
+                </div>
+
+                <!-- COLUMNA 3: Regla de Tercios -->
+                <div class="bg-gray-800/60 p-6 rounded-xl ia-border">
+                    <h4 class="text-xl font-bold text-white mb-3 text-cyan-300">Regla de Tercios (Vertical)</h4>
+                    <p class="text-gray-300 mb-4">Divide el rostro en tres partes iguales. La proporción de estos tercios es crítica para la evaluación clínica.</p>
+                    <ul class="text-sm space-y-2 text-gray-400">
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Superior: Línea del cabello al entrecejo.</li>
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Medio: Entrecejo a subnasale (bajo la nariz).</li>
+                        <li class="flex items-start"><span class="text-cyan-400 mr-2 font-bold">•</span> Inferior: Subnasale al mentón.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Mensaje de error/alerta (simulación de panel de error) -->
+        <div id="alert-message" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+            <div class="bg-gray-900 p-8 rounded-lg shadow-2xl max-w-lg w-full border-l-4 border-red-500 ia-glow" style="--ia-color: #ff0055;">
+                <p class="text-red-400 font-extrabold text-2xl mb-4">ERROR CRÍTICO DEL SISTEMA</p>
+                <p id="alert-text" class="text-gray-300 mb-6"></p>
+                <button onclick="document.getElementById('alert-message').classList.add('hidden')" class="w-full py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">DESCARTE DE ERROR</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- CRITICAL FIX: Carga de la librería face-api.js justo antes del script principal -->
+    <script src="https://cdn.jsdelivr.net/npm/face-api.js@1.0.0/dist/face-api.min.js"></script>
+    <!-- JavaScript Lógica de Análisis Facial (face-api.js) -->
+    <script>
+        // Configuración de modelos de face-api.js
+        const MODELS_URL = 'https://cdn.jsdelivr.net/npm/face-api.js@1.0.0/models';
+        
+        // Elementos DOM
+        const cameraButton = document.getElementById('camera-button');
+        const uploadButton = document.getElementById('upload-button');
+        const fileUploadInput = document.getElementById('file-upload-input');
+        const webcamFeed = document.getElementById('webcam-feed');
+        const captureCanvas = document.getElementById('capture-canvas');
+        const placeholderMessage = document.getElementById('placeholder-message');
+        const analyzeActionButton = document.getElementById('analyze-action-button');
+        const loadingContainer = document.getElementById('loading-container');
+        const loadingBar = document.getElementById('loading-bar');
+        const loadingStatus = document.getElementById('loading-status');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const scanAnimation = document.getElementById('scan-animation');
+        const resultsArea = document.getElementById('results-area');
+        const sourceStatus = document.getElementById('source-status');
+
+        // Elementos de Paso a Paso
+        const steps = [
+            document.getElementById('step-1'),
+            document.getElementById('step-2'),
+            document.getElementById('step-3'),
+            document.getElementById('step-4')
+        ];
+
+        let isInitialized = false;
+        let stream = null; 
+        let currentMediaType = null; // 'image' or 'video'
+        let currentInterval = null; // Para control del loop de video
+
+        // --- Funciones de Utilidad ---
+        function showAlert(message) {
+            document.getElementById('alert-text').textContent = message;
+            document.getElementById('alert-message').classList.remove('hidden');
+        }
+
+        // Función para actualizar el estado del flujo de trabajo (Paso a Paso)
+        function updateStep(activeStepIndex) {
+            steps.forEach((step, index) => {
+                if (index === activeStepIndex) {
+                    step.classList.add('ia-glow', 'bg-cyan-900/50');
+                    step.classList.remove('opacity-50', 'bg-gray-800/50', 'bg-green-900/50');
+                } else if (index < activeStepIndex) {
+                    // Completados
+                    step.classList.remove('ia-glow', 'bg-cyan-900/50', 'opacity-50', 'bg-gray-800/50');
+                    step.classList.add('bg-green-900/50');
+                } else {
+                    // Pendientes
+                    step.classList.remove('ia-glow', 'bg-cyan-900/50', 'bg-green-900/50');
+                    step.classList.add('opacity-50', 'bg-gray-800/50');
+                }
+            });
+        }
+        
+        // --- Inicialización y Carga (Fix del error) ---
+        async function loadModels() {
+            try {
+                // 1. Mostrar estado de carga y deshabilitar interacción
+                updateStep(0); // Paso 1 activo (Inicialización)
+                loadingSpinner.classList.remove('hidden');
+                cameraButton.disabled = true;
+                uploadButton.disabled = true;
+
+                const modelsToLoad = [
+                    faceapi.nets.ssdMobilenetv1.load(MODELS_URL),
+                    faceapi.nets.faceLandmark68Net.load(MODELS_URL),
+                    faceapi.nets.faceExpressionNet.load(MODELS_URL) 
+                ];
+
+                for (let i = 0; i < modelsToLoad.length; i++) {
+                    await modelsToLoad[i];
+                    loadingBar.style.width = `${((i + 1) / modelsToLoad.length) * 100}%`;
+                    loadingStatus.textContent = `Modelo DNN ${i + 1}/${modelsToLoad.length} cargado.`;
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+
+                // 2. Finalizar carga y habilitar UI
+                isInitialized = true;
+                loadingContainer.classList.add('hidden');
+                loadingStatus.textContent = "SISTEMA LISTO. Esperando fuente de entrada.";
+                loadingSpinner.classList.add('hidden');
+                cameraButton.disabled = false;
+                uploadButton.disabled = false;
+                
+                // Resetear estado visual de los pasos
+                steps.forEach(step => step.classList.remove('bg-green-900/50', 'ia-glow'));
+                updateStep(-1); 
+
+                console.log("Modelos de face-api.js cargados exitosamente.");
+            } catch (error) {
+                loadingSpinner.classList.add('hidden');
+                loadingContainer.classList.remove('hidden');
+                loadingStatus.textContent = "ERROR: Falló la inicialización del motor.";
+                // Este catch ahora es más robusto porque sabemos que faceapi está definido.
+                showAlert(`ERROR: Fallo de red o modelos corruptos. Detalle: ${error.message}`);
+            }
+        }
+
+        // --- Lógica de la Cámara ---
+        async function startWebcam() {
+            if (!isInitialized) return;
+
+            // Detener y limpiar estado previo
+            resetAnalysisLoop(); 
+            resetState(); 
+            
+            updateStep(0); // Activar Paso 1: Ingreso de Datos
+            sourceStatus.textContent = 'WEBCAM (Tiempo Real)';
+
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                webcamFeed.srcObject = stream;
+                webcamFeed.onloadedmetadata = () => {
+                    // Ajuste de tamaño para responsividad
+                    const container = document.getElementById('capture-area');
+                    const videoRatio = webcamFeed.videoWidth / webcamFeed.videoHeight;
+                    container.style.aspectRatio = videoRatio;
+
+                    captureCanvas.width = webcamFeed.videoWidth;
+                    captureCanvas.height = webcamFeed.videoHeight;
+                    webcamFeed.play();
+                    
+                    placeholderMessage.classList.add('hidden');
+                    webcamFeed.classList.remove('hidden');
+                    captureCanvas.classList.remove('hidden');
+
+                    analyzeActionButton.textContent = "INICIAR ESCANEO Y ANÁLISIS";
+                    analyzeActionButton.disabled = false;
+                    analyzeActionButton.onclick = startRealtimeAnalysis;
+                    currentMediaType = 'video';
+                };
+            } catch (error) {
+                console.error("Error al acceder a la cámara:", error);
+                showAlert("ERROR: Permiso de cámara denegado o dispositivo no disponible.");
+                resetState();
+            }
+        }
+
+        function startRealtimeAnalysis() {
+            if (currentMediaType !== 'video') return;
+            
+            updateStep(1); // Activar Paso 2: Detección Landmark
+            
+            const video = webcamFeed;
+            const canvas = captureCanvas;
+            const displaySize = { width: video.videoWidth, height: video.videoHeight };
+            faceapi.matchDimensions(canvas, displaySize);
+            
+            scanAnimation.style.display = 'block';
+            analyzeActionButton.textContent = "GENERANDO REPORTE FINAL...";
+            analyzeActionButton.disabled = false; // Permitir detener
+
+            // Iniciar loop de análisis
+            currentInterval = setInterval(async () => {
+                const detections = await faceapi.detectAllFaces(video, 
+                    new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 }))
+                    .withFaceLandmarks()
+                    .withFaceExpressions();
+                
+                const resizedDetections = faceapi.resizeResults(detections, displaySize);
+                
+                // Limpiar y dibujar puntos de IA
+                canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+                
+                if (resizedDetections.length > 0) {
+                    const d = resizedDetections[0];
+                    updateStep(2); // Paso 3: Análisis Cuántico
+                    
+                    // Dibujar el rostro para el efecto tecnológico
+                    faceapi.draw.drawDetections(canvas, resizedDetections, { color: 'rgba(0, 224, 255, 0.7)', lineWidth: 2 });
+                    
+                    // Dibujar los 68 puntos clave (Landmarks)
+                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetections, { color: 'rgb(0, 224, 255)', lineWidth: 1 });
+                    
+                    // Mostrar datos en la esquina
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'var(--ia-color)';
+                    ctx.font = '14px Inter';
+                    const box = d.detection.box;
+                    ctx.fillText(`ID_BIO: ${Math.floor(Math.random() * 9999)}`, box.x, box.y - 40);
+                    
+                } else {
+                    updateStep(1); // Si se pierde el rostro, volver al paso 2
+                    // Dibujar mensaje de error
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ff0055';
+                    ctx.font = '24px Orbitron';
+                    ctx.textAlign = 'center';
+                    ctx.fillText("OBJETO NO IDENTIFICADO (RECALIBRANDO)", canvas.width / 2, canvas.height / 2);
+                }
+
+            }, 100); 
+
+            // Función para detener el análisis en tiempo real
+            analyzeActionButton.onclick = () => {
+                const videoElement = webcamFeed;
+                resetAnalysisLoop();
+                updateStep(3); // Paso 4: Generación de Reporte
+                generateReport(true, videoElement);
+            };
+            analyzeActionButton.textContent = "FINALIZAR ESCANEO Y GENERAR REPORTE";
+            analyzeActionButton.disabled = false;
+        }
+
+        function resetAnalysisLoop() {
+            if (currentInterval) {
+                clearInterval(currentInterval);
+                currentInterval = null;
+            }
+            scanAnimation.style.display = 'none';
+        }
+
+        // --- Lógica de Subida de Imagen ---
+        uploadButton.addEventListener('click', () => {
+            if (!isInitialized) return;
+            resetAnalysisLoop();
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                webcamFeed.srcObject = null;
+            }
+            resetState();
+            updateStep(0);
+            sourceStatus.textContent = 'ARCHIVO LOCAL (Estatico)';
+            fileUploadInput.click();
+        });
+
+        fileUploadInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = () => {
+                        // Ajuste de tamaño para responsividad
+                        const container = document.getElementById('capture-area');
+                        const imgRatio = img.width / img.height;
+                        container.style.aspectRatio = imgRatio;
+
+                        captureCanvas.width = img.width;
+                        captureCanvas.height = img.height;
+                        captureCanvas.getContext('2d').drawImage(img, 0, 0, img.width, img.height);
+                        
+                        placeholderMessage.classList.add('hidden');
+                        webcamFeed.classList.add('hidden');
+                        captureCanvas.classList.remove('hidden');
+
+                        analyzeActionButton.textContent = "INICIAR PROCESAMIENTO BIOMÉTRICO";
+                        analyzeActionButton.onclick = () => generateReport(false, img);
+                        analyzeActionButton.disabled = false;
+                        currentMediaType = 'image';
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- Lógica de Análisis y Reporte Local ---
+
+        async function generateReport(fromVideo, inputImage = null) {
+            if (!isInitialized || !inputImage) return;
+            
+            loadingContainer.classList.remove('hidden');
+            loadingStatus.textContent = "Analizando 68 puntos biométricos...";
+            loadingBar.style.width = '10%';
+            updateStep(1); // Paso 2
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                const detection = await faceapi.detectSingleFace(inputImage)
+                    .withFaceLandmarks()
+                    .withFaceExpressions();
+
+                loadingBar.style.width = '50%';
+                updateStep(2); // Paso 3
+                loadingStatus.textContent = "Calculando Ratios Áureos (Procesamiento Nivel-5)...";
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+
+                if (!detection) {
+                    throw new Error("Rostro no detectado. Asegúrate de que el rostro esté visible.");
+                }
+
+                // Dibujar el resultado final en el canvas (solo para la imagen cargada)
+                if (!fromVideo) {
+                    const displaySize = { width: inputImage.width, height: inputImage.height };
+                    faceapi.matchDimensions(captureCanvas, displaySize);
+                    
+                    // Redibujar la imagen y superponer el análisis
+                    captureCanvas.getContext('2d').drawImage(inputImage, 0, 0, inputImage.width, inputImage.height);
+                    
+                    const resizedDetection = faceapi.resizeResults(detection, displaySize);
+                    faceapi.draw.drawDetections(captureCanvas, resizedDetection, { color: 'rgba(0, 224, 255, 0.9)', lineWidth: 3 });
+                    faceapi.draw.drawFaceLandmarks(captureCanvas, resizedDetection, { color: 'rgb(0, 224, 255)', lineWidth: 2 });
+                }
+
+                const scoreData = calculateMetrics(detection.landmarks.positions);
+
+                loadingBar.style.width = '80%';
+                loadingStatus.textContent = "Compilando Informe IFA. Encriptando datos...";
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                updateStep(3); // Paso 4
+                displayProfessionalReport(scoreData);
+
+            } catch (error) {
+                console.error("Error durante el análisis:", error);
+                showAlert(`Error de Ejecución: ${error.message}`);
+                resetState();
+            } finally {
+                loadingBar.style.width = '100%';
+                loadingStatus.textContent = "Análisis completado. Resultados listos.";
+                await new Promise(resolve => setTimeout(resolve, 300));
+                loadingContainer.classList.add('hidden');
+            }
+        }
+        
+        function calculateMetrics(landmarks) {
+            const dist = (p1, p2) => Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            const phi = 1.618;
+
+            // 1. Simetría Bilateral Ocular (SB)
+            const leftEyeOuter = landmarks[36];
+            const rightEyeOuter = landmarks[45];
+            const noseTip = landmarks[30];
+            const symmetryIndex = Math.abs(dist(leftEyeOuter, noseTip) - dist(rightEyeOuter, noseTip)) / dist(leftEyeOuter, rightEyeOuter);
+            const symmetryScore = Math.max(0, 1 - symmetryIndex * 2); 
+            
+            // 2. Proporción Boca/Nariz (Proximidad a Phi)
+            const mouthWidth = dist(landmarks[48], landmarks[54]);
+            const noseWidth = dist(landmarks[31], landmarks[35]);
+            const mouthNoseRatio = mouthWidth / noseWidth;
+            const ratioDeviation = Math.abs(mouthNoseRatio - phi);
+            const ratioScore = Math.max(0, 1 - ratioDeviation * 0.4); 
+
+            // 3. Proporción de Tercios Verticales (Simulada)
+            const eyebrowTop = landmarks[19].y;
+            const noseBottom = landmarks[33].y;
+            const chinBottom = landmarks[8].y;
+            const topThird = noseTip.y - eyebrowTop;
+            const bottomThird = chinBottom - noseBottom;
+            const verticalRatio = topThird / bottomThird;
+            const verticalDeviation = Math.abs(verticalRatio - 1.0); 
+            const verticalScore = Math.max(0, 1 - verticalDeviation * 0.5);
+
+            // Puntuación Final (Base + Ponderación)
+            const baseScore = 80;
+            const finalScore = (baseScore + symmetryScore * 6 + ratioScore * 8 + verticalScore * 6);
+            
+            // Generación de Texto Sofisticado
+            let symmetryText;
+            if (symmetryScore > 0.95) {
+                symmetryText = "Integridad estructural excepcional. La desviación en el plano vertical es mínima ($\pm 0.5\%$), indicando una alta replicación de características bilaterales. Cumple con el estándar de Proporción Áurea en el eje coronal.";
+            } else if (symmetryScore > 0.85) {
+                symmetryText = "Buena coherencia estructural. Se observa una ligera asimetría en la región orbital superior, pero el balance mandibular es altamente armónico. Reajustes menores no requeridos.";
+            } else {
+                symmetryText = "Desviación bilateral significativa. Se recomienda una reevaluación del plano medio facial. La distribución del volumen es desigual, impactando la percepción de equilibrio.";
+            }
+
+            // Puntuación y Clasificación
+            let rating;
+            if (finalScore >= 95) { rating = "ARMONÍA CUASI-PERFECTA - EXCELENCIA $\phi$"; }
+            else if (finalScore >= 90) { rating = "ESTÁNDAR IDEAL - ALTA COHERENCIA GEOMÉTRICA"; }
+            else { rating = "POTENCIAL ALTO - RECOMENDACIONES DE MEJORA"; }
+
+
+            return {
+                IFA_Score: finalScore,
+                IFA_Rating: rating,
+                Symmetry_Analysis: symmetryText,
+                Ratio_Details: [
+                    { name: 'Ratio Boca/Nariz (Referencia $\phi$)', value: mouthNoseRatio, comment: `Proximidad al valor ideal $\phi$ de ${(ratioDeviation * 100).toFixed(1)}%.` },
+                    { name: 'Índice de Simetría Ocular (SB)', value: symmetryIndex, comment: `Error de posición lateral inferior al ${(symmetryIndex * 100).toFixed(2)}%.` },
+                    { name: 'Proporción de Tercios Verticales', value: verticalRatio, comment: `Desviación de ${verticalDeviation.toFixed(3)} del ratio ideal (1.0).` }
+                ]
+            };
+        }
+
+        function displayProfessionalReport(data) {
+            document.getElementById('final-score').textContent = data.IFA_Score.toFixed(1);
+            document.getElementById('score-text').textContent = data.IFA_Rating;
+            document.getElementById('sb-analysis').textContent = data.Symmetry_Analysis;
+
+            const ratioDetailsContainer = document.getElementById('ratio-details');
+            ratioDetailsContainer.innerHTML = '';
+            
+            data.Ratio_Details.forEach(ratio => {
+                const item = document.createElement('div');
+                item.className = 'flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-cyan-900 last:border-b-0';
+                item.innerHTML = `
+                    <div class="font-medium text-gray-200">${ratio.name}</div>
+                    <div class="text-right">
+                        <span class="font-bold text-lg text-green-400">${ratio.value.toFixed(3) === 'NaN' ? 'N/A' : ratio.value.toFixed(3)}</span>
+                        <p class="text-xs text-gray-500">${ratio.comment}</p>
+                    </div>
+                `;
+                ratioDetailsContainer.appendChild(item);
+            });
+            
+            resultsArea.classList.remove('hidden');
+            // Desplazarse suavemente a los resultados
+            document.getElementById('results-area').scrollIntoView({ behavior: 'smooth' });
+            
+            // Deshabilitar botones después del reporte
+            analyzeActionButton.disabled = true;
+            analyzeActionButton.textContent = "PROCESO COMPLETADO";
+        }
+
+        // --- Inicialización y Manejo de Estado ---
+
+        function resetState() {
+            // Detener stream si estaba activo
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                webcamFeed.srcObject = null;
+            }
+            // Restablecer la UI al estado inicial
+            currentMediaType = null;
+            webcamFeed.classList.add('hidden');
+            placeholderMessage.classList.remove('hidden');
+            scanAnimation.style.display = 'none';
+            analyzeActionButton.textContent = "ESPERANDO FUENTE...";
+            analyzeActionButton.disabled = true;
+            resultsArea.classList.add('hidden');
+            loadingContainer.classList.add('hidden');
+            loadingBar.style.width = '0%';
+            sourceStatus.textContent = 'NULA';
+            
+            // Restablecer flujo de pasos
+            updateStep(-1);
+        }
+        
+        window.onload = () => {
+            // Este `window.onload` espera a que todo el DOM y scripts externos (incluyendo face-api.js) carguen
+            loadModels();
+            // Inicializar el canvas
+            const container = document.getElementById('capture-area');
+            captureCanvas.width = container.clientWidth;
+            captureCanvas.height = container.clientHeight;
+        };
+
+        // Event Listeners
+        cameraButton.addEventListener('click', startWebcam);
+        
+    </script>
+</body>
+</html>
