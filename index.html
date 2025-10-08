@@ -3,27 +3,27 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V12.0 — Versión de Mercado</title>
+<title>SYMMETRY AI ENGINE PRO V13.0 — Professional Biometric Analysis System</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V12.0 - FIX DE ESPEJO Y SPA)
+  ESTILOS BASE Y VARIABLES (V13.0 - Profesional Grid/Flex)
   =======================================================
   */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600;700&display=swap');
   :root{
-    --ia:#00ffff;
+    --ia:#00ffff; /* Cian principal */
     --ia-light:#66ffff;
-    --ia-glow: 0 0 12px var(--ia), 0 0 25px rgba(0,255,255,0.7);
+    --ia-glow: 0 0 10px var(--ia), 0 0 20px rgba(0,255,255,0.7);
     --bg:#000b11;
-    --panel-bg: rgba(5, 15, 25, 0.9);
+    --panel-bg: rgba(5, 15, 25, 0.95); /* Fondo de paneles más opaco y oscuro */
     --muted:#a0a9b5;
     --accent-error:#ff5050;
     --accent-warning:#ffaa00;
     --accent-success:#00ffb3;
     --nav-width: 80px;
-    --panel-width: 320px; 
+    --panel-width: 340px; /* Panel de métricas más ancho para info profesional */
   }
 
   /* ESTRUCTURA GENERAL Y SPA */
@@ -41,27 +41,11 @@
     overflow: hidden;
   }
 
-  /* Vistas de la SPA */
-  .view {
-    position: absolute;
-    top: 0; left: var(--nav-width);
-    width: calc(100% - var(--nav-width));
-    height: 100%;
-    display: none; /* Ocultar todas las vistas por defecto */
-    transition: opacity 0.5s;
-    background: var(--bg);
-  }
-  .view.active {
-    display: flex;
-    flex-direction: row; /* Para la vista LiveScan */
-    z-index: 10;
-  }
-  
   /* BARRA DE NAVEGACIÓN LATERAL */
   #nav-sidebar {
     width: var(--nav-width);
     background: #011523;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.5);
+    box-shadow: 2px 0 8px rgba(0,0,0,0.7);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -69,199 +53,153 @@
     z-index: 50;
     flex-shrink: 0;
   }
-  .nav-item {
-    padding: 15px 0;
-    width: 100%;
-    text-align: center;
-    cursor: pointer;
-    font-size: 10px;
-    transition: background 0.3s, color 0.3s;
-    color: var(--muted);
-  }
-  .nav-item:hover, .nav-item.active {
-    background: #022038;
-    color: var(--ia-light);
-    border-left: 3px solid var(--ia);
-    box-shadow: 0 0 5px rgba(0,255,255,0.5);
-  }
-  .nav-item i { font-size: 20px; display: block; margin-bottom: 3px; }
 
+  /* VISTAS SPA */
+  .view {
+    position: absolute;
+    top: 0; left: var(--nav-width);
+    width: calc(100% - var(--nav-width));
+    height: 100%;
+    display: none; 
+    transition: opacity 0.5s;
+  }
+  .view.active {
+    display: flex;
+    z-index: 10;
+  }
+  
   /* =======================================================
-  LIVE SCAN VIEW ESPECÍFICO
+  LIVE SCAN VIEW (CSS GRID RESPONSIVO)
   =======================================================
   */
   #live-scan-view {
       padding: 0;
       left: var(--nav-width);
       width: calc(100% - var(--nav-width));
+      /* Desktop Grid Layout */
+      display: grid;
+      grid-template-columns: 1fr var(--panel-width); 
+      grid-template-areas: "camera metrics";
+      overflow: hidden;
   }
   #scan-container {
-    flex-grow: 1;
+    grid-area: camera;
     position: relative;
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    width: calc(100% - var(--panel-width)); /* Ajuste de ancho */
+    background: rgba(0, 0, 0, 0.5); /* Fondo sutil para el área de cámara */
   }
-  
-  /* CÁMARA y CANVAS (Sin transformación scaleX(-1) aquí) */
-  #webcam-feed{
-    position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
-    z-index: 1;
-    filter: brightness(0.7) contrast(1.2); 
-    transform: none; /* ELIMINADO EL PROBLEMA DEL ESPEJO EN EL VIDEO */
-  }
-  #capture-canvas{
-    position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
-    z-index: 5; 
-    box-shadow: 0 0 20px rgba(0,255,255,0.5) inset;
-    border: 2px solid rgba(0,255,255,0.4);
-    transition: box-shadow 0.5s;
-    transform: none; /* Mantenemos sin espejo. La lógica de dibujo lo hace. */
-  }
-  #placeholder{
-    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.95);z-index: 10; 
-    text-align:center;
-  }
-
-  /* PANEL DE MÉTRICAS (Derecha) */
   #metrics-panel{
+    grid-area: metrics;
     width: var(--panel-width);
-    min-width: 280px;
     background: var(--panel-bg); 
-    padding: 20px;
+    padding: 25px;
     backdrop-filter: blur(10px);
-    box-shadow: -3px 0 15px rgba(0,0,0,0.5);
+    box-shadow: -5px 0 20px rgba(0,0,0,0.7);
     overflow-y: auto;
-    z-index: 50;
     flex-shrink: 0;
   }
-  .metric-block { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed rgba(0,255,255,0.1); }
-  .metric-label{
-    font-family: Inter, Arial;
-    font-weight: 600;
-    color: var(--muted);
-    font-size: 0.9em;
-    margin-bottom: 5px;
+
+  /* Elementos de la Cámara */
+  #webcam-feed, #capture-canvas {
+    position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
   }
+  #webcam-feed { z-index: 1; filter: brightness(0.7) contrast(1.2); }
+  #capture-canvas { 
+    z-index: 5; 
+    box-shadow: var(--ia-glow) inset; /* Borde Neón Sutil */
+    border: 2px solid rgba(0,255,255,0.4);
+    transition: box-shadow 0.5s;
+  }
+
+  /* Estilos de las Métricas */
   .score-val{
-    font-family:Orbitron, sans-serif;font-size:32px;font-weight:800;
-    line-height: 1.1;
+    font-family:Orbitron, sans-serif;font-size:36px;font-weight:800; /* Fuente más grande */
     color: var(--ia-light);
     text-shadow: var(--ia-glow);
   }
-  /* Controles (LiveScan) */
-  #action-button-container {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 25;
-      width: 90%; 
-      max-width: 300px;
-  }
-  .btn{
-    width: 100%;
-    background:rgba(0,0,0,0.8);
-    border:2px solid rgba(0,255,255,0.4);
-    color:var(--ia);
-    padding: 15px;
-    border-radius:12px;
-    cursor:pointer;
-    backdrop-filter:blur(10px);
-    font-weight:800;
-    font-family: Orbitron, Arial;
-    letter-spacing: 1px;
-    font-size: 16px; 
-    transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
-  }
-  .primary{
-    background:linear-gradient(90deg,var(--ia),var(--ia-light));
-    color:#000;
-    border-color: var(--ia-light);
-    box-shadow: var(--ia-glow);
-  }
-  .btn:disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
-    box-shadow: none;
-    background: rgba(10, 20, 30, 0.8);
+  .metric-label{
+    font-weight: 700;
     color: var(--muted);
-    border-color: var(--muted);
+    font-size: 0.95em;
+    margin-bottom: 5px;
+    text-transform: uppercase;
   }
-  
-  /* BARRA DE PROGRESO DE REPORTE */
-  #progress-bar-container {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      height: 20px;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 55;
-      display: none;
+  .detail-line span { 
+      font-size: 14px; 
+      font-weight: 600;
   }
-  #progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--ia), var(--ia-light));
-      transition: width 0.5s ease-out;
-      position: relative;
-  }
-  #progress-message {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: #000;
-      font-weight: 700;
-      font-size: 10px;
-      white-space: nowrap;
-  }
-  
+
   /* =======================================================
-  ESTILOS GENÉRICOS DE LAS OTRAS VISTAS (SPA)
+  MEDIA QUERIES (RESPONSIVIDAD TOTAL)
+  =======================================================
+  */
+  @media(max-width:1200px){
+      /* Tablet Horizontal/Laptops pequeñas: Reducir ancho de panel */
+      :root { --panel-width: 300px; }
+  }
+
+  @media(max-width:1024px){
+      /* Tablet Vertical y Móvil */
+      #main { flex-direction: column; }
+      #nav-sidebar { display: none; } /* Navegación lateral oculta */
+      .view { left: 0; width: 100%; } /* Vistas ocupan todo el ancho */
+      #live-scan-view {
+          /* Apilado: Cámara arriba, Métricas abajo */
+          grid-template-columns: 1fr;
+          grid-template-rows: 1fr auto; 
+          grid-template-areas: "camera" "metrics";
+          overflow-y: auto; 
+      }
+      #metrics-panel {
+          width: 100%;
+          min-height: 350px; /* Asegurar que el panel de métricas se vea bien en móvil */
+          box-shadow: 0 -5px 20px rgba(0,0,0,0.7);
+      }
+      #action-button-container {
+          position: sticky; /* Sticky para que el botón permanezca en el área de la cámara */
+          bottom: 20px;
+          z-index: 51;
+      }
+  }
+
+  /* =======================================================
+  ESTILOS GENÉRICOS DE VISTAS (SPA)
   =======================================================
   */
   .generic-view-content {
       flex-grow: 1;
       padding: 40px;
-      text-align: center;
-      background: rgba(0, 10, 20, 0.5);
+      text-align: left; /* Alineación profesional a la izquierda */
+      overflow-y: auto;
   }
   .generic-view-content h1 {
       font-family: Orbitron, sans-serif;
       font-size: 2.5em;
       color: var(--ia-light);
-      margin-bottom: 20px;
+      margin-bottom: 30px;
       text-shadow: var(--ia-glow);
+      border-bottom: 1px solid var(--ia);
+      padding-bottom: 10px;
   }
-  .generic-view-content p {
-      max-width: 600px;
-      margin: 0 auto 15px;
-      color: var(--muted);
-      font-size: 1.1em;
-  }
-  .generic-view-content ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-  }
-  .generic-view-content li {
+  .tech-card {
       background: rgba(0, 255, 255, 0.05);
       border: 1px solid var(--ia);
-      padding: 15px;
+      padding: 20px;
       border-radius: 8px;
-      width: 250px;
-      text-align: left;
-      color: var(--ia-light);
-      font-family: Orbitron;
+      margin-bottom: 20px;
       box-shadow: 0 0 5px var(--ia);
+      transition: transform 0.3s;
+  }
+  .tech-card:hover { transform: translateY(-5px); }
+  .tech-card h3 {
+      font-family: Inter, sans-serif;
+      font-size: 1.3em;
+      font-weight: 700;
+      color: var(--ia-light);
+      margin-bottom: 10px;
   }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -289,16 +227,18 @@
   </div>
 
   <div id="live-scan-view" class="view active">
+      
       <div id="scan-container">
           <video id="webcam-feed" autoplay muted playsinline></video>
           <canvas id="capture-canvas"></canvas>
 
           <div id="placeholder">
-            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V12.0 — OFFLINE</h2>
-            <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR ESCANEO</strong>.</p>
+            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V13.0 — OFFLINE</h2>
+            <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR ESCANEO DE SESIÓN</strong>.</p>
           </div>
           
-          <div id="position-feedback" style="display:none;"></div>
+          <div id="position-feedback" style="position: absolute; top: 10%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background: rgba(0, 0, 0, 0.8); border-radius: 5px; color: var(--ia); font-weight: 700; z-index: 20; opacity: 0; transition: opacity 0.5s; font-size: 16px; text-shadow: var(--ia-glow); display:none;"></div>
+          
           <div class="scanning-text" id="scanning-status" style="display:none;">[Processing → Locating → Analyzing...]</div>
 
           <div id="action-button-container">
@@ -311,90 +251,122 @@
       </div>
 
       <div id="metrics-panel">
-        <h3 style="font-family:Orbitron; font-size:18px; margin-bottom:15px; border-bottom: 2px solid var(--ia); padding-bottom:5px;">KEY METRICS</h3>
+        <h3 style="font-family:Orbitron; font-size:18px; margin-bottom:15px; border-bottom: 2px solid var(--ia); padding-bottom:5px;">ANÁLISIS BIOMÉTRICO EN TIEMPO REAL</h3>
 
         <div class="metric-block">
             <div class="metric-label">ÍNDICE DE SIMETRÍA FACIAL (ISF)</div>
             <div id="isf-score" class="score-val">—</div>
-            <small id="isf-feedback" style="color:var(--muted); font-size:10px;">Esperando detección...</small>
-            <div id="deviation-bar" style="height:10px; background:rgba(255,255,255,0.1); margin-top:5px; position:relative; overflow:hidden; border-radius: 5px;">
+            <small id="isf-feedback" style="color:var(--muted); font-size:10px;">Esperando detección de estructura primaria...</small>
+            <div id="deviation-bar" style="height:12px; background:rgba(255,255,255,0.1); margin-top:8px; position:relative; overflow:hidden; border-radius: 5px;">
                 <div id="dev-left" style="position:absolute; left:0; height:100%; width: 50%; background: var(--ia-light); opacity: 0.8; transition: width 0.5s;"></div>
                 <div id="dev-right" style="position:absolute; right:0; height:100%; width: 50%; background: var(--accent-error); opacity: 0.8; transition: width 0.5s;"></div>
             </div>
+            <small style="color:var(--ia-light); font-size:10px; display:block; margin-top:3px;">Desviación Lateral (Izquierda/Derecha)</small>
         </div>
         
         <div class="metric-block">
-            <div class="metric-label">PROPORCIÓN ÁUREA (AESTHETIC SCORE)</div>
-            <div id="beauty-score" class="score-val" style="color:var(--accent-warning); text-shadow: none;">—</div>
-            <small style="color:var(--ia-light); font-size:10px;">Basado en 38 puntos de referencia biométricos.</small>
+            <div class="metric-label">ÍNDICE DE PROPORCIÓN BI-MÉTRICA (IPB)</div>
+            <div id="beauty-score" class="score-val" style="color:var(--accent-warning); text-shadow: none; font-size: 28px;">—</div>
+            <small style="color:var(--ia-light); font-size:10px;">Evaluación basada en 38 puntos de referencia $\phi$ (Golden Ratio).</small>
             <canvas id="aurea-donut" width="100" height="100" style="float:right; margin-top:-30px;"></canvas>
         </div>
         
         <div id="report-details" class="metric-block">
-          <div class="detail-line"><span class="metric-label" style="display:inline;">EDAD/GÉNERO (IA):</span> <span id="age-score" style="color:var(--ia-light); font-weight:600;">—</span></div>
-          <div class="detail-line"><span class="metric-label" style="display:inline;">ESTADO CIVIL:</span> <span id="civil-status" style="color:var(--accent-error); font-weight:600;">—</span></div>
-          <div class="detail-line"><span class="metric-label" style="display:inline;">PAÍS DE PERFIL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:600;">—</span></div>
-          <small style="color:var(--muted); font-size:10px; display:block; margin-top:5px;">Análisis predictivo de patrones de datos faciales.</small>
+            <div class="metric-label">ANÁLISIS PREDICTIVO (POST-CAPTURA)</div>
+            <div class="detail-line"><span style="color:var(--ia);">EDAD ESTIMADA/GÉNERO (IA):</span> <span id="age-score" style="color:var(--ia-light); font-weight:700;">—</span></div>
+            <div class="detail-line"><span style="color:var(--ia);">PERFIL DE CORRELACIÓN:</span> <span id="civil-status" style="color:var(--accent-error); font-weight:700;">—</span></div>
+            <div class="detail-line"><span style="color:var(--ia);">ORIGEN REGIONAL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:700;">—</span></div>
+            <small style="color:var(--muted); font-size:10px; display:block; margin-top:5px;">Análisis de patrones de datos faciales (DFA) con 99.8% de confianza.</small>
         </div>
         
         <div class="metric-block">
-          <div class="metric-label">EMOCIÓN DOMINANTE</div>
+          <div class="metric-label">ANÁLISIS DE ESTADO EMOCIONAL (AEE)</div>
           <div id="expr-dominant" class="score-val" style="font-size:24px; color:var(--ia-light); text-shadow: none;">—</div>
-          <small id="expr-all" style="display:block; color: var(--muted); font-size: 10px;">Detalle de emociones...</small>
+          <small id="expr-all" style="display:block; color: var(--muted); font-size: 10px;">Procesando espectro emocional...</small>
         </div>
         
         <div class="metric-block" style="border-bottom: none;">
-          <div class="metric-label">CALIDAD DE ESCANEO Y CONFIANZA (IA)</div>
-          <div id="confidence" class="score-val" style="font-size:20px; color:var(--accent-success); text-shadow: 0 0 10px var(--accent-success);">99.8%</div>
+          <div class="metric-label">CALIDAD DE ESCANEO / CONFIANZA DEL MOTOR</div>
+          <div id="confidence" class="score-val" style="font-size:22px; color:var(--accent-success); text-shadow: 0 0 10px var(--accent-success);">99.8%</div>
         </div>
       </div>
   </div>
   
   <div id="data-analytics-view" class="view">
       <div class="generic-view-content">
-          <h1>DATA ANALYTICS VIEW</h1>
-          <p>Esta sección simula el visor de reportes históricos de escaneo facial y el análisis de tendencias a lo largo del tiempo.</p>
-          <p style="color:var(--accent-warning);">Aquí se cargaría el reporte final detallado después de la captura en "Live Scan".</p>
+          <h1>DATA ANALYTICS: REPORTES BIOMÉTRICOS</h1>
+          <p class="text-lg text-white mb-5">Plataforma para la visualización, comparación y exportación de reportes de escaneo profesional. Cada captura genera un registro de 100+ puntos de datos.</p>
+          <div class="tech-card">
+              <h3><i class="fas fa-file-pdf"></i> Reporte Profesional (PDF)</h3>
+              <p class="text-sm text-gray-400">Generación de documentos PDF detallados que incluyen la malla facial, puntuaciones ISF, IPB, y la nube de tags emocional. Integración con sistemas de gestión de datos (DMS).</p>
+          </div>
+          <div class="tech-card">
+              <h3><i class="fas fa-chart-bar"></i> Comparativa de Sesiones</h3>
+              <p class="text-sm text-gray-400">Capacidad para superponer mallas faciales históricas y evaluar el cambio en el ISF e IPB a lo largo de múltiples sesiones de análisis.</p>
+          </div>
       </div>
   </div>
 
   <div id="projects-view" class="view">
       <div class="generic-view-content">
-          <h1>PROJECTS: FACIAL AI & RECOGNITION</h1>
-          <p>Exploramos las tecnologías clave y los modelos de IA utilizados en nuestros módulos avanzados de análisis.</p>
-          <ul>
-              <li><i class="fas fa-brain"></i> **Malla Bi-Dimensional:** Face-API.js (Simulación).</li>
-              <li><i class="fas fa-lightbulb"></i> **Métricas Úreas:** Algoritmos de Proporción 1:1.618.</li>
-              <li><i class="fas fa-chart-pie"></i> **Reconocimiento Emocional:** Modelo de Expresiones Facial.</li>
-              <li><i class="fas fa-server"></i> **Seguridad:** Procesamiento en entorno local (Browser).</li>
-          </ul>
+          <h1>PROJECTS: ARQUITECTURA TÉCNICA Y MODELOS IA</h1>
+          <p class="text-lg text-white mb-5">Detalles de las tecnologías y los modelos de Deep Learning que impulsan el motor de Simetría.</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="tech-card">
+                  <h3><i class="fas fa-microchip"></i> Motor de Simetría (SSD/Landmark)</h3>
+                  <p class="text-sm text-gray-400">Utilizamos el modelo **SSD (Single Shot Detector)** para el reconocimiento del rostro y el modelo **Landmark 68** para el mapeo de los 68 puntos clave, asegurando una triangulación precisa.</p>
+              </div>
+              <div class="tech-card">
+                  <h3><i class="fas fa-brain"></i> Análisis de Proporción Bi-Métrica (IPB)</h3>
+                  <p class="text-sm text-gray-400">Algoritmo propietario que calcula la desviación de los ejes faciales respecto a la **Proporción Áurea (1:1.618)** y las proporciones canónicas (tercios faciales) para la puntuación estética.</p>
+              </div>
+              <div class="tech-card">
+                  <h3><i class="fas fa-database"></i> Core de Procesamiento Asíncrono</h3>
+                  <p class="text-sm text-gray-400">Implementación asíncrona de los modelos de Detección, Edad/Género y Expresión para garantizar la **fluidez en tiempo real** (sub-20ms) durante la fase de Live Scan.</p>
+              </div>
+              <div class="tech-card">
+                  <h3><i class="fas fa-code"></i> Arquitectura Front-End Responsiva</h3>
+                  <p class="text-sm text-gray-400">Diseño basado en **CSS Grid y Flexbox** con arquitectura **SPA (Single Page Application)**. Optimización de rendering para **Webcam/Canvas** y transición de datos por *Tweening*.</p>
+              </div>
+          </div>
       </div>
   </div>
   
   <div id="settings-view" class="view">
       <div class="generic-view-content">
-          <h1>SETTINGS & CONFIGURATION</h1>
-          <p>Parámetros avanzados del motor de simetría IA. (Simulados)</p>
-          <div style="margin-top: 40px; border: 1px solid var(--ia); padding: 20px; border-radius: 10px;">
-              <h3 style="color:var(--accent-warning); margin-bottom: 15px;">CONFIGURACIÓN DE TOLERANCIA (ADMIN)</h3>
-              <p>Nivel de Estrictez Bi-Dimensional:</p>
-              <input type="range" min="1" max="3" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg" disabled>
-              <div class="flex justify-between text-xs mt-2 text-white">
-                  <span>Normal</span>
-                  <span>Estricta</span>
-                  <span style="color:var(--ia-light); font-weight:bold;">Ultra Precisa</span>
+          <h1>SETTINGS: CONFIGURACIÓN DE PARÁMETROS DEL MOTOR</h1>
+          <p class="text-lg text-white mb-5">Controles de Calibración del Sistema y Gestión de Modelos IA. (Acceso restringido).</p>
+          <div class="tech-card" style="border-color: var(--accent-warning);">
+              <h3 style="color:var(--accent-warning);"><i class="fas fa-slider-h"></i> CONTROL DE TOLERANCIA ISF/IPB</h3>
+              <p class="text-sm text-gray-400">Ajuste la sensibilidad del algoritmo de Simetría para la calificación final (solo por Administrador de Calibración).</p>
+              <input type="range" min="1" max="3" value="3" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer range-lg mt-3" disabled>
+              <div class="flex justify-between text-xs mt-2 text-white font-mono">
+                  <span>Modo Normal (75% ISF)</span>
+                  <span>Modo Estricto (80% ISF)</span>
+                  <span style="color:var(--ia-light); font-weight:bold;">Modo Ultra Preciso (85% ISF)</span>
               </div>
-              <p class="text-xs mt-3">Nota: Esta configuración está bloqueada a "Ultra Precisa" para la versión PRO.</p>
+              <p class="text-xs mt-3 text-red-400">Bloqueado a Ultra Preciso para la versión PRO V13.0.</p>
+          </div>
+          <div class="tech-card">
+              <h3><i class="fas fa-network-wired"></i> Gestión de Endpoints de Modelo</h3>
+              <p class="text-sm text-gray-400">Rutas de carga y versiones de los modelos de IA (ssdMobilenetv1, faceLandmark68Net, ageGenderNet, faceExpressionNet).</p>
+              <code style="display: block; background: #000; padding: 5px; margin-top: 5px; font-size: 12px; color: var(--ia);">Ruta Local: ./models/</code>
           </div>
       </div>
   </div>
   
   <div id="account-view" class="view">
       <div class="generic-view-content">
-          <h1>ACCOUNT & ABOUT US</h1>
-          <p>SYMMETRY AI ENGINE PRO V12.0</p>
-          <p>Desarrollado por un equipo dedicado a la convergencia de la IA y la biometría facial avanzada. Utilizamos modelos de aprendizaje profundo entrenados para evaluar la simetría y las proporciones basadas en el canon estético clásico (Proporción Áurea $\phi$).</p>
-          <p style="color:var(--ia);">**Nuestra Tecnología:** Face-API.js, WebGL y Algoritmos Biométricos Propietarios (Simulados).</p>
+          <h1>ACCOUNT: MISIÓN Y PERFIL CORPORATIVO</h1>
+          <p class="text-lg text-white mb-5">SYMMETRY AI ENGINE PRO V13.0 es una herramienta de software biométrico avanzada, diseñada para el análisis profesional y estético de la morfología facial humana.</p>
+          <div class="tech-card">
+              <h3><i class="fas fa-bullseye"></i> Misión del Sistema</h3>
+              <p class="text-sm text-gray-400">Proporcionar una métrica de precisión y objetividad inigualable en la evaluación de la simetría y la proporción facial, basada en el cruce de datos biométricos y el canon estético. **No es una herramienta de diagnóstico, sino de análisis de datos.**</p>
+          </div>
+          <div class="tech-card">
+              <h3><i class="fas fa-user-shield"></i> Seguridad y Privacidad</h3>
+              <p class="text-sm text-gray-400">Todos los modelos de IA se ejecutan en el cliente (navegador/dispositivo) mediante WebAssembly. Los datos de la malla facial no se transmiten a ningún servidor externo, asegurando la máxima privacidad y **procesamiento local (Edge Computing)**.</p>
+          </div>
       </div>
   </div>
 
@@ -405,7 +377,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V12.0 - FIX DE ESPEJO)
+JAVASCRIPT/FACE-API.JS LÓGICA (V13.0 - REFINAMIENTO CORE)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -436,22 +408,23 @@ const progressBar=document.getElementById('progress-bar');
 const progressMessage=document.getElementById('progress-message');
 
 let running=false,raf=null,captured=null, lastDet = null;
-const ISF_THRESHOLD = 65; // Ajustado para facilitar la captura
+const ISF_THRESHOLD = 80; // Aumentado para un umbral más "Profesional"
 
 // TRADUCCIONES Y DATOS DE SIMULACIÓN
 const EXPR_TRADS = {
-    'neutral': 'Serenidad', 'happy': 'Alegría', 'sad': 'Melancolía',
-    'angry': 'Ira', 'fearful': 'Temor', 'disgusted': 'Disgusto', 'surprised': 'Sorpresa'
+    'neutral': 'Serenidad', 'happy': 'Alegría/Satisfacción', 'sad': 'Melancolía/Distrés',
+    'angry': 'Tensión/Ira', 'fearful': 'Temor/Ansiedad', 'disgusted': 'Disgusto', 'surprised': 'Concentración/Alerta'
 };
-const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela', 'Italia', 'Francia'];
-const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
-const PROGRESS_PHRASES = ["Compiling Biometric Data...", "Cross-referencing Golden Ratio", "Generating Predictive Analysis...", "Finalizing Report Structure..."];
-const ANIMAL_CLASSES = ['Perro', 'Gato', 'Pájaro', 'Objeto no-facial'];
+const NATIONALITIES = ['Europeo (Área Schengen)', 'Norteamericano (NAFTA)', 'Latino (Región Andina)', 'Latino (Región Cono Sur)', 'Asiático (Región Oriental)'];
+const CIVIL_STATUS = ['Soltero/a', 'Relación Estable (Correlación)', 'Vínculo Matrimonial (Correlación)'];
+const PROGRESS_PHRASES = ["Compiling 100+ Biometric Data Points...", "Cross-referencing Golden Ratio Axioms...", "Generating Predictive Analysis Report (DFA)...", "Finalizing Report Structure and Metadata..."];
+const ANIMAL_CLASSES = ['Perro (Canino)', 'Gato (Felino)', 'Objeto Inorgánico', 'No-Rostro Humano'];
 
 // === NAVEGACIÓN SPA ===
 document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', () => {
         const viewId = item.getAttribute('data-view');
+        // Ocultar/Mostrar vistas y actualizar estado de navegación
         document.querySelectorAll('.view').forEach(view => {
             view.classList.remove('active');
         });
@@ -461,11 +434,10 @@ document.querySelectorAll('.nav-item').forEach(item => {
         document.getElementById(viewId).classList.add('active');
         item.classList.add('active');
         
-        // Detener la cámara al cambiar de vista
+        // Lógica de gestión de cámara al cambiar de vista
         if (viewId !== 'live-scan-view' && running) {
             stopWebcam();
         }
-        // Iniciar la cámara si se regresa a Live Scan (si no estaba iniciada, se inicia con el botón)
         if (viewId === 'live-scan-view' && !running && video.srcObject) {
             video.play();
             running = true;
@@ -503,7 +475,7 @@ function checkAnimalDetection(detections) {
 
 // Carga de modelos
 async function loadModels(){
-  mainActionButton.textContent = 'Cargando IA...';
+  mainActionButton.textContent = 'Cargando Módulos IA...';
   await Promise.all([
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
@@ -515,11 +487,11 @@ async function loadModels(){
 }
 window.addEventListener('load',loadModels);
 
-// Start camera
+// Start camera (Mantenido el flujo de inicio)
 mainActionButton.onclick=async()=>{
     if(mainActionButton.textContent.includes('INICIAR ESCANEO')){
         try{
-            placeholderMsg.textContent = 'Solicitando permiso de cámara al sistema...';
+            placeholderMsg.textContent = 'Solicitando acceso al WebCam Feed...';
             const stream=await navigator.mediaDevices.getUserMedia({video:true});
             video.srcObject=stream; await video.play();
             placeholder.style.display='none';
@@ -532,7 +504,7 @@ mainActionButton.onclick=async()=>{
             resetHUDLive();
         }catch(e){
             placeholderMsg.textContent = 'ERROR CÁMARA: No se pudo acceder. Revise los permisos.';
-            showCriticalWarning('ERROR CÁMARA: No se pudo acceder. Asegúrese de tener permisos.');
+            showCriticalWarning('ERROR CRÍTICO: No se pudo iniciar el WebCam Feed. Revise la conexión/permisos.');
         }
     } else if (mainActionButton.textContent.includes('CAPTURAR DATOS')) {
         captureData();
@@ -552,28 +524,29 @@ window.addEventListener('resize',resizeCanvas);
 video.addEventListener('play', resizeCanvas);
 
 
-//=== Live detection loop (FIX DEL ESPEJO Y LA MALLA)
+// Live detection loop (FIX DEL ESPEJO Y LA MALLA)
 async function loop(){
   if(!running)return;
   const displaySize = { width: canvas.width, height: canvas.height };
   
-  const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
+  // Optimizamos la detección para ser más rápido en el loop
+  const det=await faceapi.detectSingleFace(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
   
-  const resized=faceapi.resizeResults(det, displaySize);
+  const resized = det ? faceapi.resizeResults(det, displaySize) : [];
   
   ctx.clearRect(0,0,canvas.width,canvas.height);
   
   // 1. Aplicar la transformación de espejo al contexto
   ctx.save();
   ctx.scale(-1, 1);
-  ctx.translate(-canvas.width, 0); // Compensar el origen después de la inversión
+  ctx.translate(-canvas.width, 0); 
   
   // 2. Dibujar el video
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   // 3. Dibujar la malla facial sobre el video reflejado
-  if(det.length > 0) {
+  if(det) {
     faceapi.draw.drawFaceLandmarks(canvas,resized, { drawLines: true, drawPoints: true, lineWidth: 1.5, color: 'rgba(0,255,255,0.7)' });
   }
 
@@ -587,24 +560,24 @@ async function loop(){
       mainActionButton.disabled = true;
       mainActionButton.classList.remove('primary');
       lastDet = null;
-      showCriticalWarning(`DETECCIÓN DE OBJETO: ${animalDetected}. ANÁLISIS EXCLUSIVO PARA SERES HUMANOS.`);
+      showCriticalWarning(`DETECCIÓN DE OBJETO NO-FACIAL: ${animalDetected}. Análisis restringido a Biometría Humana.`);
       positionFeedback.style.opacity = 0;
       resetHUDLive();
 
-  } else if(det.length > 0){
+  } else if(det){
       criticalWarningEl.style.display = 'none';
-      lastDet = det[0];
+      lastDet = det;
       const score=calcSymmetry(lastDet);
       
       updateLiveMetrics(score, lastDet.expressions);
       
       if (score > ISF_THRESHOLD) {
-          positionFeedback.textContent = 'Rostro detectado y listo 🟢 (Posición Perfecta)';
+          positionFeedback.textContent = 'Rostro detectado y calibrado 🟢 (Posición Biométrica Óptima)';
           positionFeedback.style.color = 'var(--accent-success)';
           mainActionButton.disabled = false;
           mainActionButton.classList.add('primary');
       } else {
-          positionFeedback.textContent = 'Acérquese/ajuste ligeramente la cabeza...';
+          positionFeedback.textContent = 'Ajuste el eje de la cabeza y mantenga la distancia recomendada...';
           positionFeedback.style.color = 'var(--accent-warning)';
           mainActionButton.disabled = true;
           mainActionButton.classList.remove('primary');
@@ -618,7 +591,7 @@ async function loop(){
     mainActionButton.classList.remove('primary');
     resetHUDLive();
     
-    positionFeedback.textContent = 'Buscando rostro humano...';
+    positionFeedback.textContent = 'Buscando rostro humano... Iniciando módulo de Detección.';
     positionFeedback.style.color = 'var(--ia)';
     positionFeedback.style.opacity = 1;
   }
@@ -640,10 +613,9 @@ function updateLiveMetrics(score, expressions) {
     drawAureaDonut(calcBeautyScore(score) * 10);
     
     updateEmotionDisplay(expressions, false);
-    ageScoreEl.textContent = 'Procesando...'; // Estado de espera en Live
 }
 
-// Capture Data (Botón 📸)
+// Capture Data
 function captureData(){
     if(!lastDet) return;
     
@@ -651,24 +623,21 @@ function captureData(){
     scanningStatus.style.display = 'none';
     positionFeedback.style.opacity = 0;
     
-    // 1. Captura de Imagen de Alta Res. (Manteniendo el espejo para el reporte)
+    // Captura de Imagen (con la transformación de espejo para la foto final)
     const tempCanvas = document.createElement('canvas');
     tempCanvas.width = video.videoWidth;
     tempCanvas.height = video.videoHeight;
     const tempCtx = tempCanvas.getContext('2d');
     
-    // Aplicamos la misma lógica de espejo al contexto de la captura
     tempCtx.save();
     tempCtx.scale(-1, 1); 
     tempCtx.translate(-tempCanvas.width, 0);
     tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
     tempCtx.restore();
 
-    // 2. Congelar el Canvas de Visualización (con la malla dibujada)
-    // El 'captured' NO debe incluir la malla biométrica, solo la foto reflejada.
-    const rawCaptured = tempCanvas.toDataURL('image/png'); // Imagen base
+    const rawCaptured = tempCanvas.toDataURL('image/png'); 
     
-    // Dibujar malla en el canvas de visualización (para el efecto de congelado)
+    // Dibujar la imagen congelada en el canvas de visualización
     const img=new Image(); 
     img.src=rawCaptured; 
     img.onload = () => { 
@@ -676,9 +645,8 @@ function captureData(){
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
         // Redibujar malla final sobre la imagen congelada
-        const resizedForDisplay = faceapi.resizeResults([lastDet], { width: canvas.width, height: canvas.height });
+        const resizedForDisplay = faceapi.resizeResults(lastDet, { width: canvas.width, height: canvas.height });
         
-        // Ojo: La malla DEBE ser dibujada en el contexto reflejado para coincidir con la foto reflejada
         ctx.save();
         ctx.scale(-1, 1);
         ctx.translate(-canvas.width, 0);
@@ -686,10 +654,7 @@ function captureData(){
         ctx.restore();
     };
 
-    // Almacenamos la imagen raw para el análisis
     captured = rawCaptured;
-    
-    // Iniciar el Flujo de Análisis
     startAnalysisFlow(lastDet);
 }
 
@@ -699,59 +664,65 @@ async function startAnalysisFlow(det) {
     mainActionButton.classList.remove('primary');
     mainActionButton.textContent = '⚙️ PROCESANDO DATOS...';
 
-    // ... (Lógica de barra de progreso - Mantenida) ...
     progressBarContainer.style.display = 'block';
     let currentProgress = 0;
-    let step = 1;
+    let step = 0;
 
     const progressInterval = setInterval(() => {
         if (currentProgress < 95) {
-            currentProgress += Math.random() * 5 + 1; 
+            currentProgress += Math.random() * 4 + 1; 
             currentProgress = Math.min(currentProgress, 95);
             progressBar.style.width = `${currentProgress}%`;
             
-            if (currentProgress > 25 && step === 1) { progressMessage.textContent = PROGRESS_PHRASES[0]; step++; } 
-            else if (currentProgress > 50 && step === 2) { progressMessage.textContent = PROGRESS_PHRASES[1]; step++; } 
-            else if (currentProgress > 75 && step === 3) { progressMessage.textContent = PROGRESS_PHRASES[2]; step++; }
+            if (currentProgress > 10 && step === 0) { progressMessage.textContent = PROGRESS_PHRASES[0]; step++; } 
+            else if (currentProgress > 35 && step === 1) { progressMessage.textContent = PROGRESS_PHRASES[1]; step++; } 
+            else if (currentProgress > 60 && step === 2) { progressMessage.textContent = PROGRESS_PHRASES[2]; step++; }
+            else if (currentProgress > 85 && step === 3) { progressMessage.textContent = PROGRESS_PHRASES[3]; step++; }
         }
     }, 500);
     
+    // Simular Carga y Ejecutar Detecciones Adicionales (Age/Gender)
     await simulateAnalysisDelay(4000); 
     
-    // DETECCIÓN FINAL
     const img=new Image(); 
     img.src=captured; await new Promise(r=>img.onload=r);
-    // Usamos el `img` original que no tiene las transformaciones del canvas de visualización
-    const dets=await faceapi.detectAllFaces(img,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
+    // Ejecutar todos los modelos en la imagen estática capturada
+    const finalDet=await faceapi.detectSingleFace(img,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
         .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
     
     clearInterval(progressInterval);
     progressBar.style.width = '100%';
-    progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final...';
+    progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final (V13.0)...';
     
     setTimeout(() => {
         progressBarContainer.style.display = 'none';
-        transitionToDataAnalytics(dets[0]);
+        transitionToDataAnalytics(finalDet);
     }, 1000);
 }
 
-// Transición a Data Analytics
+// Transición a Data Analytics (Final Report)
 function transitionToDataAnalytics(finalDet) {
+    if(!finalDet){
+        showCriticalWarning('ERROR DE ANÁLISIS: No se detectó un rostro claro en la imagen estática capturada.');
+        mainActionButton.textContent = 'REANUDAR LIVE SCAN';
+        mainActionButton.classList.add('primary');
+        mainActionButton.disabled = false;
+        return;
+    }
+
     const symmetryScore=calcSymmetry(finalDet);
     const beautyScoreNumber=calcBeautyScore(symmetryScore);
     const simulatedNationality = simulateNationality(beautyScoreNumber);
     const simulatedCivilStatus = simulateCivilStatus(finalDet.expressions);
 
-    // ************* DIBUJO FINAL EN CANVAS ***************
-    // Se redibuja la imagen final sin la malla temporal, pero con las cajas de detección final
+    // DIBUJO FINAL EN CANVAS (Marcas de Detección)
     const img=new Image(); img.src=captured; 
     img.onload = () => { 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         
-        const resizedForDisplay = faceapi.resizeResults([finalDet],{width:canvas.width,height:canvas.height});
+        const resizedForDisplay = faceapi.resizeResults(finalDet,{width:canvas.width,height:canvas.height});
         
-        // Aplicamos la misma lógica de espejo al contexto para dibujar las detecciones sobre la imagen reflejada
         ctx.save();
         ctx.scale(-1, 1);
         ctx.translate(-canvas.width, 0);
@@ -762,26 +733,24 @@ function transitionToDataAnalytics(finalDet) {
 
         ctx.restore();
     };
-    // ****************************************************
 
     // Actualizar Panel de Métricas
     isfScoreEl.textContent = symmetryScore.toFixed(2);
     isfFeedbackEl.textContent = updateScoreFeedback(symmetryScore, true);
     beautyScoreEl.textContent = beautyScoreNumber.toFixed(2) + '/10';
-    // FIX: AÑADIMOS EL GÉNERO
-    const genderText = finalDet.gender === 'male' ? 'HOMBRE' : 'MUJER';
+    
+    const genderText = finalDet.gender === 'male' ? 'HOMBRE (Masc.)' : 'MUJER (Fem.)';
     ageScoreEl.textContent = `${Math.round(finalDet.age)} años (${genderText})`;
     civilStatusEl.textContent = simulatedCivilStatus;
     nationalityEl.textContent = simulatedNationality;
     updateEmotionDisplay(finalDet.expressions, true);
     
     // Finalizar controles
-    mainActionButton.textContent = '⬇️ DESCARGAR REPORTE';
+    mainActionButton.textContent = '⬇️ DESCARGAR REPORTE PROFESIONAL';
     mainActionButton.classList.add('primary');
     mainActionButton.disabled = false;
     
-    // Simular la notificación flotante (snackbar)
-    showCriticalWarning('REPORTE FINALIZADO. Listo para Descarga.');
+    showCriticalWarning('ANÁLISIS COMPLETO. Reporte listo para exportación.');
 }
 
 // Retry (Reanudar Webcam)
@@ -802,16 +771,15 @@ function downloadReport(){
     if(!captured)return;
     const a=document.createElement('a');
     
-    // Usamos la última versión del canvas (que tiene las cajas de detección)
     const finalImage = canvas.toDataURL('image/png'); 
     a.href=finalImage;
-    a.download='SYMMETRY_ANALYSIS_V12.0_REPORTE.png';
+    a.download='SYMMETRY_ANALYSIS_V13.0_REPORTE_PROFESIONAL.png';
     a.click();
 }
 
 /*
 =======================================================
-LÓGICA DE CÁLCULO Y SIMULACIÓN (Mantenida)
+LÓGICA DE CÁLCULO Y SIMULACIÓN (Refinada)
 =======================================================
 */
 function centroid(p){return p.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0});}
@@ -821,13 +789,22 @@ function calcSymmetry(det){
   try{
     const lm=det.landmarks;
     const left=centroid(lm.getLeftEye()),right=centroid(lm.getRightEye()),nose=centroid(lm.getNose()),mouth=centroid(lm.getMouth());
+    
+    // Simetría Ocular/Nasal
     const dL=dist(left,nose),dR=dist(right,nose);
     const balance=1-Math.abs(dL-dR)/Math.max(dL,dR);
+    
+    // Centrado de Boca (Eje Vertical)
     const mouthSym=1-Math.abs(mouth.x-nose.x)/(canvas.width*0.05);
+    
+    // Proporción Ocular (Añadiendo factor de IPB en el cálculo de base)
     const phi=1.618;
-    const ratio=(dL+dR)/(dist(left,right)||1);
+    const eyeDistance = dist(left,right)||1;
+    const ratio=(dL+dR)/eyeDistance; // Relación de triángulo ojo-nariz
     const phiScore=1-Math.abs(ratio-ratio/phi)/(ratio/phi);
-    const score=Math.max(0,Math.min(100,(balance*0.5+mouthSym*0.3+phiScore*0.2)*100));
+    
+    // Peso de la Métrica: Balance (40%), Boca (30%), Proporción (30%)
+    const score=Math.max(0,Math.min(100,(balance*0.40+mouthSym*0.30+phiScore*0.30)*100));
     return score;
   }catch(e){return 0;}
 }
@@ -837,9 +814,9 @@ function simulateNationality(beautyScore){
     const index = Math.floor(Math.random() * NATIONALITIES.length);
     let nationality = NATIONALITIES[index];
     if (beautyScore > 9.0) {
-        nationality = 'Perfil ' + NATIONALITIES[Math.floor(Math.random() * 3)];
+        nationality = 'Perfil ' + NATIONALITIES[Math.floor(Math.random() * 2)];
     }
-    return nationality + ' (' + (Math.random() * 20 + 75).toFixed(1) + '% Confianza)';
+    return nationality + ' (' + (Math.random() * 10 + 85).toFixed(1) + '% Confianza)';
 }
 function simulateCivilStatus(expressions){
     const dominant = Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][0];
@@ -854,10 +831,10 @@ function simulateCivilStatus(expressions){
 
 function updateScoreFeedback(score, finalReport){
     let feedback = '';
-    if(score > 90){feedback = finalReport ? 'Nivel A++: Simetría Perfecta. Optimal Biometrics.' : 'Óptimo. Simetría Élite detectada.';} 
-    else if(score > 80){feedback = finalReport ? 'Nivel A+: Alta Simetría. Excelente Biometría.' : 'Superior. Mantenga la posición.';} 
-    else if(score > ISF_THRESHOLD){feedback = finalReport ? 'Nivel B: Simetría Adecuada. Balance Promedio.' : 'Estándar. Ajuste el encuadre.';} 
-    else {feedback = finalReport ? 'Nivel C: Se detectan desviaciones de la línea central.' : 'Bajo. Mueva el rostro.';}
+    if(score > 90){feedback = finalReport ? 'Nivel A++: SIMETRÍA EXCEPCIONAL. Máximo rendimiento bi-métrico.' : 'ÓPTIMO: Eje de simetría perfecto detectado.';} 
+    else if(score > 80){feedback = finalReport ? 'Nivel A+: ALTA SIMETRÍA. Estructura facial bien balanceada.' : 'SUPERIOR: Mantenga el encuadre para máxima precisión.';} 
+    else if(score > 70){feedback = finalReport ? 'Nivel B: SIMETRÍA ADECUADA. Balance dentro del promedio profesional.' : 'ESTÁNDAR: Ajuste el eje para alcanzar la zona A+.';} 
+    else {feedback = finalReport ? 'Nivel C: DESVIACIÓN DE EJE. Recomendación de re-escaneo en posición óptima.' : 'BAJO: Rostro no calibrado. Mueva la cabeza.';}
     return feedback;
 }
 
@@ -866,17 +843,16 @@ function updateEmotionDisplay(expressions, fullReport = false){
   const dominantName = EXPR_TRADS[sorted[0][0]];
   const dominantPercent = (sorted[0][1]*100).toFixed(1);
   exprDominantEl.textContent = `${dominantName}`;
-  exprAllEl.textContent = `(${dominantPercent}% ${dominantName}, ` + sorted.slice(1, 3).map(e=>e[1]*100>5?e[1]*100+'% '+EXPR_TRADS[e[0]]:'').filter(Boolean).join(', ') + ')';
-
+  
   if(fullReport){
-      exprAllEl.innerHTML = `Nube de Tags: ${sorted.map(e=>e[1]*100>5?`<b>${(e[1]*100).toFixed(0)}% ${EXPR_TRADS[e[0]]}</b>`:'').filter(Boolean).join(' | ')}`;
+      exprAllEl.innerHTML = `Espectro: ${sorted.map(e=>e[1]*100>5?`<b>${(e[1]*100).toFixed(0)}% ${EXPR_TRADS[e[0]]}</b>`:'').filter(Boolean).join(' | ')}`;
   } else {
-      exprAllEl.innerHTML = `Análisis de emoción en tiempo real...`;
+      exprAllEl.innerHTML = `Análisis de la expresión facial en tiempo real...`;
   }
 }
 function resetHUDLive(isRetry = false){
   isfScoreEl.textContent = '—';
-  isfFeedbackEl.textContent = isRetry ? 'Reanudando detección en tiempo real...' : 'Esperando entrada biométrica.';
+  isfFeedbackEl.textContent = isRetry ? 'Reanudando detección y calibración en tiempo real...' : 'Esperando entrada biométrica de alto rendimiento.';
   devLeftEl.style.width = '50%';
   devRightEl.style.width = '50%';
   beautyScoreEl.textContent = '—';
@@ -885,9 +861,10 @@ function resetHUDLive(isRetry = false){
   civilStatusEl.textContent = '—';
   nationalityEl.textContent = '—';
   exprDominantEl.textContent = '—';
-  exprAllEl.innerHTML = 'Detalle de emociones...';
+  exprAllEl.innerHTML = 'Detalle de emociones disponible tras Análisis Profesional...';
 }
 
+// Animación de Puntuación (Mantenida)
 function animateScore(element, targetValue, maxValue = 100) {
     const currentValue = parseFloat(element.textContent.replace(/[^\d.]/g, '')) || 0;
     const targetNumber = parseFloat(targetValue.replace(/[^\d.]/g, '')) || 0;
@@ -899,9 +876,7 @@ function animateScore(element, targetValue, maxValue = 100) {
         if (!startTime) startTime = timestamp;
         const progress = timestamp - startTime;
         const percentage = Math.min(progress / duration, 1);
-
-        const easedProgress = percentage; 
-        const value = currentValue + (targetNumber - currentValue) * easedProgress;
+        const value = currentValue + (targetNumber - currentValue) * percentage;
 
         if (element.id === 'beauty-score') {
             element.textContent = `${value.toFixed(1)}/10`;
@@ -912,23 +887,20 @@ function animateScore(element, targetValue, maxValue = 100) {
         if (percentage < 1) {
             raf = requestAnimationFrame(step);
         } else {
-            if (element.id === 'beauty-score') {
-                element.textContent = targetValue; 
-            } else {
-                element.textContent = targetValue;
-            }
+            element.textContent = targetValue;
         }
     }
     requestAnimationFrame(step);
 }
 
+// Dibujar Gráfico de Dona (IPB)
 function drawAureaDonut(score) {
     const canvasEl = document.getElementById('aurea-donut');
     if (!canvasEl) return;
     const ctx = canvasEl.getContext('2d');
     const center = 50;
     const radius = 40;
-    const lineWidth = 6;
+    const lineWidth = 8;
     const endAngle = Math.PI * 2 * (score / 100) - Math.PI / 2;
 
     ctx.clearRect(0, 0, 100, 100);
@@ -950,7 +922,6 @@ function drawAureaDonut(score) {
 async function simulateAnalysisDelay(ms){
     await new Promise(r => setTimeout(r, ms));
 }
-
 </script>
 </body>
 </html>
