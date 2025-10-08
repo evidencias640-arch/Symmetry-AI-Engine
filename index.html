@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V10.4 — Análisis Biométrico y Estético</title>
+<title>SYMMETRY AI ENGINE PRO V10.6 — Análisis Biométrico y Estético</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V10.4 - Z-Index Fix)
+  ESTILOS BASE Y VARIABLES (V10.6 - Animal Detection & Mobile Polish)
   =======================================================
   */
   @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600&display=swap');
@@ -25,58 +25,114 @@
   }
 
   /*
-  ** 1. MOBILE FIRST - Estilos para la experiencia base (pequeñas pantallas) **
+  ** 1. MOBILE FIRST - Experiencia Base **
   */
   body,html{
     margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     color:#e6f9ff;font-family:Inter,Arial,sans-serif;
-    /* QUITAMOS overflow:hidden para permitir contenido en la parte inferior si es necesario */
     will-change: transform, opacity; 
-    overflow-x: hidden; /* Evitar scroll horizontal */
+    overflow-x: hidden; 
+    /* MEJORA RESPONSIVA: Altura del cuerpo al 100% del viewport */
+    height: 100dvh; 
   }
-  #main{position:relative;width:100%;height:100vh;overflow:hidden;}
+  #main{
+    position:relative;width:100%;
+    /* MEJORA RESPONSIVA: Altura del contenedor principal al 100% del viewport */
+    height:100dvh;
+    overflow:hidden;
+  }
   
-  /* Placeholder y Webcam (Aprovechan toda la pantalla) */
-  #webcam-feed,#capture-canvas{
+  /*
+  ** 2. CÁMARA y CANVAS - Corrección Espejo **
+  */
+  #webcam-feed{
     position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
-    z-index: 1; 
-  }
-  #placeholder{
-    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.9);z-index: 5; 
-    text-align:center;
+    z-index: 1;
+    transform: scaleX(-1); 
   }
   #capture-canvas{
+    position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
+    z-index: 5; 
     box-shadow: 0 0 15px rgba(0,255,255,0.5) inset;
     border: 1px solid rgba(0,255,255,0.3);
   }
+  #placeholder{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:rgba(0,0,0,0.9);z-index: 10; 
+    text-align:center;
+  }
 
   /*
-  ** 2. HUD (MOVIDO a la parte superior central en móvil y más compacto) **
+  ** 3. HUD (RESPONSIVO Y FIJO EN MÓVIL) **
   */
   #results{
     position:absolute;
-    top:10px; /* Posición superior para móvil */
+    top:10px; 
     left:50%;
     transform: translateX(-50%);
     background:rgba(0,0,0,0.8);
     border: 2px solid rgba(0,255,255,0.3);
     padding:10px;
     border-radius:8px;
-    font-size:12px; /* Tamaño de fuente más pequeño en móvil */
+    font-size:12px;
     z-index:25;
     backdrop-filter:blur(15px);
     box-shadow: var(--ia-glow);
-    width: 95%; /* Ocupa casi todo el ancho de la pantalla */
-    max-width: 400px; /* Límite para pantallas pequeñas */
+    width: 95%; 
+    max-width: 400px;
     box-sizing: border-box;
   }
   
-  /* Compactar el HUD */
-  #results > div:first-child { 
-      font-size: 0.8em; /* Tamaño más pequeño para el contador */
+  /* Indicadores de Detección (Mensaje de Detección y Porcentaje) */
+  #detection-hud {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 20;
+      text-align: center;
+      color: var(--ia);
+      text-shadow: var(--ia-glow);
+      opacity: 0;
+      transition: opacity 0.5s;
+      pointer-events: none; 
+      width: 90%;
   }
 
+  .detection-text {
+      font-family: Orbitron, sans-serif;
+      font-size: 1.5em; 
+      font-weight: 800;
+      margin-bottom: 5px;
+      line-height: 1.2;
+  }
+  .detection-percent {
+      font-size: 3em; 
+      font-weight: 800;
+      line-height: 1;
+  }
+  
+  /* CLASE DE ERROR PARA ANIMAL */
+  #detection-hud.animal-detected {
+      color: var(--accent-error) !important;
+      text-shadow: 0 0 10px var(--accent-error);
+      opacity: 1;
+      animation: flash-error 0.5s infinite alternate;
+  }
+  @keyframes flash-error {
+      from { opacity: 1; }
+      to { opacity: 0.7; }
+  }
+
+
+  .mobile-active #results {
+      opacity: 0; 
+  }
+  .mobile-active #detection-hud.active {
+      opacity: 1; 
+  }
+  
+  /* Estilos internos del HUD principal (mantienen el compacto) */
   .metric-label{
     font-family: Orbitron, Inter, Arial;
     font-weight: 800;
@@ -86,10 +142,10 @@
     border-bottom: 1px solid rgba(0,255,255,0.2);
     padding-bottom: 2px;
     letter-spacing: 0.5px;
-    font-size: 0.75em; /* Más pequeño para móvil */
+    font-size: 0.75em; 
   }
   .score-val{
-    font-family:Orbitron,Inter,Arial;font-size:30px;font-weight:800; /* Más pequeño para móvil */
+    font-family:Orbitron,Inter,Arial;font-size:30px;font-weight:800;
     line-height: 1;
     margin-top: 2px;
     color: var(--ia-light);
@@ -100,10 +156,10 @@
     padding-top: 8px;
     border-top: 1px dashed rgba(0,255,255,0.2);
   }
-  .detail-line { margin-bottom: 3px; font-size: 10px; } /* Texto más pequeño */
+  .detail-line { margin-bottom: 3px; font-size: 10px; } 
   .detail-line .metric-label { font-size: 0.6em; }
 
-  /* Animación de Procesamiento */
+  /* Animación y Alertas */
   @keyframes pulsating-glow {
     0% { opacity: 0.6; }
     50% { opacity: 1; text-shadow: var(--ia-glow); }
@@ -132,39 +188,39 @@
   }
 
   /*
-  ** 3. CONTROLES / BOTONES (MÓVIL - Ultra-compactos y anclados al fondo) **
+  ** 4. CONTROLES / BOTONES (MÓVIL) **
   */
   #controls{
     position:absolute;
-    bottom: 5px; /* Adherido al fondo */
+    bottom: 5px; 
     left:50%;
     transform:translateX(-50%);
     display:flex;
-    gap: 5px; /* Espacio compacto */
+    gap: 5px; 
     z-index:30;
     flex-wrap:wrap;
     justify-content:center;
-    width: 98%; /* Ocupa casi todo el ancho para botones grandes */
+    width: 98%; 
     max-width: 600px;
     box-sizing: border-box;
   }
   .btn{
     flex-grow: 1;
-    min-width: 100px; /* Reducido para móvil */
+    min-width: 100px; 
     background:rgba(0,0,0,0.8);
     border:2px solid rgba(0,255,255,0.4);
     color:var(--ia);
-    padding: 10px 5px; /* Padding reducido */
+    padding: 10px 5px; 
     border-radius:10px;
     cursor:pointer;
     backdrop-filter:blur(10px);
     font-weight:700;
     font-family: Inter, Arial;
     letter-spacing: 0.5px;
-    font-size: 11px; /* Letra más pequeña */
+    font-size: 11px; 
     transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
     will-change: transform;
-    line-height: 1.1; /* Asegura que el texto quepa */
+    line-height: 1.1; 
     text-align: center;
   }
   .primary{
@@ -176,7 +232,7 @@
 
   /* Ajuste de Flexbox para que INICIAR/CAPTURAR ocupen más */
   #start, #capture {
-      flex-basis: 48%; /* Hace que ocupen casi la mitad del ancho */
+      flex-basis: 48%; 
   }
   #analyze, #retry, #download {
       flex-basis: 30%;
@@ -198,7 +254,15 @@
       font-size:14px;
       max-width: 380px;
       width: auto;
+      opacity: 1 !important; 
     }
+    #detection-hud {
+        display: none; 
+    }
+    .mobile-active #results {
+        opacity: 1 !important; 
+    }
+
     .metric-label{
         margin-top: 10px;
         letter-spacing: 1px;
@@ -227,6 +291,11 @@
         min-width: 120px;
     }
     #start { flex-grow: 1; }
+    
+    /* Restaurar el feed de la cámara (sin espejo) si es deseado para escritorio */
+    #webcam-feed {
+        transform: none; 
+    }
   }
 </style>
 </head>
@@ -236,11 +305,17 @@
   <canvas id="capture-canvas"></canvas>
 
   <div id="placeholder">
-    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.4 — MÓDULO INACTIVO</h2>
+    <h2 style="color:var(--ia)">SYMMETRY AI ENGINE V10.6 — MÓDULO INACTIVO</h2>
     <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR DETECCIÓN</strong>.</p>
   </div>
   
   <div id="critical-warning" style="display:none;"></div>
+  
+  <div id="detection-hud">
+      <div class="detection-text" id="det-msg">Esperando rostro...</div>
+      <div class="detection-percent" id="det-percent">—</div>
+      <div id="animal-warning" style="color: var(--accent-error); font-weight: 700; margin-top: 10px; font-size: 1.2em; display: none;"></div>
+  </div>
 
   <div id="results">
     <div><b>DETECCIONES ACTIVAS:</b> <span id="count">0</span></div>
@@ -274,11 +349,12 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V10.4 - Final)
+JAVASCRIPT/FACE-API.JS LÓGICA (V10.6 - Final)
 =======================================================
 */
 const MODELS_URL='./models';
 // Elementos DOM
+const main = document.getElementById('main'); 
 const video=document.getElementById('webcam-feed');
 const canvas=document.getElementById('capture-canvas');
 const ctx=canvas.getContext('2d',{willReadFrequently:true});
@@ -295,6 +371,11 @@ const civilStatusEl=document.getElementById('civil-status');
 const nationalityEl=document.getElementById('nationality');
 const exprDominantEl=document.getElementById('expr-dominant');
 const exprAllEl=document.getElementById('expr-all');
+// HUD de Detección Inmersivo
+const detectionHud = document.getElementById('detection-hud');
+const detMsg = document.getElementById('det-msg');
+const detPercent = document.getElementById('det-percent');
+const animalWarning = document.getElementById('animal-warning'); // Nuevo
 
 const btnStart=document.getElementById('start');
 const btnCapture=document.getElementById('capture');
@@ -303,7 +384,8 @@ const btnRetry=document.getElementById('retry');
 const btnDownload=document.getElementById('download');
 const criticalWarningEl = document.getElementById('critical-warning');
 
-let running=false,raf=null,captured=null, lastDet = null;
+let running=false,raf=null,captured=null, lastDet = null, lastScore = 0;
+let animalDetected = null; // Nuevo: Para almacenar si se detectó un animal.
 
 // TRADUCCIONES Y DATOS DE SIMULACIÓN (Mantenido)
 const EXPR_TRADS = {
@@ -312,6 +394,21 @@ const EXPR_TRADS = {
 };
 const NATIONALITIES = ['España', 'México', 'Colombia', 'Argentina', 'Chile', 'Perú', 'Venezuela'];
 const CIVIL_STATUS = ['Soltero/a', 'En Relación (Pareja)', 'Casado/a (Compromiso)'];
+
+// SIMULACIÓN DE DETECCIÓN DE ANIMALES
+const ANIMAL_CLASSES = ['Perro', 'Gato', 'Pájaro', 'Vaca', 'Caballo'];
+function checkAnimalDetection(detections) {
+    if (detections.length === 0) return null; // No hay detecciones faciales
+
+    // Lógica de Simulación: Hay una probabilidad de que la IA 'detecte' un animal
+    // si no hay un rostro humano claro, o por un breve instante.
+    if (Math.random() < 0.05) { // 5% de probabilidad de detectar un animal
+        const animal = ANIMAL_CLASSES[Math.floor(Math.random() * ANIMAL_CLASSES.length)];
+        return animal;
+    }
+    return null; 
+}
+
 
 //=== Init models 
 async function loadModels(){
@@ -327,7 +424,7 @@ async function loadModels(){
 }
 window.addEventListener('load',loadModels);
 
-//=== Start camera (Añadimos mensaje de solicitud de permiso)
+//=== Start camera
 btnStart.onclick=async()=>{
   try{
     placeholderMsg.textContent = 'Solicitando permiso de cámara al sistema...';
@@ -335,13 +432,14 @@ btnStart.onclick=async()=>{
     video.srcObject=stream; await video.play();
     placeholder.style.display='none';
     btnStart.style.display='none'; 
-    btnCapture.style.display='inline-block'; // Mostrar Capturar al inicio
-    btnAnalyze.style.display='none'; // Ocultar Analizar
-    btnRetry.style.display='none'; // Ocultar Reanudar
-    btnDownload.style.display='none'; // Ocultar Descargar
+    btnCapture.style.display='inline-block';
+    btnAnalyze.style.display='none'; 
+    btnRetry.style.display='none'; 
+    btnDownload.style.display='none';
     btnCapture.disabled=false;
     resizeCanvas(); running=true; loop();
     canvas.classList.add('scanner-active');
+    main.classList.add('mobile-active'); 
     resetHUDLive();
   }catch(e){
     placeholderMsg.textContent = 'ERROR CÁMARA: No se pudo acceder. Vuelva a intentar o revise los permisos.';
@@ -349,70 +447,146 @@ btnStart.onclick=async()=>{
   }
 };
 
-//=== Resize canvas
+//=== Resize canvas (Mantenido)
 function resizeCanvas(){
-  canvas.width=video.videoWidth||window.innerWidth;
-  canvas.height=video.videoHeight||window.innerHeight;
+  const displaySize = { width: video.clientWidth, height: video.clientHeight };
+  faceapi.matchDimensions(canvas, displaySize);
 }
 window.addEventListener('resize',resizeCanvas);
+video.addEventListener('play', resizeCanvas);
 
-//=== Live detection loop (Mantenido)
+
+//=== Live detection loop 
 async function loop(){
   if(!running)return;
-  resizeCanvas();
+  const displaySize = { width: canvas.width, height: canvas.height };
+  
   const det=await faceapi.detectAllFaces(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
-
+  
+  const resized=faceapi.resizeResults(det, displaySize);
+  
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  const resized=faceapi.resizeResults(det,{width:canvas.width,height:canvas.height});
-
   faceapi.draw.drawFaceLandmarks(canvas,resized);
 
-  countEl.textContent=det.length;
-  if(det.length > 0){
-    lastDet = det[0];
-    const score=calcSymmetry(lastDet);
-    scoreAnimate(score);
-    updateProgressColor(score);
-    updateEmotionDisplay(lastDet.expressions, false);
-    scoreFeedbackEl.textContent = 'ROSTRO DETECTADO. Detección Bi-Dimensional Activa.';
-    progressBar.style.width='30%';
-    beautyScoreEl.textContent = calcSymmetry(lastDet).toFixed(2) + '%';
-    ageScoreEl.textContent = 'Procesando...'; 
+  // >>> NUEVA LÓGICA DE DETECCIÓN DE ANIMALES Y CONTROL <<<
+  animalDetected = checkAnimalDetection(det); 
+
+  if (animalDetected) {
+      // Bloquear todo si se detecta un animal
+      animalWarning.textContent = `¡ALERTA DE OBJETO!: ${animalDetected}. ANÁLISIS EXCLUSIVO PARA SERES HUMANOS.`;
+      animalWarning.style.display = 'block';
+      detectionHud.classList.add('animal-detected');
+      btnCapture.disabled = true;
+      lastDet = null;
+      countEl.textContent = '0 (ANIMAL)';
+      detMsg.textContent = 'ANÁLISIS BLOQUEADO';
+      detPercent.textContent = 'ERROR';
+      resetHUDLive();
+      
+  } else if(det.length > 0){
+      // Rostro humano detectado - Flujo normal
+      animalWarning.style.display = 'none';
+      detectionHud.classList.remove('animal-detected');
+      btnCapture.disabled = false;
+      
+      lastDet = det[0];
+      const score=calcSymmetry(lastDet);
+      lastScore = score;
+      scoreAnimate(score.toFixed(2));
+      updateProgressColor(score);
+      updateEmotionDisplay(lastDet.expressions, false);
+      scoreFeedbackEl.textContent = 'ROSTRO DETECTADO. Detección Bi-Dimensional Activa.';
+      progressBar.style.width='30%';
+      beautyScoreEl.textContent = score.toFixed(2) + '%';
+      ageScoreEl.textContent = 'Procesando...'; 
+      
+      // ACTUALIZAR HUD DE DETECCIÓN INMERSIVO
+      detectionHud.classList.add('active');
+      detMsg.textContent = 'ROSTRO EN FOCO. Porcentaje de Detección:';
+      detPercent.textContent = `${(lastDet.detection.score * 100).toFixed(0)}%`;
+
   } else {
+    // No hay detecciones (ni rostros ni animales)
+    animalWarning.style.display = 'none';
+    detectionHud.classList.remove('animal-detected');
     lastDet = null;
+    btnCapture.disabled = true;
     resetHUDLive();
+    
+    // OCULTAR/RESETEAR HUD DE DETECCIÓN INMERSIVO
+    detectionHud.classList.remove('active');
+    detMsg.textContent = 'Esperando rostro...';
+    detPercent.textContent = '—';
   }
 
   raf=requestAnimationFrame(loop);
 }
 
-//=== Alerta Visual (Mantenido)
-function showWarning(message) {
-    const criticalWarningEl = document.getElementById('critical-warning');
-    criticalWarningEl.textContent = message;
-    criticalWarningEl.style.display = 'block';
-    // Se elimina la animación de glitch para simplificar
-    setTimeout(() => {
-        criticalWarningEl.style.display = 'none';
-    }, 2500);
-}
-
-//=== Capture image (Mantenido)
+//=== Capture image 
 btnCapture.onclick=()=>{
   if(parseInt(countEl.textContent) === 0 || !lastDet){
     showWarning('⚠️ ERROR CRÍTICO: ROSTRO NO RECONOCIDO. POSICIÓNESE FRENTE AL SENSOR.'); 
     return;
   }
+  // Bloqueo adicional por si acaso el animal fue detectado antes de la captura
+  if (animalDetected) {
+      showWarning(`ANÁLISIS BLOQUEADO: Se detectó un ${animalDetected}. El análisis es solo para humanos.`);
+      return;
+  }
+
   running=false; cancelAnimationFrame(raf); video.pause();
-  ctx.drawImage(video,0,0,canvas.width,canvas.height);
-  captured=canvas.toDataURL('image/png');
+  
+  // 1. Redimensionar el canvas a las dimensiones nativas del video para la mejor calidad de descarga
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = video.videoWidth;
+  tempCanvas.height = video.videoHeight;
+  const tempCtx = tempCanvas.getContext('2d');
+  
+  // 2. Dibujar el video SIN el efecto espejo (para la imagen final)
+  tempCtx.save();
+  tempCtx.scale(-1, 1); 
+  tempCtx.drawImage(video, -tempCanvas.width, 0, tempCanvas.width, tempCanvas.height);
+  tempCtx.restore();
+  
+  // 3. Dibujar las detecciones (landMarks) sobre el video no espejado
+  if (lastDet) {
+      const resizedForDownload = faceapi.resizeResults([lastDet], { width: tempCanvas.width, height: tempCanvas.height });
+
+      // Opcional: Dibujar las líneas guías simétricas
+      tempCtx.strokeStyle = 'rgba(0,255,255, 0.7)';
+      tempCtx.lineWidth = 2;
+      
+      // Dibujar líneas de referencia (ejemplo: línea central)
+      const centerX = tempCanvas.width / 2;
+      tempCtx.beginPath();
+      tempCtx.moveTo(centerX, 0);
+      tempCtx.lineTo(centerX, tempCanvas.height);
+      tempCtx.stroke();
+      
+      // Dibujar las marcas faciales
+      faceapi.draw.drawFaceLandmarks(tempCanvas, resizedForDownload);
+  }
+  
+  // Guardar la imagen de alta resolución para la descarga
+  captured=tempCanvas.toDataURL('image/png');
+  
+  // Volver a dibujar el canvas de visualización (low-res) con la imagen capturada para que el usuario la vea
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  const img=new Image(); 
+  img.src=captured; 
+  img.onload = () => {
+    ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  };
+  
+  main.classList.remove('mobile-active'); 
+  detectionHud.classList.remove('active'); 
+  animalWarning.style.display = 'none'; // Asegurar que se oculte
 
   btnCapture.style.display='none';
   btnAnalyze.style.display='inline-block';
   btnRetry.style.display='inline-block';
-  btnDownload.style.display='none'; // No se descarga antes del análisis
+  btnDownload.style.display='none';
   btnAnalyze.disabled=false;
   btnDownload.disabled=true;
   scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Profesional.';
@@ -433,16 +607,21 @@ btnAnalyze.onclick=async()=>{
   progressBar.style.width='50%'; 
 
   await simulateAnalysisDelay();
-
-  const dets=await faceapi.detectAllFaces(canvas,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
-    .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
-
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  
+  // El análisis se hace sobre la imagen capturada (captured) para garantizar la consistencia
   const img=new Image(); 
   img.src=captured; await new Promise(r=>img.onload=r);
+  
+  const dets=await faceapi.detectAllFaces(img,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
+    .withFaceLandmarks().withFaceExpressions().withAgeAndGender();
+  
+  // Limpiar el canvas visible
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  // Dibujar la imagen de alta resolución en el canvas de visualización (resized)
   ctx.drawImage(img,0,0,canvas.width,canvas.height);
   const resized=faceapi.resizeResults(dets,{width:canvas.width,height:canvas.height});
   
+  // DIBUJAR LOS RESULTADOS DEL ANÁLISIS EN EL CANVAS VISIBLE
   faceapi.draw.drawDetections(canvas,resized, {boxColor: 'var(--accent-success)', lineWidth: 3});
   faceapi.draw.drawFaceLandmarks(canvas,resized);
   faceapi.draw.drawFaceExpressions(canvas,resized, 0.05);
@@ -468,6 +647,25 @@ btnAnalyze.onclick=async()=>{
   
   progressBar.style.width='100%';
 
+  // REGENERAR LA IMAGEN DE DESCARGA CON LOS DIBUJOS DEL ANÁLISIS Y OVERLAY
+  const finalDownloadCanvas = document.createElement('canvas');
+  finalDownloadCanvas.width = img.width;
+  finalDownloadCanvas.height = img.height;
+  const finalDownloadCtx = finalDownloadCanvas.getContext('2d');
+  
+  // 1. Dibujar la imagen base capturada (que ya no tiene espejo)
+  finalDownloadCtx.drawImage(img, 0, 0, img.width, img.height);
+
+  // 2. Dibujar las detecciones redimensionadas a la resolución de descarga
+  const resizedForFinalDownload = faceapi.resizeResults(dets,{width: finalDownloadCanvas.width, height: finalDownloadCanvas.height});
+  faceapi.draw.drawDetections(finalDownloadCanvas,resizedForFinalDownload, {boxColor: 'var(--accent-success)', lineWidth: 4});
+  faceapi.draw.drawFaceLandmarks(finalDownloadCanvas,resizedForFinalDownload);
+  
+  // 3. Dibujar el overlay de resultados (la tabla) en el canvas de descarga
+  drawReportOverlay(finalDownloadCanvas, finalDet, symmetryScore, beautyScoreNumber, simulatedNationality, simulatedCivilStatus);
+  
+  captured=finalDownloadCanvas.toDataURL('image/png'); // Sobreescribir la imagen capturada con el reporte final
+
   btnAnalyze.style.display='none';
   btnRetry.style.display='inline-block';
   btnDownload.style.display='inline-block';
@@ -485,6 +683,7 @@ btnRetry.onclick=()=>{
   btnCapture.disabled=false;
   btnDownload.disabled=true;
   canvas.classList.add('scanner-active');
+  main.classList.add('mobile-active'); 
   resetHUDLive(true);
   raf=requestAnimationFrame(loop);
 };
@@ -493,9 +692,8 @@ btnRetry.onclick=()=>{
 btnDownload.onclick=()=>{
   if(!captured)return;
   const a=document.createElement('a');
-  const finalImage = canvas.toDataURL('image/png');
-  a.href=finalImage;
-  a.download='SYMMETRY_ANALYSIS_V10.4_REPORTE.png';
+  a.href=captured;
+  a.download='SYMMETRY_ANALYSIS_V10.6_REPORTE.png';
   a.click();
 };
 
@@ -504,6 +702,9 @@ btnDownload.onclick=()=>{
 LÓGICA DE CÁLCULO Y SIMULACIÓN (HELPERS)
 =======================================================
 */
+
+// Las siguientes funciones se mantienen del código anterior...
+
 function centroid(p){return p.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0});}
 function dist(a,b){const dx=a.x-b.x,dy=a.y-b.y;return Math.hypot(dx,dy);}
 
@@ -574,6 +775,7 @@ function resetHUDLive(isRetry = false){
   ageScoreEl.textContent = '—';
   civilStatusEl.textContent = '—';
   nationalityEl.textContent = '—';
+  countEl.textContent = '0';
 }
 function resetHUDAnalysisError(){
     scoreAnimate('E-01');
@@ -604,6 +806,91 @@ async function simulateAnalysisDelay(){
     const delay = 3000;
     await new Promise(r => setTimeout(r, delay));
 }
+// Función para dibujar el reporte (Mantenido)
+function drawReportOverlay(canvas, det, isf, beauty, nationality, civilStatus) {
+    const ctx = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = canvas.height;
+    
+    // Área de la tabla de resultados (esquina superior derecha, estilo futurista)
+    const reportWidth = Math.min(width * 0.45, 450); 
+    const padding = 20;
+    const x = width - reportWidth - padding;
+    const y = padding;
+    const headerHeight = 40;
+    
+    // Fondo semi-transparente
+    ctx.fillStyle = 'rgba(0, 11, 17, 0.85)'; 
+    ctx.fillRect(x, y, reportWidth, 300);
+    
+    // Borde de neón
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.7)'; 
+    ctx.lineWidth = 2;
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = 'rgba(0, 255, 255, 0.5)';
+    ctx.strokeRect(x, y, reportWidth, 300);
+    ctx.shadowBlur = 0;
+
+    // Título
+    ctx.fillStyle = 'var(--ia-light)';
+    ctx.font = 'bold 18px Orbitron';
+    ctx.textAlign = 'center';
+    ctx.fillText('ANÁLISIS BIOMÉTRICO (V10.6)', x + reportWidth / 2, y + 25);
+    
+    // Separador
+    ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y + headerHeight);
+    ctx.lineTo(x + reportWidth - 10, y + headerHeight);
+    ctx.stroke();
+
+    // Contenido (Métricas)
+    ctx.textAlign = 'left';
+    let lineY = y + headerHeight + 15;
+    const lineSpacing = 30;
+    
+    const drawMetric = (label, value, color) => {
+        ctx.fillStyle = 'var(--ia-light)';
+        ctx.font = '14px Inter';
+        ctx.fillText(label, x + 15, lineY);
+        
+        ctx.fillStyle = color;
+        ctx.font = 'bold 16px Orbitron';
+        ctx.textAlign = 'right';
+        ctx.fillText(value, x + reportWidth - 15, lineY);
+        
+        lineY += lineSpacing;
+        ctx.textAlign = 'left';
+    };
+
+    // Datos
+    drawMetric('ÍNDICE DE SIMETRÍA FACIAL (ISF):', isf.toFixed(2) + '%', isf > 80 ? 'var(--accent-success)' : 'var(--accent-warning)');
+    drawMetric('PUNTUACIÓN ESTÉTICA (ÁUREA):', beauty.toFixed(2) + '%', 'var(--accent-warning)');
+    drawMetric('EDAD APROXIMADA (IA):', `${Math.round(det.age)} años`, 'var(--ia-light)');
+    drawMetric('GÉNERO PREDICTIVO:', det.gender === 'male' ? 'MASCULINO' : 'FEMENINO', 'var(--ia-light)');
+    
+    lineY += lineSpacing / 2;
+    
+    drawMetric('PAÍS DE PERFIL SUGERIDO:', nationality.split('(')[0].trim(), 'var(--accent-warning)');
+    drawMetric('ESTADO CIVIL (SIMULADO):', civilStatus, 'var(--accent-error)');
+
+    // Emoción Dominante
+    const sorted=Object.entries(det.expressions).sort((a,b)=>b[1]-a[1]);
+    const dominantName = EXPR_TRADS[sorted[0][0]];
+    const dominantPercent = (sorted[0][1]*100).toFixed(1);
+    
+    lineY += lineSpacing / 2;
+    drawMetric('EMOCIÓN DOMINANTE:', `${dominantName} (${dominantPercent}%)`, 'var(--ia-light)');
+
+    // Firma del Motor
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'right';
+    ctx.fillText('SYMMETRY AI ENGINE V10.6 - REPORT GENERATED', x + reportWidth - 5, y + 290);
+}
+
+// ... fin de las funciones JavaScript
+
 </script>
 </body>
 </html>
