@@ -24,21 +24,26 @@
     --shadow-light: 0 0 8px var(--ia), 0 0 12px var(--ia-light);
   }
 
+  /*
+  ** 1. MOBILE FIRST - Estilos para la experiencia base (pequeñas pantallas) **
+  */
   body,html{
     margin:0;padding:0;width:100%;height:100%;background:var(--bg);
-    color:#e6f9ff;font-family:Inter,Arial,sans-serif;overflow:hidden;
+    color:#e6f9ff;font-family:Inter,Arial,sans-serif;
+    /* QUITAMOS overflow:hidden para permitir contenido en la parte inferior si es necesario */
     will-change: transform, opacity; 
+    overflow-x: hidden; /* Evitar scroll horizontal */
   }
   #main{position:relative;width:100%;height:100vh;overflow:hidden;}
   
-  /* Placeholder y Webcam (Z-index bajo) */
+  /* Placeholder y Webcam (Aprovechan toda la pantalla) */
   #webcam-feed,#capture-canvas{
     position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
-    z-index: 1; /* Aseguramos que estén detrás de los controles y HUD */
+    z-index: 1; 
   }
   #placeholder{
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    background:rgba(0,0,0,0.9);z-index: 5; /* Necesita un z-index más bajo que los controles/HUD para desaparecer */
+    background:rgba(0,0,0,0.9);z-index: 5; 
     text-align:center;
   }
   #capture-canvas{
@@ -47,49 +52,57 @@
   }
 
   /*
-  =======================================================
-  HUD (ESCRITORIO - Z-INDEX ALTO)
-  =======================================================
+  ** 2. HUD (MOVIDO a la parte superior central en móvil y más compacto) **
   */
   #results{
     position:absolute;
-    top:10px;
-    right:10px;
-    background:rgba(0,0,0,0.9);
+    top:10px; /* Posición superior para móvil */
+    left:50%;
+    transform: translateX(-50%);
+    background:rgba(0,0,0,0.8);
     border: 2px solid rgba(0,255,255,0.3);
-    padding:16px;
+    padding:10px;
     border-radius:8px;
-    font-size:14px;
-    z-index:25; /* ALTO Z-INDEX: Aseguramos visibilidad */
+    font-size:12px; /* Tamaño de fuente más pequeño en móvil */
+    z-index:25;
     backdrop-filter:blur(15px);
     box-shadow: var(--ia-glow);
-    max-width: 380px;
+    width: 95%; /* Ocupa casi todo el ancho de la pantalla */
+    max-width: 400px; /* Límite para pantallas pequeñas */
+    box-sizing: border-box;
   }
+  
+  /* Compactar el HUD */
+  #results > div:first-child { 
+      font-size: 0.8em; /* Tamaño más pequeño para el contador */
+  }
+
   .metric-label{
     font-family: Orbitron, Inter, Arial;
     font-weight: 800;
     color: var(--ia-light);
-    margin-top: 10px;
+    margin-top: 8px;
     text-shadow: 0 0 5px rgba(0,255,255,0.5);
     border-bottom: 1px solid rgba(0,255,255,0.2);
     padding-bottom: 2px;
-    letter-spacing: 1px;
-    font-size: 0.85em;
+    letter-spacing: 0.5px;
+    font-size: 0.75em; /* Más pequeño para móvil */
   }
   .score-val{
-    font-family:Orbitron,Inter,Arial;font-size:36px;font-weight:800;
+    font-family:Orbitron,Inter,Arial;font-size:30px;font-weight:800; /* Más pequeño para móvil */
     line-height: 1;
-    margin-top: 4px;
+    margin-top: 2px;
     color: var(--ia-light);
     text-shadow: var(--ia-glow);
   }
   #report-details {
-    margin-top: 15px;
-    padding-top: 10px;
+    margin-top: 10px;
+    padding-top: 8px;
     border-top: 1px dashed rgba(0,255,255,0.2);
   }
-  .detail-line { margin-bottom: 5px; }
-  
+  .detail-line { margin-bottom: 3px; font-size: 10px; } /* Texto más pequeño */
+  .detail-line .metric-label { font-size: 0.6em; }
+
   /* Animación de Procesamiento */
   @keyframes pulsating-glow {
     0% { opacity: 0.6; }
@@ -101,36 +114,58 @@
     font-weight: 800;
     animation: pulsating-glow 1.5s infinite alternate;
   }
+  #critical-warning {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    padding: 15px;
+    background: var(--accent-error);
+    color: #000;
+    font-weight: 900;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 0 20px var(--accent-error);
+    width: 90%;
+    max-width: 300px;
+  }
 
   /*
-  =======================================================
-  CONTROLES / BOTONES (ESCRITORIO - Z-INDEX MÁXIMO)
-  =======================================================
+  ** 3. CONTROLES / BOTONES (MÓVIL - Ultra-compactos y anclados al fondo) **
   */
   #controls{
-    position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
-    display:flex;gap:10px;
-    z-index:30; /* MÁXIMO Z-INDEX: Debería ser visible siempre */
-    flex-wrap:wrap;justify-content:center;
-    width: 95%; 
+    position:absolute;
+    bottom: 5px; /* Adherido al fondo */
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap: 5px; /* Espacio compacto */
+    z-index:30;
+    flex-wrap:wrap;
+    justify-content:center;
+    width: 98%; /* Ocupa casi todo el ancho para botones grandes */
     max-width: 600px;
+    box-sizing: border-box;
   }
   .btn{
     flex-grow: 1;
-    min-width: 120px;
+    min-width: 100px; /* Reducido para móvil */
     background:rgba(0,0,0,0.8);
     border:2px solid rgba(0,255,255,0.4);
     color:var(--ia);
-    padding:12px 16px;
+    padding: 10px 5px; /* Padding reducido */
     border-radius:10px;
     cursor:pointer;
     backdrop-filter:blur(10px);
     font-weight:700;
     font-family: Inter, Arial;
     letter-spacing: 0.5px;
-    font-size: 14px;
+    font-size: 11px; /* Letra más pequeña */
     transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
     will-change: transform;
+    line-height: 1.1; /* Asegura que el texto quepa */
+    text-align: center;
   }
   .primary{
     background:linear-gradient(90deg,var(--ia),var(--ia-light));
@@ -139,45 +174,59 @@
   }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+  /* Ajuste de Flexbox para que INICIAR/CAPTURAR ocupen más */
+  #start, #capture {
+      flex-basis: 48%; /* Hace que ocupen casi la mitad del ancho */
+  }
+  #analyze, #retry, #download {
+      flex-basis: 30%;
+      min-width: unset;
+  }
 
   /*
   =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD MÓVIL CRÍTICA) 📱
+  MEDIA QUERIES - Escritorio / Tabletas (Min-width) 💻
   =======================================================
   */
-  @media(max-width:600px){
-    /* Posición y Centrado del HUD (MOVIDO MÁS ARRIBA) */
+  @media(min-width:601px){
+    /* Restaurar el HUD al estilo de escritorio */
     #results{
-      top: auto;
-      bottom: 80px; 
-      right: 50%;
-      transform: translateX(-50%);
-      width: 98%;
-      padding: 10px;
-      max-width: 98%;
+      top:10px;
+      right:10px;
+      left: auto;
+      transform: none;
+      font-size:14px;
+      max-width: 380px;
+      width: auto;
     }
-    .score-val{font-size:24px;} 
-    .metric-label{font-size: 0.7em; margin-top: 6px;}
-    .detail-line { font-size: 10px; }
+    .metric-label{
+        margin-top: 10px;
+        letter-spacing: 1px;
+        font-size: 0.85em;
+    }
+    .score-val{font-size:36px;}
+    .detail-line { font-size: 14px; }
+    .detail-line .metric-label { font-size: 0.85em; }
 
-    /* Controles MÓVIL (ULTRA-COMPACTOS Y ADHERIDOS) */
+    /* Restaurar Controles al estilo de escritorio */
     #controls{
-      bottom: 2px; 
-      gap: 3px; 
-      width: 100%; 
-      box-sizing: border-box; 
-      padding: 0 5px; 
+      bottom:10px;
+      left:50%;
+      transform:translateX(-50%);
+      gap:10px;
+      width: 95%; 
+      max-width: 600px;
     }
     .btn{
-      padding: 5px 3px; 
-      font-size: 9px; 
-      min-width: unset;
-      flex-grow: 1;
-      height: auto; 
-      line-height: 1.1;
-      border-radius: 6px;
+      padding:12px 16px;
+      font-size: 14px;
+      line-height: normal;
     }
-    #start { flex-grow: 2; }
+    #start, #capture, #analyze, #retry, #download {
+        flex-basis: auto;
+        min-width: 120px;
+    }
+    #start { flex-grow: 1; }
   }
 </style>
 </head>
@@ -204,8 +253,8 @@
     <div id="report-details">
       <div class="detail-line"><span class="metric-label" style="border:none;">PUNT. ESTÉTICA (PROPORCIÓN ÁUREA):</span> <span id="beauty-score" class="score-val" style="font-size:16px; color: var(--accent-warning);">—</span></div>
       <div class="detail-line"><span class="metric-label" style="border:none;">EDAD APROX. (IA):</span> <span id="age-score" style="color:var(--ia-light); font-weight:600;">—</span></div>
-      <div class="detail-line"><span class="metric-label" style="border:none;">ESTADO CIVIL (SIMULADO):</span> <span id="civil-status" style="color:var(--accent-error); font-weight:600;">—</span></div>
-      <div class="detail-line"><span class="metric-label" style="border:none;">PAÍS DE PERFIL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:600;">—</span></div>
+      <div class="detail-line"><span class="metric-label" style="border:none;">ESTADO CIVIL (SIMULADO):</span> <span id="civil-status" style="color:var(--accent-error); font-weight:600);">—</span></div>
+      <div class="detail-line"><span class="metric-label" style="border:none;">PAÍS DE PERFIL SUGERIDO:</span> <span id="nationality" style="color:var(--accent-warning); font-weight:600);">—</span></div>
       
       <div class="detail-line" style="margin-top: 10px;"><span class="metric-label" style="border:none;">EMOCIÓN DOMINANTE:</span> <span id="expr-dominant" style="color:var(--ia-light); font-weight:600;">—</span></div>
       <small id="expr-all" style="display:block; margin-top: 4px; color: var(--muted); font-size: 10px;">Detalle de emociones...</small>
@@ -214,10 +263,10 @@
 
   <div id="controls">
     <button id="start" class="btn">▶ INICIAR DETECCIÓN</button>
-    <button id="capture" class="btn primary" disabled>📸 CAPTURAR Y CONGELAR</button>
+    <button id="capture" class="btn primary" disabled>📸 CAPTURAR</button>
     <button id="analyze" class="btn" style="display:none">⚙️ ANALIZAR PROFESIONAL</button>
-    <button id="retry" class="btn" style="display:none">🔄 REANUDAR WEBCAM</button>
-    <button id="download" class="btn" style="display:none" disabled>⬇️ DESCARGAR REPORTE</button>
+    <button id="retry" class="btn" style="display:none">🔄 REANUDAR</button>
+    <button id="download" class="btn" style="display:none" disabled>⬇️ REPORTE</button>
   </div>
 </div>
 
@@ -285,7 +334,12 @@ btnStart.onclick=async()=>{
     const stream=await navigator.mediaDevices.getUserMedia({video:true});
     video.srcObject=stream; await video.play();
     placeholder.style.display='none';
-    btnStart.style.display='none'; btnCapture.disabled=false;
+    btnStart.style.display='none'; 
+    btnCapture.style.display='inline-block'; // Mostrar Capturar al inicio
+    btnAnalyze.style.display='none'; // Ocultar Analizar
+    btnRetry.style.display='none'; // Ocultar Reanudar
+    btnDownload.style.display='none'; // Ocultar Descargar
+    btnCapture.disabled=false;
     resizeCanvas(); running=true; loop();
     canvas.classList.add('scanner-active');
     resetHUDLive();
@@ -358,7 +412,7 @@ btnCapture.onclick=()=>{
   btnCapture.style.display='none';
   btnAnalyze.style.display='inline-block';
   btnRetry.style.display='inline-block';
-  btnDownload.style.display='inline-block';
+  btnDownload.style.display='none'; // No se descarga antes del análisis
   btnAnalyze.disabled=false;
   btnDownload.disabled=true;
   scoreFeedbackEl.textContent = 'IMAGEN CONGELADA. Listo para Análisis Profesional.';
@@ -415,6 +469,8 @@ btnAnalyze.onclick=async()=>{
   progressBar.style.width='100%';
 
   btnAnalyze.style.display='none';
+  btnRetry.style.display='inline-block';
+  btnDownload.style.display='inline-block';
   btnRetry.disabled=false;
   btnDownload.disabled=false;
 };
