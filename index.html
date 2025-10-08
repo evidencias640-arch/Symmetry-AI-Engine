@@ -3,27 +3,27 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V13.0 — Professional Biometric Analysis System</title>
+<title>SYMMETRY AI ENGINE PRO V13.1 — Professional Biometric Analysis System</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V13.0 - Profesional Grid/Flex)
+  ESTILOS BASE Y VARIABLES (V13.1 - MÁXIMA RESPONSIVIDAD)
   =======================================================
   */
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600;700&display=swap');
+  @import url('https://fonts.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600;700&display=swap');
   :root{
     --ia:#00ffff; /* Cian principal */
     --ia-light:#66ffff;
     --ia-glow: 0 0 10px var(--ia), 0 0 20px rgba(0,255,255,0.7);
     --bg:#000b11;
-    --panel-bg: rgba(5, 15, 25, 0.95); /* Fondo de paneles más opaco y oscuro */
+    --panel-bg: rgba(5, 15, 25, 0.95); 
     --muted:#a0a9b5;
     --accent-error:#ff5050;
     --accent-warning:#ffaa00;
     --accent-success:#00ffb3;
-    --nav-width: 80px;
-    --panel-width: 340px; /* Panel de métricas más ancho para info profesional */
+    --nav-width: 80px; /* Ancho fijo de la navegación profesional */
+    --panel-width: 340px; /* Ancho fijo del panel de métricas en escritorio */
   }
 
   /* ESTRUCTURA GENERAL Y SPA */
@@ -31,7 +31,7 @@
     margin:0;padding:0;width:100%;height:100%;background:var(--bg);
     color:#e6f9ff;font-family:Inter,Arial,sans-serif;
     overflow:hidden; 
-    height: 100dvh; 
+    height: 100dvh; /* Para mejor manejo de la altura en móviles */
   }
   #main{
     position:relative;
@@ -41,7 +41,7 @@
     overflow: hidden;
   }
 
-  /* BARRA DE NAVEGACIÓN LATERAL */
+  /* BARRA DE NAVEGACIÓN LATERAL (Solo Escritorio/Tablet) */
   #nav-sidebar {
     width: var(--nav-width);
     background: #011523;
@@ -53,6 +53,13 @@
     z-index: 50;
     flex-shrink: 0;
   }
+  .nav-item {
+      cursor: pointer; padding: 10px 5px; margin-bottom: 10px; text-align: center;
+      color: var(--muted); font-size: 10px; transition: color 0.3s;
+  }
+  .nav-item:hover, .nav-item.active { color: var(--ia-light); text-shadow: 0 0 5px var(--ia); }
+  .nav-item i { display: block; font-size: 20px; margin-bottom: 4px; }
+
 
   /* VISTAS SPA */
   .view {
@@ -62,11 +69,10 @@
     height: 100%;
     display: none; 
     transition: opacity 0.5s;
+    flex-direction: column; 
+    align-items: stretch;
   }
-  .view.active {
-    display: flex;
-    z-index: 10;
-  }
+  .view.active { display: flex; z-index: 10; }
   
   /* =======================================================
   LIVE SCAN VIEW (CSS GRID RESPONSIVO)
@@ -74,9 +80,7 @@
   */
   #live-scan-view {
       padding: 0;
-      left: var(--nav-width);
-      width: calc(100% - var(--nav-width));
-      /* Desktop Grid Layout */
+      /* Desktop Grid Layout: Cámara (1fr) | Metrics (Fijo) */
       display: grid;
       grid-template-columns: 1fr var(--panel-width); 
       grid-template-areas: "camera metrics";
@@ -89,7 +93,7 @@
     justify-content: center;
     align-items: center;
     overflow: hidden;
-    background: rgba(0, 0, 0, 0.5); /* Fondo sutil para el área de cámara */
+    background: rgba(0, 0, 0, 0.5); 
   }
   #metrics-panel{
     grid-area: metrics;
@@ -102,52 +106,56 @@
     flex-shrink: 0;
   }
 
-  /* Elementos de la Cámara */
-  #webcam-feed, #capture-canvas {
-    position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;
+  /* Elementos de la Cámara y Botones */
+  #webcam-feed, #capture-canvas { position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover; z-index: 1; }
+  #capture-canvas { z-index: 5; box-shadow: var(--ia-glow) inset; border: 2px solid rgba(0,255,255,0.4); }
+  
+  #action-button-container {
+      position: absolute; /* Usamos 'absolute' en escritorio, 'sticky' en móvil */
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80%;
+      max-width: 400px;
+      z-index: 51; 
   }
-  #webcam-feed { z-index: 1; filter: brightness(0.7) contrast(1.2); }
-  #capture-canvas { 
-    z-index: 5; 
-    box-shadow: var(--ia-glow) inset; /* Borde Neón Sutil */
-    border: 2px solid rgba(0,255,255,0.4);
-    transition: box-shadow 0.5s;
+  .btn{
+    width: 100%; padding: 15px 20px; border-radius: 10px; cursor: pointer;
+    background:rgba(0,0,0,0.8); border:2px solid rgba(0,255,255,0.4);
+    color:var(--ia); font-weight:700; font-family: Orbitron, Inter; font-size: 16px;
+    transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
   }
+  .btn.primary { background: var(--ia-light); color: #000; border-color: var(--ia-light); box-shadow: var(--ia-glow); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   /* Estilos de las Métricas */
-  .score-val{
-    font-family:Orbitron, sans-serif;font-size:36px;font-weight:800; /* Fuente más grande */
-    color: var(--ia-light);
-    text-shadow: var(--ia-glow);
+  .score-val{ font-family:Orbitron, sans-serif;font-size:36px;font-weight:800; color: var(--ia-light); text-shadow: var(--ia-glow);}
+  .metric-label{ font-weight: 700; color: var(--muted); font-size: 0.95em; margin-bottom: 5px; text-transform: uppercase; }
+  .detail-line span { font-size: 14px; font-weight: 600; }
+  .metric-block { margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed rgba(0,255,255,0.2); }
+
+  /* Progress Bar */
+  #progress-bar-container {
+    position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+    width: 80%; max-width: 400px; background: rgba(0,0,0,0.8); border: 1px solid var(--ia);
+    border-radius: 5px; overflow: hidden; height: 25px; z-index: 51; display: none;
   }
-  .metric-label{
-    font-weight: 700;
-    color: var(--muted);
-    font-size: 0.95em;
-    margin-bottom: 5px;
-    text-transform: uppercase;
-  }
-  .detail-line span { 
-      font-size: 14px; 
-      font-weight: 600;
-  }
+  #progress-bar { height: 100%; width: 0%; background: var(--ia); transition: width 0.5s; }
+  #progress-message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #000; font-size: 10px; font-weight: 700; text-shadow: none; z-index: 10; }
 
   /* =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD TOTAL)
+  MEDIA QUERIES (RESPONSIVIDAD TOTAL V13.1) 📱
   =======================================================
   */
-  @media(max-width:1200px){
-      /* Tablet Horizontal/Laptops pequeñas: Reducir ancho de panel */
-      :root { --panel-width: 300px; }
-  }
-
   @media(max-width:1024px){
       /* Tablet Vertical y Móvil */
       #main { flex-direction: column; }
-      #nav-sidebar { display: none; } /* Navegación lateral oculta */
-      .view { left: 0; width: 100%; } /* Vistas ocupan todo el ancho */
+      #nav-sidebar { display: none; } /* Ocultamos la navegación lateral para móvil/tablet */
+      
+      .view { left: 0; width: 100%; } 
+      
       #live-scan-view {
-          /* Apilado: Cámara arriba, Métricas abajo */
+          /* Apilado: Cámara arriba (1fr), Métricas abajo (auto) */
           grid-template-columns: 1fr;
           grid-template-rows: 1fr auto; 
           grid-template-areas: "camera" "metrics";
@@ -155,14 +163,39 @@
       }
       #metrics-panel {
           width: 100%;
-          min-height: 350px; /* Asegurar que el panel de métricas se vea bien en móvil */
+          min-height: 400px; /* Asegura espacio para todas las métricas */
           box-shadow: 0 -5px 20px rgba(0,0,0,0.7);
+          padding: 15px;
       }
+      
+      /* Reubicación de Controles a 'sticky' en el área de la cámara para que floten */
       #action-button-container {
-          position: sticky; /* Sticky para que el botón permanezca en el área de la cámara */
-          bottom: 20px;
-          z-index: 51;
+          position: sticky; 
+          bottom: 10px; 
+          width: 90%;
+          max-width: 90%;
+          margin: 0 auto;
+          left: 0;
+          transform: none;
+          display: flex;
+          gap: 5px;
+          flex-wrap: wrap; 
+          justify-content: center;
       }
+      .btn {
+          padding: 8px 10px;
+          font-size: 12px; 
+          flex-grow: 1;
+          min-width: 100px;
+      }
+      #progress-bar-container {
+          bottom: 60px; /* Subimos la barra de progreso */
+      }
+      
+      /* Ajuste de vistas genéricas en móvil */
+      .generic-view-content { padding: 15px; }
+      .generic-view-content h1 { font-size: 2em; margin-bottom: 20px; }
+      .tech-card { padding: 15px; }
   }
 
   /* =======================================================
@@ -170,36 +203,23 @@
   =======================================================
   */
   .generic-view-content {
-      flex-grow: 1;
-      padding: 40px;
-      text-align: left; /* Alineación profesional a la izquierda */
-      overflow-y: auto;
+      flex-grow: 1; padding: 40px; text-align: left; overflow-y: auto;
   }
   .generic-view-content h1 {
-      font-family: Orbitron, sans-serif;
-      font-size: 2.5em;
-      color: var(--ia-light);
-      margin-bottom: 30px;
-      text-shadow: var(--ia-glow);
-      border-bottom: 1px solid var(--ia);
-      padding-bottom: 10px;
+      font-family: Orbitron, sans-serif; font-size: 2.5em; color: var(--ia-light);
+      margin-bottom: 30px; text-shadow: var(--ia-glow); border-bottom: 1px solid var(--ia); padding-bottom: 10px;
   }
   .tech-card {
-      background: rgba(0, 255, 255, 0.05);
-      border: 1px solid var(--ia);
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 5px var(--ia);
-      transition: transform 0.3s;
+      background: rgba(0, 255, 255, 0.05); border: 1px solid var(--ia); padding: 20px;
+      border-radius: 8px; margin-bottom: 20px; box-shadow: 0 0 5px var(--ia); transition: transform 0.3s;
   }
-  .tech-card:hover { transform: translateY(-5px); }
   .tech-card h3 {
-      font-family: Inter, sans-serif;
-      font-size: 1.3em;
-      font-weight: 700;
-      color: var(--ia-light);
-      margin-bottom: 10px;
+      font-family: Inter, sans-serif; font-size: 1.3em; font-weight: 700; color: var(--ia-light); margin-bottom: 10px;
+  }
+  #position-feedback {
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%); padding: 8px 15px; 
+      background: rgba(0, 0, 0, 0.7); border-radius: 5px; color: var(--ia); font-weight: 700; z-index: 20; 
+      opacity: 0; transition: opacity 0.5s; font-size: 14px; text-shadow: var(--ia-glow); display:none;
   }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -233,13 +253,13 @@
           <canvas id="capture-canvas"></canvas>
 
           <div id="placeholder">
-            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V13.0 — OFFLINE</h2>
+            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V13.1 — OFFLINE</h2>
             <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR ESCANEO DE SESIÓN</strong>.</p>
           </div>
           
-          <div id="position-feedback" style="position: absolute; top: 10%; left: 50%; transform: translateX(-50%); padding: 10px 20px; background: rgba(0, 0, 0, 0.8); border-radius: 5px; color: var(--ia); font-weight: 700; z-index: 20; opacity: 0; transition: opacity 0.5s; font-size: 16px; text-shadow: var(--ia-glow); display:none;"></div>
+          <div id="position-feedback" style="display:none;"></div>
           
-          <div class="scanning-text" id="scanning-status" style="display:none;">[Processing → Locating → Analyzing...]</div>
+          <div class="scanning-text" id="scanning-status" style="display:none; position: absolute; top: 40%; left: 50%; transform: translateX(-50%); color: var(--ia); font-weight: 700; z-index: 20;">[Processing → Locating → Analyzing...]</div>
 
           <div id="action-button-container">
               <button id="main-action-btn" class="btn" disabled>▶ INICIAR ESCANEO</button>
@@ -345,7 +365,7 @@
                   <span>Modo Estricto (80% ISF)</span>
                   <span style="color:var(--ia-light); font-weight:bold;">Modo Ultra Preciso (85% ISF)</span>
               </div>
-              <p class="text-xs mt-3 text-red-400">Bloqueado a Ultra Preciso para la versión PRO V13.0.</p>
+              <p class="text-xs mt-3 text-red-400">Bloqueado a Ultra Preciso para la versión PRO V13.1.</p>
           </div>
           <div class="tech-card">
               <h3><i class="fas fa-network-wired"></i> Gestión de Endpoints de Modelo</h3>
@@ -358,7 +378,7 @@
   <div id="account-view" class="view">
       <div class="generic-view-content">
           <h1>ACCOUNT: MISIÓN Y PERFIL CORPORATIVO</h1>
-          <p class="text-lg text-white mb-5">SYMMETRY AI ENGINE PRO V13.0 es una herramienta de software biométrico avanzada, diseñada para el análisis profesional y estético de la morfología facial humana.</p>
+          <p class="text-lg text-white mb-5">SYMMETRY AI ENGINE PRO V13.1 es una herramienta de software biométrico avanzada, diseñada para el análisis profesional y estético de la morfología facial humana.</p>
           <div class="tech-card">
               <h3><i class="fas fa-bullseye"></i> Misión del Sistema</h3>
               <p class="text-sm text-gray-400">Proporcionar una métrica de precisión y objetividad inigualable en la evaluación de la simetría y la proporción facial, basada en el cruce de datos biométricos y el canon estético. **No es una herramienta de diagnóstico, sino de análisis de datos.**</p>
@@ -377,8 +397,10 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V13.0 - REFINAMIENTO CORE)
+JAVASCRIPT/FACE-API.JS LÓGICA (V13.1 - REFINAMIENTO CORE)
 =======================================================
+* Mantiene la lógica robusta de la V13.0, incluyendo la corrección de espejo.
+* Añade la lógica SPA para la navegación.
 */
 const MODELS_URL='./models';
 // Elementos DOM (Live Scan)
@@ -408,7 +430,7 @@ const progressBar=document.getElementById('progress-bar');
 const progressMessage=document.getElementById('progress-message');
 
 let running=false,raf=null,captured=null, lastDet = null;
-const ISF_THRESHOLD = 80; // Aumentado para un umbral más "Profesional"
+const ISF_THRESHOLD = 80; 
 
 // TRADUCCIONES Y DATOS DE SIMULACIÓN
 const EXPR_TRADS = {
@@ -466,6 +488,7 @@ function showCriticalWarning(message) {
     setTimeout(() => { criticalWarningEl.style.display = 'none'; }, 4000);
 }
 function checkAnimalDetection(detections) {
+    // Simulación de detección no-humana
     if (detections.length > 0) return null; 
     if (Math.random() < 0.05) { 
         return ANIMAL_CLASSES[Math.floor(Math.random() * ANIMAL_CLASSES.length)];
@@ -487,7 +510,7 @@ async function loadModels(){
 }
 window.addEventListener('load',loadModels);
 
-// Start camera (Mantenido el flujo de inicio)
+// Start camera 
 mainActionButton.onclick=async()=>{
     if(mainActionButton.textContent.includes('INICIAR ESCANEO')){
         try{
@@ -529,7 +552,6 @@ async function loop(){
   if(!running)return;
   const displaySize = { width: canvas.width, height: canvas.height };
   
-  // Optimizamos la detección para ser más rápido en el loop
   const det=await faceapi.detectSingleFace(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
     .withFaceLandmarks().withFaceExpressions();
   
@@ -542,7 +564,7 @@ async function loop(){
   ctx.scale(-1, 1);
   ctx.translate(-canvas.width, 0); 
   
-  // 2. Dibujar el video
+  // 2. Dibujar el video reflejado
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   
   // 3. Dibujar la malla facial sobre el video reflejado
@@ -550,7 +572,7 @@ async function loop(){
     faceapi.draw.drawFaceLandmarks(canvas,resized, { drawLines: true, drawPoints: true, lineWidth: 1.5, color: 'rgba(0,255,255,0.7)' });
   }
 
-  // 4. Restaurar el contexto para el resto del dibujo (textos, etc.)
+  // 4. Restaurar el contexto 
   ctx.restore();
 
   // >>> LÓGICA DE BLOQUEO Y FEEDBACK <<<
@@ -692,7 +714,7 @@ async function startAnalysisFlow(det) {
     
     clearInterval(progressInterval);
     progressBar.style.width = '100%';
-    progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final (V13.0)...';
+    progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final (V13.1)...';
     
     setTimeout(() => {
         progressBarContainer.style.display = 'none';
@@ -704,7 +726,7 @@ async function startAnalysisFlow(det) {
 function transitionToDataAnalytics(finalDet) {
     if(!finalDet){
         showCriticalWarning('ERROR DE ANÁLISIS: No se detectó un rostro claro en la imagen estática capturada.');
-        mainActionButton.textContent = 'REANUDAR LIVE SCAN';
+        mainActionButton.textContent = '🔄 REANUDAR LIVE SCAN';
         mainActionButton.classList.add('primary');
         mainActionButton.disabled = false;
         return;
@@ -773,7 +795,7 @@ function downloadReport(){
     
     const finalImage = canvas.toDataURL('image/png'); 
     a.href=finalImage;
-    a.download='SYMMETRY_ANALYSIS_V13.0_REPORTE_PROFESIONAL.png';
+    a.download='SYMMETRY_ANALYSIS_V13.1_REPORTE_PROFESIONAL.png';
     a.click();
 }
 
