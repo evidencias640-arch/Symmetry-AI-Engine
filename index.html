@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>SYMMETRY AI ENGINE PRO V13.4 — Professional Biometric Analysis System</title>
+<title>SYMMETRY AI ENGINE PRO V13.6 — Professional Biometric Analysis System</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script> 
 <style>
   /*
   =======================================================
-  ESTILOS BASE Y VARIABLES (V13.4 - MÁXIMA RESPONSIVIDAD)
+  ESTILOS BASE Y VARIABLES (V13.6 - MÁXIMA RESPONSIVIDAD)
   =======================================================
   */
   @import url('https://fonts.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@300;600;700&display=swap');
@@ -63,7 +63,8 @@
   .nav-item i { display: block; font-size: 20px; margin-bottom: 4px; }
 
 
-  /* VISTAS SPA (Secciones secundarias) */
+  /* 🚨 CORRECCIÓN CLAVE 1: VISTAS SPA (Secciones secundarias) */
+  /* En escritorio, se posicionan absolutamente junto a la barra lateral */
   .view {
     position: absolute;
     top: 0; 
@@ -78,7 +79,8 @@
     align-items: stretch;
     overflow-y: auto; 
     padding-bottom: 50px; 
-    padding-top: 20px; /* Pequeño padding arriba para contenido */
+    padding-top: 20px; 
+    box-sizing: border-box; /* Importante para el padding */
   }
   .view.active { 
       display: flex; 
@@ -146,6 +148,7 @@
       left: 0;
       width: 100%;
       height: 100%;
+      min-height: 100%; /* Asegura que tome toda la altura */
   }
   
   /* Contenedor de la cámara */
@@ -172,28 +175,28 @@
     transition: all 0.5s ease-out; 
   }
   
-  /* BOTÓN (ESCRITORIO: CENTRADO Y FOSFORESCENTE) */
+  /* 🚨 CORRECCIÓN CLAVE 2: BOTÓN - ASEGURAR VISIBILIDAD INICIAL */
   #action-button-container {
     position: absolute;
-    top: 50%; /* CENTRAR VERTICAL */
+    top: 50%; 
     left: 50%;
-    transform: translate(-50%, -50%); /* CENTRAR HORIZONTAL Y VERTICALMENTE */
+    transform: translate(-50%, -50%); 
     width: 80%;
-    max-width: 500px; /* Hacemos el contenedor más grande */
+    max-width: 500px; 
     z-index: 51; 
   }
   .btn{
-    width: 100%; padding: 25px 30px; /* Aumentamos el padding para hacerlo grande */
+    width: 100%; padding: 25px 30px; 
     border-radius: 10px; cursor: pointer;
     background:rgba(0,0,0,0.9); border:2px solid var(--ia-light);
-    color:var(--ia-light); font-weight:800; font-family: Orbitron, Inter; font-size: 20px; /* Más grande y llamativo */
+    color:var(--ia-light); font-weight:800; font-family: Orbitron, Inter; font-size: 20px; 
     transition: background .3s, transform .2s, box-shadow .3s, opacity 0.3s;
   }
   .btn.primary { 
-      background: var(--ia); /* Cian brillante para Primary */
+      background: var(--ia); 
       color: #000b11; 
       border-color: var(--ia); 
-      box-shadow: 0 0 15px var(--ia), 0 0 30px rgba(0,255,255,0.8); /* Efecto fosforescente fuerte */
+      box-shadow: 0 0 15px var(--ia), 0 0 30px rgba(0,255,255,0.8); 
   }
   .btn:disabled { 
       opacity: 0.3; 
@@ -202,8 +205,7 @@
       background: rgba(0,0,0,0.8); 
       color: var(--muted);
   }
-  /* --- FIN ESTILOS BOTÓN --- */
-
+  
   #webcam-feed, #capture-canvas { position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover; z-index: 1; }
   .score-val{ 
     font-family:Orbitron, sans-serif;
@@ -257,7 +259,7 @@
     height: var(--nav-height-mobile);
     background: #011523;
     box-shadow: 0 -2px 8px rgba(0,0,0,0.7);
-    display: none; /* Oculto por defecto, se muestra en móvil */
+    display: none; 
     justify-content: space-around;
     align-items: center;
     z-index: 100;
@@ -276,7 +278,7 @@
 
 
   /* =======================================================
-  MEDIA QUERIES (RESPONSIVIDAD TOTAL V13.4) 📱
+  MEDIA QUERIES (RESPONSIVIDAD TOTAL V13.6) 📱
   =======================================================
   */
   @media(max-width:1024px){
@@ -284,16 +286,19 @@
       /* ESTRUCTURA GENERAL MÓVIL */
       #nav-sidebar { display: none; } 
       #nav-footer-mobile { display: flex; } 
+      /* La altura de #main debe ser el 100% de la pantalla menos el footer */
       #main { flex-direction: column; height: calc(100% - var(--nav-height-mobile)); overflow-y: hidden; } 
       
-      /* AJUSTE DE VISTAS SECUNDARIAS EN MÓVIL */
+      /* 🚨 CORRECCIÓN CLAVE 3: Vistas secundarias en móvil */
+      /* Usamos posicionamiento relativo y ancho/alto 100% del contenedor #main */
       .view { 
+        position: relative; /* Cambia a relativo para que fluya con el #main */
         left: 0; 
         width: 100%; 
-        height: 100%; 
-        position: relative; 
+        height: 100%; /* Toma la altura disponible en #main */
         padding-top: 10px;
         padding-bottom: 20px;
+        box-sizing: border-box; 
       } 
       .generic-view-content { padding: 15px; }
       .generic-view-content h1 { font-size: 2em; margin-bottom: 20px; }
@@ -303,22 +308,23 @@
       #live-scan-view {
           /* Cámara (1fr/grande) y Métricas (0fr/ocultas) */
           grid-template-columns: 1fr;
-          grid-template-rows: 1fr 0fr; /* Inicialmente: Cámara 1fr, Métricas 0fr (Ocultas) */
+          grid-template-rows: 1fr 0fr; 
           grid-template-areas: "camera" "metrics";
           min-height: 100%; 
-          transition: grid-template-rows 0.6s ease-out; /* TRANSICIÓN SUAVE AL MOSTRAR RESULTADOS */
-          overflow-y: auto; /* Permite el scroll de toda la vista en móvil */
+          height: 100%; /* Asegura la altura completa del contenedor #main */
+          transition: grid-template-rows 0.6s ease-out; 
+          overflow-y: auto; 
       }
       
-      /* Estado Móvil de Resultados: La tabla aparece (1fr) y la cámara se achica (auto) */
+      /* Estado Móvil de Resultados: La tabla aparece (auto) y la cámara se achica (auto) */
       #live-scan-view.show-results {
-          grid-template-rows: auto 1fr; 
+          grid-template-rows: auto auto; 
           grid-template-areas: "camera" "metrics";
       }
 
       #metrics-panel {
           width: 100%;
-          min-height: 400px; /* Sigue siendo mínimo, pero la fila 1fr lo forzará a expandirse */
+          min-height: 400px; 
           box-shadow: 0 -5px 20px rgba(0,0,0,0.7);
           padding: 15px;
           flex-shrink: 0;
@@ -342,7 +348,7 @@
           min-width: 120px;
       }
       #progress-bar-container {
-          bottom: 70px; /* Colocado sobre el footer móvil */
+          bottom: 70px; 
       }
   }
 
@@ -391,7 +397,7 @@
           </div>
 
           <div id="placeholder" style="position: absolute; z-index: 10; text-align: center;">
-            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V13.4 — OFFLINE</h2>
+            <h2 style="color:var(--ia); font-family:Orbitron;">SYMMETRY AI ENGINE V13.6 — OFFLINE</h2>
             <p id="placeholder-msg" style="color:var(--muted)">Active la cámara y presione <strong>INICIAR ESCANEO DE SESIÓN</strong>.</p>
           </div>
           
@@ -508,7 +514,7 @@
                   <span>Modo Estricto (80% ISF)</span>
                   <span style="color:var(--ia-light); font-weight:bold;">Modo Ultra Preciso (85% ISF)</span>
               </div>
-              <p class="text-xs mt-3 text-red-400">Bloqueado a Ultra Preciso para la versión PRO V13.4.</p>
+              <p class="text-xs mt-3 text-red-400">Bloqueado a Ultra Preciso para la versión PRO V13.5.</p>
           </div>
           <div class="tech-card" style="border-left: 5px solid var(--ia);">
               <h3><i class="fas fa-network-wired" style="color:var(--ia);"></i> Gestión de Endpoints de Modelo</h3>
@@ -521,7 +527,7 @@
   <div id="account-view" class="view">
       <div class="generic-view-content">
           <h1 class="text-3xl font-bold mb-4" style="color:var(--ia); font-family:Orbitron;">ACCOUNT: MISIÓN Y PERFIL CORPORATIVO</h1>
-          <p class="text-lg text-white mb-8 border-b border-gray-700 pb-4">SYMMETRY AI ENGINE PRO V13.4 es una herramienta de software biométrico avanzada, diseñada para el análisis profesional y estético de la morfología facial humana.</p>
+          <p class="text-lg text-white mb-8 border-b border-gray-700 pb-4">SYMMETRY AI ENGINE PRO V13.6 es una herramienta de software biométrico avanzada, diseñada para el análisis profesional y estético de la morfología facial humana.</p>
           
           <div class="tech-card" style="border-left: 5px solid var(--accent-success);">
               <h3><i class="fas fa-bullseye" style="color:var(--accent-success);"></i> Misión del Sistema</h3>
@@ -560,7 +566,7 @@
 <script>
 /*
 =======================================================
-JAVASCRIPT/FACE-API.JS LÓGICA (V13.4 - FLOW MÓVIL Y CAPTURA)
+JAVASCRIPT/FACE-API.JS LÓGICA (V13.6 - FIXES DE RESPONSIVIDAD)
 =======================================================
 */
 const MODELS_URL='./models';
@@ -636,12 +642,10 @@ async function startWebcamFlow() {
     try{
         placeholderMsg.textContent = 'Solicitando acceso al WebCam Feed...';
         
-        // 🚨 NUEVA LÓGICA MÓVIL: OCULTAR MÉTRICAS HASTA LA CAPTURA
-        const isMobile = isMobileView();
-        if (isMobile) {
-            // Asegura que al iniciar la cámara, la tabla de métricas está oculta
+        // 🚨 LÓGICA MÓVIL: Ocultar métricas al iniciar
+        if (isMobileView()) {
             liveScanViewEl.classList.remove('show-results');
-            liveScanViewEl.scrollTop = 0; // Asegura que se vea la cámara
+            liveScanViewEl.scrollTop = 0; 
         }
 
         const stream=await navigator.mediaDevices.getUserMedia({video:true});
@@ -670,7 +674,7 @@ mainActionButton.onclick=async()=>{
         await startWebcamFlow();
         
         // 2. Establecer texto inicial (depende de la vista)
-        const initialText = isMobile ? 'ESCANEAR ROSTRO' : '📸 CAPTURAR DATOS';
+        const initialText = isMobile ? 'ESPERANDO ROSTRO...' : '📸 CAPTURAR DATOS';
         mainActionButton.textContent = initialText;
         mainActionButton.disabled = true; // Disabled until a face is aligned
         
@@ -686,6 +690,7 @@ async function loop(){
     if(!running)return;
     const displaySize = { width: canvas.width, height: canvas.height };
     
+    // DETECCIÓN con SsdMobilenetv1Options
     const det=await faceapi.detectSingleFace(video,new faceapi.SsdMobilenetv1Options({minConfidence:.5}))
         .withFaceLandmarks().withFaceExpressions();
     
@@ -703,6 +708,8 @@ async function loop(){
     
     // Lógica de detección, scoring y feedback
     const animalDetected = checkAnimalDetection(det); 
+    const isMobile = isMobileView();
+    const targetText = isMobile ? 'ESCANEAR ROSTRO' : '📸 CAPTURAR DATOS';
 
     if (animalDetected) {
         mainActionButton.disabled = true;
@@ -711,25 +718,30 @@ async function loop(){
         showCriticalWarning(`DETECCIÓN DE OBJETO NO-FACIAL: ${animalDetected}. Análisis restringido a Biometría Humana.`);
         positionFeedback.style.opacity = 0;
         resetHUDLive();
+        mainActionButton.textContent = targetText;
+
     } else if(det){
         lastDet = det;
         const score=calcSymmetry(lastDet);
         updateLiveMetrics(score, lastDet.expressions);
         
-        const targetText = isMobileView() ? 'ESCANEAR ROSTRO' : '📸 CAPTURAR DATOS';
-        
         if (score > ISF_THRESHOLD) {
             positionFeedback.textContent = 'Rostro detectado y calibrado 🟢 (Posición Biométrica Óptima)';
             positionFeedback.style.color = 'var(--accent-success)';
+            
+            // 💡 FIX: Habilitar el botón SÓLO aquí, cuando el rostro es óptimo.
             mainActionButton.disabled = false;
             mainActionButton.classList.add('primary');
-            mainActionButton.textContent = targetText; // Asegura el texto correcto
+            mainActionButton.textContent = targetText; 
+
         } else {
             positionFeedback.textContent = 'Ajuste el eje de la cabeza y mantenga la distancia recomendada...';
             positionFeedback.style.color = 'var(--accent-warning)';
+            
+            // 💡 FIX: Deshabilitar el botón si no es óptimo.
             mainActionButton.disabled = true;
             mainActionButton.classList.remove('primary');
-            mainActionButton.textContent = targetText; // Asegura el texto correcto
+            mainActionButton.textContent = targetText;
         }
         positionFeedback.style.opacity = 1;
 
@@ -737,7 +749,7 @@ async function loop(){
       lastDet = null;
       mainActionButton.disabled = true;
       mainActionButton.classList.remove('primary');
-      mainActionButton.textContent = isMobileView() ? 'ESPERANDO ROSTRO...' : '📸 CAPTURAR DATOS'; 
+      mainActionButton.textContent = isMobile ? 'ESPERANDO ROSTRO...' : '📸 CAPTURAR DATOS'; 
       resetHUDLive();
       
       positionFeedback.textContent = 'Buscando rostro humano... Iniciando módulo de Detección.';
@@ -765,7 +777,7 @@ async function captureData(){
     tempCtx.save();
     tempCtx.scale(-1, 1); 
     tempCtx.translate(-tempCanvas.width, 0);
-    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+    tempCtx.drawImage(video, 0, 0, tempCanvas.width, video.videoHeight); // FIX: usar video.videoHeight
     tempCtx.restore();
     const rawCaptured = tempCanvas.toDataURL('image/png'); 
     
@@ -833,7 +845,7 @@ async function startAnalysisFlow(det, isScanningAnimation = false) {
         
         clearInterval(progressInterval);
         progressBar.style.width = '100%';
-        progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final (V13.4)...';
+        progressMessage.textContent = 'ANÁLISIS COMPLETADO. Generando Reporte Final (V13.6)...';
         await simulateAnalysisDelay(1000); 
 
     } else {
@@ -862,6 +874,7 @@ function transitionToDataAnalytics(finalDet) {
         
         // Desplazamiento suave hacia el panel de métricas
         setTimeout(() => {
+            // FIX: Usar scrollIntoView con un contenedor específico o el body (Aquí el liveScanViewEl tiene scroll)
             document.getElementById('metrics-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
         }, 650); // Delay ligeramente mayor que la transición CSS (0.6s)
     }
@@ -896,7 +909,8 @@ function transitionToDataAnalytics(finalDet) {
     document.getElementById('dev-left').style.width = `${50 + deviation}%`;
     document.getElementById('dev-right').style.width = `${50 - deviation}%`;
 
-    animateScore(beautyScoreEl, beautyScoreNumber.toFixed(2) + '/10', 10);
+    animateScore(beautyScoreEl, beautyScoreNumber.toFixed(2)); // FIX: Ya no añade '/10' aquí.
+    beautyScoreEl.textContent += '/10'; // Lo añadimos después de la animación.
     drawAureaDonut(beautyScoreNumber * 10);
     
     ageScoreEl.textContent = `${Math.round(finalDet.age)} años (${finalDet.gender === 'male' ? 'HOMBRE (Masc.)' : 'MUJER (Fem.)'})`;
@@ -969,6 +983,11 @@ function switchView(viewId, clickedItem) {
 
     if (viewId !== 'live-scan-view') {
         if(running) stopWebcam();
+    } else {
+        // Al volver a Live Scan, asegurar que el botón de inicio sea visible.
+        if (!running && mainActionButton.textContent.includes('INICIAR ESCANEO')) {
+             placeholder.style.display='block';
+        }
     }
 }
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -993,10 +1012,11 @@ async function loadModels(){
     faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS_URL),
     faceapi.nets.faceLandmark68Net.loadFromUri(MODELS_URL),
     faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL),
-    faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL) 
+    faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL)
   ]);
   mainActionButton.textContent = '▶ INICIAR ESCANEO';
   mainActionButton.disabled=false;
+  mainActionButton.classList.add('primary'); 
 }
 window.addEventListener('load',loadModels);
 function resizeCanvas(){
@@ -1074,10 +1094,10 @@ function updateScoreFeedback(score, finalReport){
 function resetHUDLive(isRetry = false){
   const devLeftEl=document.getElementById('dev-left');
   const devRightEl=document.getElementById('dev-right');
-
-  animateScore(isfScoreEl, 0); 
-  animateScore(beautyScoreEl, 0, 10);
   
+  animateScore(isfScoreEl, 0); 
+  animateScore(beautyScoreEl, 0);
+
   isfScoreEl.textContent = '—';
   isfFeedbackEl.textContent = isRetry ? 'Reanudando detección y calibración en tiempo real...' : 'Esperando entrada biométrica de alto rendimiento.';
   devLeftEl.style.width = '50%';
@@ -1091,8 +1111,13 @@ function resetHUDLive(isRetry = false){
   exprAllEl.innerHTML = 'Detalle de emociones disponible tras Análisis Profesional...';
 }
 function animateScore(element, targetValue, maxValue = 100) {
+    const targetNumber = parseFloat(targetValue); 
+    if (isNaN(targetNumber)) {
+        element.textContent = targetValue; 
+        return;
+    }
+    
     const currentValue = parseFloat(element.textContent.replace(/[^\d.]/g, '')) || 0;
-    const targetNumber = parseFloat(targetValue.replace(/[^\d.]/g, '')) || 0;
     
     let startTime;
     const duration = 500; 
@@ -1102,9 +1127,9 @@ function animateScore(element, targetValue, maxValue = 100) {
         const progress = timestamp - startTime;
         const percentage = Math.min(progress / duration, 1);
         const value = currentValue + (targetNumber - currentValue) * percentage;
-
+        
         if (element.id === 'beauty-score') {
-            element.textContent = `${value.toFixed(1)}/10`;
+            element.textContent = `${value.toFixed(1)}`; 
         } else {
             element.textContent = value.toFixed(2);
         }
@@ -1112,7 +1137,7 @@ function animateScore(element, targetValue, maxValue = 100) {
         if (percentage < 1) {
             raf = requestAnimationFrame(step);
         } else {
-            element.textContent = targetValue;
+             element.textContent = targetValue;
         }
     }
     if (Math.abs(currentValue - targetNumber) > 0.01) {
@@ -1193,7 +1218,8 @@ function updateLiveMetrics(score, expressions) {
     devRightEl.style.width = `${50 - deviation}%`;
     devLeftEl.style.backgroundColor = score > 85 ? 'var(--accent-success)' : 'var(--accent-warning)';
 
-    animateScore(beautyScoreEl, calcBeautyScore(score).toFixed(2) + '/10', 10);
+    animateScore(beautyScoreEl, calcBeautyScore(score).toFixed(2)); 
+    beautyScoreEl.textContent += '/10'; 
     drawAureaDonut(calcBeautyScore(score) * 10);
     
     updateEmotionDisplay(expressions, false);
