@@ -124,12 +124,12 @@
   </div>
 
   <!-- Dependencies: face-api must be provided in ./libs/ or adjust path -->
-  <script src="./libs/face-api.min.js"></script>
+  <script src="/face-api.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
     /* ======== Config & Helpers ======== */
-    const MODELS_URL = './models';
+    const MODELS_URL = '/models';
     const video = document.getElementById('inputVideo');
     const canvas = document.getElementById('overlayCanvas');
     const ctx = canvas.getContext('2d');
