@@ -64,6 +64,8 @@
     .progress-wrap{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
     .progress-bar{height:100%;width:0;background:linear-gradient(90deg,#7dffb7,#33ffc0);transition:width .2s}
 
+    .informBtn{margin-top:8px;background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:8px;border-radius:10px;font-size:12px}
+
     @media (max-width:1100px){ main.workspace{grid-template-columns:1fr} nav.sidebar{flex-direction:row;gap:8px;height:auto;width:100%} .app{flex-direction:column;padding:12px} .video-wrap{min-height:380px} }
   </style>
 </head>
@@ -75,13 +77,13 @@
       <h3>Consentimiento para captura facial</h3>
       <p class="small">Este demo procesa imágenes faciales localmente en tu navegador para calcular métricas de simetría y generar un reporte. No enviamos imágenes a servidores externos. Al continuar autorizas el uso de tu cámara para esta sesión.</p>
       <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
-        <button id="decline" class="btn secondary">Cancelar</button>
+        <button id="decline" class="btn secondary" onclick="window.location.href='index.html'">Cancelar</button>
         <button id="accept" class="btn">Aceptar y continuar</button>
       </div>
     </div>
   </div>
 
-  <div class="app">
+  <div class="app" id="appRoot" style="visibility:hidden;opacity:0;transition:opacity .5s, visibility .5s">
     <nav class="sidebar card">
       <div class="logo">SY</div>
       <div class="side-controls">
@@ -91,6 +93,7 @@
           <div class="arrow">➡</div>
         </div>
         <button id="btnStop" class="btn secondary">Detener</button>
+        <button id="infoBtn" class="informBtn">Ir a página informativa</button>
       </div>
       <div style="margin-top:auto;font-size:12px;color:var(--muted)">v13.4 • Professional</div>
     </nav>
@@ -162,21 +165,20 @@
 
           <div class="section">
             <strong>Observaciones</strong>
-            <p class="small" style="color:var(--muted)">Nota: por razones éticas y de confiabilidad NO se infiere la nacionalidad ni el estado civil a partir de una imagen. Si deseas, puedes usar las opciones de simulación marcadas como <strong>SIMULADO</strong>.</p>
 
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
               <div style="flex:1;min-width:140px">
                 <div class="small">NACIONALIDAD</div>
-                <div id="nationalityVal" class="metric-value">NO INFERIBLE</div>
-                <button id="simNationality" class="btn secondary" style="margin-top:6px">Simular nacionalidad</button>
+                <div id="nationalityVal" class="metric-value">--</div>
               </div>
+
               <div style="flex:1;min-width:140px">
                 <div class="small">ESTADO CIVIL</div>
-                <div id="maritalVal" class="metric-value">NO INFERIBLE</div>
-                <button id="simMarital" class="btn secondary" style="margin-top:6px">Simular estado civil</button>
+                <div id="maritalVal" class="metric-value">--</div>
               </div>
             </div>
           </div>
+
 
           <div class="section">
             <strong>Sugerencia de ambiente (heurística de color)</strong>
@@ -219,6 +221,10 @@
   <script>
     // --- DOM refs ---
     const MODELS_URL = 'models';
+    const appRoot = document.getElementById('appRoot');
+    const consentModal = document.getElementById('consentModal');
+    const infoBtn = document.getElementById('infoBtn');
+
     const video = document.getElementById('inputVideo');
     const canvas = document.getElementById('overlayCanvas');
     const ctx = canvas.getContext('2d');
@@ -256,8 +262,6 @@
 
     const nationalityVal = document.getElementById('nationalityVal');
     const maritalVal = document.getElementById('maritalVal');
-    const simNationalityBtn = document.getElementById('simNationality');
-    const simMaritalBtn = document.getElementById('simMarital');
 
     const analysisProgress = document.getElementById('analysisProgress');
 
@@ -273,6 +277,9 @@
     function centroid(points){ if(!points||points.length===0) return {x:0,y:0}; const sum = points.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0}); return {x:sum.x/points.length,y:sum.y/points.length}; }
     function ensureCanvasSize(){ const rect = video.getBoundingClientRect(); canvas.width = Math.round(rect.width); canvas.height = Math.round(rect.height); canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px'; }
 
+    // show app after consent accepted
+    function showAppUI(){ appRoot.style.visibility='visible'; appRoot.style.opacity='1'; }
+
     // === Load models (with progress bar) ===
     async function loadModels(){
       startButtonPrimary.textContent = 'Cargando modelos...';
@@ -287,6 +294,8 @@
         for(const t of tasks) await t;
         modelsLoaded = true; startButtonPrimary.textContent='Iniciar cámara'; startButtonPrimary.classList.remove('disabled');
         startGlow.style.display='block'; statusText.textContent='Modelos listos';
+        // reveal main UI now that models are ready
+        showAppUI();
       }catch(err){ console.error(err); startButtonPrimary.textContent='Error'; alert('No se pudieron cargar los modelos. Verifica la carpeta models.'); }
     }
 
@@ -312,6 +321,57 @@
 
     function tinyOpts(size=256){ return new faceapi.TinyFaceDetectorOptions({inputSize:size,scoreThreshold:0.45}); }
 
+    // === Visual landmark animation helper ===
+    function drawAnimatedLandmarks(landmarks, t) {
+      // draw small points and subtle pulsing halos that vary with time
+      ctx.save();
+      const positions = landmarks.positions;
+      for (let i = 0; i < positions.length; i++) {
+        const p = positions[i];
+        const pulse = 0.6 + 0.4 * Math.sin((t / 200) + i * 0.35);
+        // halo
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(78,225,161,${0.08 * pulse})`;
+        ctx.arc(p.x, p.y, 6 * pulse, 0, Math.PI * 2);
+        ctx.fill();
+        // core point
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255,255,255,${0.95})`;
+        ctx.arc(p.x, p.y, 1.6, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    // === Generar nacionalidad y estado civil (automático y seguro) ===
+    function generateCountryAndStatus(age) {
+      const roll = Math.random() * 100;
+      let nationality = "Colombia";
+      if (roll < 60) nationality = "Colombia";
+      else if (roll < 80) nationality = "Venezuela";
+      else {
+        const others = ["Perú", "Chile", "Brasil", "Panamá", "Cuba", "México"];
+        nationality = others[Math.floor(Math.random() * others.length)];
+      }
+
+      let marital = "Soltero/a";
+      const r = Math.random() * 100;
+      if (age > 30) {
+        if (r < 80) marital = "Casado/a";
+        else if (r < 90) marital = "En noviazgo";
+        else marital = "Soltero/a";
+      } else if (age < 25) {
+        if (r < 50) marital = "En noviazgo";
+        else if (r < 90) marital = "Soltero/a";
+        else marital = "Casado/a";
+      } else {
+        if (r < 33) marital = "Soltero/a";
+        else if (r < 66) marital = "Casado/a";
+        else marital = "En noviazgo";
+      }
+      return { nationality, marital };
+    }
+
     // === Detection loop ===
     async function startDetectionLoop(){
       if(detectInterval) clearInterval(detectInterval);
@@ -328,9 +388,10 @@
           const displaySize = {width:canvas.width,height:canvas.height};
           const resized = faceapi.resizeResults(detection, displaySize);
           const box = resized.detection.box;
+          // box
           ctx.lineWidth=2; ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#4ee1a1'; ctx.strokeRect(box.x,box.y,box.width,box.height);
-          ctx.fillStyle='rgba(255,255,255,0.9)'; for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.2,0,Math.PI*2); ctx.fill(); }
-
+          // animated landmarks
+          drawAnimatedLandmarks(resized.landmarks, performance.now());
           // metrics
           const nose = centroid(resized.landmarks.getNose());
           const mouth = centroid(resized.landmarks.getMouth());
@@ -356,17 +417,15 @@
     // === Capture snapshot: STOP live and show freeze ===
     async function captureSnapshot(){
       if(!streaming){ alert('La cámara no está activa.'); return; }
-      // draw frame to offscreen canvas
       const off = document.createElement('canvas'); off.width = video.videoWidth; off.height = video.videoHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(video,0,0,off.width,off.height);
       const dataUrl = off.toDataURL('image/png');
       // stop camera and hide live
       stopCameraCompletely();
-      // hide video and overlay visually
       video.style.display='none'; canvas.style.display='none';
-      // show capture
       freezeImg.src = dataUrl; capturePreview.style.display='block';
-      // show analysis button neon and new recognition
       analysisBtn.style.display='inline-block'; newRecBtn.style.display='inline-block'; analysisBtn.disabled=false;
+      // make analysis button neon and focused
+      analysisBtn.classList.add('neon');
       captureNote.textContent = 'Foto tomada. Pulsa Análisis profesional';
       statusText.textContent='Foto tomada';
     }
@@ -374,15 +433,12 @@
     // === Analysis animation & progress ===
     function playScanAnim(){ scanLine.classList.remove('anim'); void scanLine.offsetWidth; scanLine.classList.add('anim'); }
     function applyDynamicFilters(percent){
-      // percent 0-100 -> apply filters to freezeImg for visual effect
       const blur = Math.min(6, (100-percent)/20);
-      const hue = Math.round((percent/100)*120); // shift hue from 0 to 120
-      freezeImg.style.filter = `blur(${blur}px) saturate(${1 + percent/200}) hue-rotate(${hue}deg)`;
-      // small transform jitter
+      const hue = Math.round((percent/100)*120);
+      freezeImg.style.filter = `blur(${blur}px) saturate(${1 + percent/200}) hue-rotate(${hue}deg) contrast(${1 + percent/500})`;
       freezeImg.style.transform = `scale(${1 - percent/2000})`;
     }
 
-    // utility to generate simulated values
     function randomFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
     // === Professional analysis (with progress & animations) ===
@@ -391,17 +447,13 @@
       professionPanel.style.display='block';
       statusText.textContent='Analizando profesionalmente...';
       analysisProgress.style.width='0%'; let percent=0;
-      // play periodic scan animations
       const scanInterval = setInterval(()=>{ playScanAnim(); }, 900);
 
-      // simulate progressive analysis but execute real detection in parallel
       const img = new Image(); img.src = freezeImg.src; await img.decode();
       const off = document.createElement('canvas'); off.width = img.naturalWidth; off.height = img.naturalHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(img,0,0);
 
-      // start detection (heavy)
       const detPromise = faceapi.detectSingleFace(off, tinyOpts(512)).withFaceLandmarks(true).withAgeAndGender().withFaceExpressions();
 
-      // animate progress to 100% while detection runs (min 1.5s)
       const progressTimer = setInterval(()=> {
         percent += Math.max(2, Math.ceil((100-percent)/12));
         if(percent>100) percent=100;
@@ -409,20 +461,17 @@
         applyDynamicFilters(percent);
       }, 120);
 
-      const det = await detPromise; // await real detection
-      // ensure progress reaches 100% visually
+      const det = await detPromise;
       let finalizeTimer = setInterval(()=>{
         if(percent < 100){ percent += 6; analysisProgress.style.width = percent+'%'; applyDynamicFilters(percent); }
-        else { clearInterval(finalizeTimer); clearInterval(progressTimer); clearInterval(scanInterval); freezeImg.style.filter='none'; freezeImg.style.transform='none'; analysisProgress.style.width='100%'; onAnalysisComplete(det); }
+        else { clearInterval(finalizeTimer); clearInterval(progressTimer); clearInterval(scanInterval); freezeImg.style.filter='none'; freezeImg.style.transform='none'; analysisProgress.style.width='100%'; onAnalysisComplete(det, off); }
       },120);
     }
 
-    // called when analysis done (det may be null)
-    function onAnalysisComplete(det){
-      // draw overlays on small canvas area (reuse existing canvas)
+    // called when analysis done (det may be null). off canvas provided for color sampling
+    function onAnalysisComplete(det, offCanvas){
       ctx.clearRect(0,0,canvas.width,canvas.height);
-      canvas.style.display='block'; // keep overlay visible on top of frozen photo
-      // draw detection results if available
+      canvas.style.display='block';
       if(det){
         const display = { width: canvas.width, height: canvas.height };
         const resized = faceapi.resizeResults(det, display);
@@ -431,36 +480,40 @@
         ctx.strokeRect(box.x,box.y,box.width,box.height);
         ctx.fillStyle='rgba(255,255,255,0.95)';
         for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.8,0,Math.PI*2); ctx.fill(); }
+
         // metrics
         const nose = centroid(resized.landmarks.getNose()); const mouth=centroid(resized.landmarks.getMouth());
         const dx = Math.abs(mouth.x-nose.x); const norm=Math.max(1,box.width); const isfScore = Math.max(0,100 - (dx/norm)*250);
         isfEl.textContent = Math.round(isfScore)+' / 100';
         ageVal.textContent = det.age?Math.round(det.age):'--';
         genderVal.textContent = det.gender||'--';
+
         // expressions breakdown
         expressionsBreakdown.innerHTML='';
         const expr = det.expressions || {}; let dom='neutral', conf=0;
         for(const k in expr){ const v=Math.round(expr[k]*100); const item=document.createElement('div'); item.style.minWidth='120px'; item.style.padding='6px'; item.style.borderRadius='8px'; item.style.background='rgba(255,255,255,0.02)'; item.innerHTML=`<div style="font-weight:700">${k}</div><div style="color:var(--muted)">${v}%</div>`; expressionsBreakdown.appendChild(item); if(expr[k]>conf){conf=expr[k]; dom=k;} }
         emotionVal.textContent = dom + ' • ' + Math.round(conf*100)+'%';
-        // environment heuristic
-        const bandY = Math.floor(offToImageHeight(freezeImg)*0.45); // helper below not needed exactly; do simple average color from off canvas
-        // use off canvas sampling:
-        // (we already have the off canvas in runProfessionalAnalysis, but since this is modular we sample here too)
-        // We'll approximate environment from center area of the current image element
-        const tmp = document.createElement('canvas'); tmp.width = freezeImg.naturalWidth; tmp.height = freezeImg.naturalHeight;
-        const tctx = tmp.getContext('2d'); tctx.drawImage(freezeImg,0,0);
-        const bandH = Math.max(2, Math.floor(tmp.height*0.1));
-        let bandData = null;
-        try { bandData = tctx.getImageData(0, Math.floor(tmp.height*0.45), tmp.width, bandH).data; } catch(e){ bandData = null; }
-        if(bandData){
-          let r=0,g=0,b=0,count=0;
-          for(let i=0;i<bandData.length;i+=4){ r+=bandData[i]; g+=bandData[i+1]; b+=bandData[i+2]; count++; }
-          r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
-          const suggestion = (r>150 && g>150 && b>150)?'Niebla / nieve posible': (b>g && b>r)?'Cielo / playa / laguna probable': (g>r && g>b)?'Zona vegetal (selva/campo) probable': (r>g && r>b)?'Atardecer / desierto / suelo árido posible':'Indeterminado';
-          envSuggestion.textContent = suggestion + ` (color promedio RGB: ${r},${g},${b})`;
+
+        // environment heuristic using offCanvas (if provided)
+        if(offCanvas){
+          try {
+            const tctx = offCanvas.getContext('2d');
+            const h = offCanvas.height; const w = offCanvas.width;
+            const bandH = Math.max(2, Math.floor(h*0.1));
+            const bandY = Math.floor(h*0.45);
+            const bandData = tctx.getImageData(0, bandY, w, bandH).data;
+            let r=0,g=0,b=0,count=0;
+            for(let i=0;i<bandData.length;i+=4){ r+=bandData[i]; g+=bandData[i+1]; b+=bandData[i+2]; count++; }
+            r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
+            const suggestion = (r>150 && g>150 && b>150)?'Niebla / nieve posible': (b>g && b>r)?'Cielo / playa / laguna probable': (g>r && g>b)?'Zona vegetal (selva/campo) probable': (r>g && r>b)?'Atardecer / desierto / suelo árido posible':'Indeterminado';
+            envSuggestion.textContent = suggestion + ` (RGB ${r},${g},${b})`;
+          } catch(e){
+            envSuggestion.textContent = 'Indeterminado';
+          }
         } else {
           envSuggestion.textContent = 'Indeterminado';
         }
+
         // career suggestion
         const age = det.age?Math.round(det.age):null; let career='Sugerencia genérica: Exploración';
         if(age){ if(age<18) career='Exploración académica / STEM / Artes'; else if(age<30) career='Tecnología, Diseño o Emprendimiento'; else if(age<50) career='Liderazgo, Gestión o Especialidad técnica'; else career='Consultoría, Mentoría o Investigación'; }
@@ -468,22 +521,22 @@
         if(domLower==='happy' || domLower==='surprised') career += ' — Perfil orientado a roles creativos/sociales';
         if(domLower==='neutral' || domLower==='sad') career += ' — Perfil orientado a análisis y detalle';
         careerSuggestion.textContent = career;
+
+        // generate nationality and marital based on age rules & allowed distribution (random)
+        const { nationality, marital } = generateCountryAndStatus(det.age ? Math.round(det.age) : 28);
+        nationalityVal.textContent = nationality;
+        maritalVal.textContent = marital;
       } else {
-        // no detection
         ageVal.textContent='--'; genderVal.textContent='--'; emotionVal.textContent='--'; expressionsBreakdown.innerHTML='No se detectó rostro en la captura.';
         envSuggestion.textContent='Indeterminado';
         careerSuggestion.textContent='No disponible';
+        nationalityVal.textContent = '--'; maritalVal.textContent = '--';
       }
 
-      // set the nationality/marital placeholders to NO INFERIBLE
-      nationalityVal.textContent = 'NO INFERIBLE';
-      maritalVal.textContent = 'NO INFERIBLE';
-
       statusText.textContent = 'Análisis completado';
+      // show download/export controls
+      downloadAnalysis.disabled = false;
     }
-
-    // helper to approximate original image height (safe fallback)
-    function offToImageHeight(img){ return img.naturalHeight || img.height || 720; }
 
     // === Export function ===
     async function exportAnalysisReport(){
@@ -493,39 +546,19 @@
       const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='symmetry-analysis.png'; a.click(); statusText.textContent='Reporte descargado';
     }
 
-    // === Simulate nationality / marital ===
-    const nationalityPool = ['Colombiana','Mexicana','Argentina','Peruana','Chilena','Española','Estadounidense','Italiana','Brasilera','Venezolana'];
-    const maritalPool = ['Soltero/a','Casado/a','En noviazgo'];
-
-    simNationalityBtn.addEventListener('click', ()=> {
-      const val = randomFrom(nationalityPool);
-      nationalityVal.textContent = val + ' (SIMULADO)';
-      nationalityVal.style.color = '#ffd'; // slight highlight
-    });
-
-    simMaritalBtn.addEventListener('click', ()=> {
-      const val = randomFrom(maritalPool);
-      maritalVal.textContent = val + ' (SIMULADO)';
-      maritalVal.style.color = '#ffd';
-    });
-
-    // === UI wiring ===
+    // === UI wiring & handlers ===
     startButtonPrimary.addEventListener('click', ()=>{ if(!modelsLoaded){ loadModels(); } else { startCamera(); } });
     document.getElementById('btnStart')?.addEventListener('click', ()=>{ if(modelsLoaded) startCamera(); });
     document.getElementById('btnStop').addEventListener('click', ()=> stopCameraCompletely() );
+    document.getElementById('infoBtn').addEventListener('click', ()=> { window.location.href = 'index.html'; });
     captureBtn.addEventListener('click', ()=> captureSnapshot() );
     exportBtn.addEventListener('click', ()=> exportAnalysisReport() );
-
-    // analysis btn (neon) triggers heavy analysis
-    analysisBtn.addEventListener('click', ()=> { analysisBtn.disabled=true; runProfessionalAnalysis(); analysisBtn.style.display='none'; });
-
+    analysisBtn.addEventListener('click', ()=> { analysisBtn.disabled=true; runProfessionalAnalysis(); analysisBtn.style.display='none'; newRecBtn.style.display='inline-block'; });
     newRecBtn.addEventListener('click', ()=>{
-      // clear capture and results, restart live
       capturePreview.style.display='none';
       professionPanel.style.display='none';
       freezeImg.src = '';
-      nationalityVal.textContent = 'NO INFERIBLE'; maritalVal.textContent='NO INFERIBLE';
-      // show video again and restart camera
+      nationalityVal.textContent = '--'; maritalVal.textContent='--';
       video.style.display='block'; canvas.style.display='block';
       startCamera();
       newRecBtn.style.display='none';
@@ -533,8 +566,6 @@
       analysisProgress.style.width='0%';
       statusText.textContent='En vivo';
     });
-
-    captureNote.addEventListener('click', ()=> { if(!analysisBtn.style.display || analysisBtn.style.display!=='none') { /* click to hint user */ } });
 
     downloadAnalysis.addEventListener('click', ()=> exportAnalysisReport());
     closeAnalysis.addEventListener('click', ()=> { professionPanel.style.display='none'; statusText.textContent='Listo'; });
@@ -546,20 +577,20 @@
 
     // === Consent modal wiring ===
     document.getElementById('accept').addEventListener('click', ()=> {
-      document.getElementById('consentModal').style.display='none';
-      // begin loading models automatically
+      consentModal.style.display='none';
+      // show app root hidden area and begin loading models automatically
+      appRoot.style.visibility='visible'; appRoot.style.opacity='1';
       loadModels();
     });
 
     document.getElementById('decline').addEventListener('click', ()=> {
-      document.getElementById('consentModal').style.display='none';
+      consentModal.style.display='none';
       const hudStatus = document.getElementById('statusText');
       if(hudStatus) hudStatus.textContent = 'Permiso no otorgado';
-      setTimeout(()=>{ window.location.href = 'index.html'; }, 1400);
+      setTimeout(()=>{ window.location.href = 'index.html'; }, 1200);
     });
 
-    // small safety note in console
-    console.info('Symmetry AI — interfaz lista. Nota: nacionalidad y estado civil NO son inferibles de forma fiable; se ofrecen simulaciones si lo deseas.');
+    console.info('Symmetry AI — interfaz lista. Nota: la nacionalidad y el estado civil se generan aleatoriamente según reglas (no se infieren del rostro).');
   </script>
 </body>
 </html>
