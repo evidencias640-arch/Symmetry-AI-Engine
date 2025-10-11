@@ -1,0 +1,2106 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aurion Biometric Engine</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0a1628;
+      color: #ffffff;
+      overflow-x: hidden;
+    }
+
+    .scanner-line {
+      position: fixed;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+      animation: scan 4s linear infinite;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    @keyframes scan {
+      0% {
+        top: 0;
+      }
+
+      100% {
+        top: 100%;
+      }
+    }
+
+    .particles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: rgba(0, 212, 255, 0.5);
+      animation: float 10s infinite;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+      }
+
+      10% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translateY(-100vh) translateX(50px);
+        opacity: 0;
+      }
+    }
+
+    header {
+      position: relative;
+      text-align: center;
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #0a1628 0%, #1a2f4a 100%);
+      border-bottom: 2px solid #00d4ff;
+      overflow: hidden;
+    }
+
+    .header-glow {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.2) 0%, transparent 70%);
+      transform: translate(-50%, -50%);
+      animation: pulse 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.5;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.8;
+      }
+    }
+
+    h1 {
+      font-size: 4em;
+      color: #00d4ff;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.8), 0 0 40px rgba(0, 212, 255, 0.4);
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 2;
+      animation: glitch 5s infinite;
+    }
+
+    @keyframes glitch {
+
+      0%,
+      90%,
+      100% {
+        transform: translate(0);
+      }
+
+      91% {
+        transform: translate(-2px, 2px);
+      }
+
+      92% {
+        transform: translate(2px, -2px);
+      }
+
+      93% {
+        transform: translate(0);
+      }
+    }
+
+    .subtitle {
+      font-size: 1.3em;
+      color: #8ec5fc;
+      position: relative;
+      z-index: 2;
+      letter-spacing: 2px;
+    }
+
+    /* --- Keyframes Mejorados --- */
+    @keyframes rotate-border-slow {
+
+      /* Para el círculo principal */
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes rotate-border-fast {
+
+      /* Para los pseudo-elementos */
+      0% {
+        transform: rotate(10deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes pulse-glow {
+
+      /* Efecto de brillo para el círculo principal */
+      0%,
+      100% {
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.5), inset 0 0 10px rgba(0, 212, 255, 0.2);
+      }
+
+      50% {
+        box-shadow: 0 0 50px rgba(0, 212, 255, 0.8), inset 0 0 25px rgba(0, 212, 255, 0.4);
+      }
+    }
+
+    /* --- Estilos del Contenedor Principal (.face-scan) --- */
+    .face-scan {
+      width: 300px;
+      height: 300px;
+      margin: 40px auto;
+      position: relative;
+      border: 3px solid #00d4ff;
+      /* Borde más sutil */
+      border-radius: 50%;
+      /* Combinamos la animación de rotación y el pulso */
+      animation:
+        rotate-border-slow 10s linear infinite,
+        /* Hacemos la rotación principal mucho más lenta */
+        pulse-glow 2s ease-in-out infinite alternate;
+      /* Añadimos el pulso de brillo */
+    }
+
+    /* --- Estilos de los Anillos Giratorios (::before y ::after) --- */
+
+    .face-scan::before,
+    .face-scan::after {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      /* Borde un poco más grueso para más visibilidad */
+      /* Usamos un filtro de sombra para darle un efecto Neón */
+      filter: drop-shadow(0 0 5px);
+    }
+
+    /* Anillo 1: Verde Neón - Rotación Rápida y Normal */
+    .face-scan::before {
+      border-top-color: #d9ff00;
+      /* Usamos 'ease-in-out' para un movimiento menos robótico */
+      animation: rotate-border-fast 1.5s ease-in-out infinite;
+      /* Ligeramente más pequeño para separar las órbitas */
+      transform: scale(0.20);
+    }
+
+    /* Anillo 2: Magenta Brillante - Rotación Lenta e Inversa */
+    .face-scan::after {
+      border-top-color: #f13fcb;
+      /* Rotación más lenta y en sentido contrario */
+      animation: rotate-border-fast 1.5s ease-in-out infinite reverse;
+      /* Ligeramente más grande para que abarque al otro */
+      transform: scale(0.20);
+    }
+
+    .measurement-points {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+    }
+
+    .point {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: #00d4ff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #00d4ff;
+      animation: blink 1.5s infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.3;
+        transform: scale(1.3);
+      }
+    }
+
+    .point:nth-child(1) {
+      top: 78%;
+      left: 12%;
+    }
+
+    .point:nth-child(2) {
+      top: 22%;
+      left: 88%;
+    }
+
+    .point:nth-child(3) {
+      top: 55%;
+      left: 35%;
+    }
+
+    .point:nth-child(4) {
+      top: 10%;
+      left: 63%;
+    }
+
+    .point:nth-child(5) {
+      top: 90%;
+      left: 50%;
+    }
+
+    .point:nth-child(6) {
+      top: 40%;
+      left: 5%;
+    }
+
+    .point:nth-child(7) {
+      top: 70%;
+      left: 75%;
+    }
+
+    .point:nth-child(8) {
+      top: 15%;
+      left: 30%;
+    }
+
+    .point:nth-child(9) {
+      top: 85%;
+      left: 20%;
+    }
+
+    .point:nth-child(10) {
+      top: 30%;
+      left: 80%;
+    }
+
+    .point:nth-child(11) {
+      top: 60%;
+      left: 18%;
+    }
+
+    .point:nth-child(12) {
+      top: 5%;
+      left: 45%;
+    }
+
+    .point:nth-child(13) {
+      top: 50%;
+      left: 80%;
+    }
+
+    .point:nth-child(14) {
+      top: 45%;
+      left: 55%;
+    }
+
+    .point:nth-child(15) {
+      top: 25%;
+      left: 70%;
+    }
+
+
+    /* --- Estilos del Contenedor Principal (.face-scan) --- */
+    .face-scan {
+      width: 300px;
+      height: 300px;
+      margin: 40px auto;
+      position: relative;
+      border: 3px solid #00d4ff;
+      /* Borde más sutil */
+      border-radius: 50%;
+      /* Combinamos la animación de rotación y el pulso */
+      animation:
+        rotate-border-slow 10s linear infinite,
+        /* Hacemos la rotación principal mucho más lenta */
+        pulse-glow 2s ease-in-out infinite alternate;
+      /* Añadimos el pulso de brillo */
+    }
+
+    /* --- Estilos de los Anillos Giratorios (::before y ::after) --- */
+
+    .face-scan::before,
+    .face-scan::after {
+      content: '';
+      position: absolute;
+      width: 60%;
+      height: 60%;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      /* Borde un poco más grueso para más visibilidad */
+      /* Usamos un filtro de sombra para darle un efecto Neón */
+      filter: drop-shadow(0 0 5px);
+    }
+
+    /* Anillo 1: Verde Neón - Rotación Rápida y Normal */
+    .face-scan::before {
+      border-top-color: #00ff00;
+      /* Usamos 'ease-in-out' para un movimiento menos robótico */
+      animation: rotate-border-fast 1.5s ease-in-out infinite;
+      /* Ligeramente más pequeño para separar las órbitas */
+      transform: scale(0.20);
+    }
+
+    /* Anillo 2: Magenta Brillante - Rotación Lenta e Inversa */
+    .face-scan::after {
+      border-top-color: #f13fcb;
+      /* Rotación más lenta y en sentido contrario */
+      animation: rotate-border-fast 1.5s ease-in-out infinite reverse;
+      /* Ligeramente más grande para que abarque al otro */
+      transform: scale(0.20);
+    }
+
+    .measurement-line {
+      position: absolute;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+      animation: line-glow 2s infinite;
+    }
+
+    @keyframes line-glow {
+
+      0%,
+      100% {
+        opacity: 0.3;
+      }
+
+      50% {
+        opacity: 1;
+        box-shadow: 0 0 10px #00d4ff;
+      }
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section {
+      margin: 60px 0;
+      padding: 40px;
+      background: rgba(26, 47, 74, 0.6);
+      border-radius: 20px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(0, 212, 255, 0.1) 0%, transparent 70%);
+      animation: rotate-bg 20s linear infinite;
+    }
+
+    @keyframes rotate-bg {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    .section:hover {
+      transform: translateY(-5px);
+      border-color: #00d4ff;
+      box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+    }
+
+    h2 {
+      font-size: 2.5em;
+      color: #00d4ff;
+      margin-bottom: 30px;
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    h2::before {
+      content: '';
+      width: 50px;
+      height: 3px;
+      background: linear-gradient(90deg, #00d4ff, transparent);
+      animation: extend 2s infinite;
+    }
+
+    @keyframes extend {
+
+      0%,
+      100% {
+        width: 50px;
+      }
+
+      50% {
+        width: 100px;
+      }
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 30px;
+      margin-top: 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .tech-card {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(26, 47, 74, 0.8) 100%);
+      padding: 30px;
+      border-radius: 15px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tech-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .tech-card:hover::before {
+      left: 100%;
+    }
+
+    .tech-card:hover {
+      transform: translateY(-10px) scale(1.02);
+      border-color: #00d4ff;
+      box-shadow: 0 15px 50px rgba(0, 212, 255, 0.4);
+    }
+
+    .tech-card h3 {
+      color: #00d4ff;
+      font-size: 1.5em;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .tech-icon {
+      width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, #00d4ff, #0088ff);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      animation: icon-pulse 2s infinite;
+    }
+
+    @keyframes icon-pulse {
+
+      0%,
+      100% {
+        box-shadow: 0 0 5px #00d4ff;
+      }
+
+      50% {
+        box-shadow: 0 0 20px #00d4ff;
+      }
+    }
+
+    .tech-card p {
+      color: #b8d4f1;
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+
+    .tech-card ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .tech-card li {
+      color: #8ec5fc;
+      padding: 8px 0;
+      padding-left: 25px;
+      position: relative;
+    }
+
+    .tech-card li::before {
+      content: '▹';
+      position: absolute;
+      left: 0;
+      color: #00d4ff;
+      font-size: 1.2em;
+      animation: arrow-move 1s infinite;
+    }
+
+    @keyframes arrow-move {
+
+      0%,
+      100% {
+        transform: translateX(0);
+      }
+
+      50% {
+        transform: translateX(5px);
+      }
+    }
+
+    .process-flow {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 40px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .process-step {
+      flex: 1;
+      min-width: 200px;
+      text-align: center;
+      padding: 30px;
+      margin: 10px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(26, 47, 74, 0.9) 100%);
+      border-radius: 15px;
+      border: 2px solid rgba(0, 212, 255, 0.4);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .process-step:hover {
+      transform: scale(1.05);
+      border-color: #00d4ff;
+    }
+
+    .step-number {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #00d4ff, #0088ff);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8em;
+      font-weight: bold;
+      margin: 0 auto 20px;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+      animation: step-glow 2s infinite;
+    }
+
+    @keyframes step-glow {
+
+      0%,
+      100% {
+        box-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+      }
+
+      50% {
+        box-shadow: 0 0 50px rgba(0, 212, 255, 1);
+      }
+    }
+
+    .process-step h4 {
+      color: #00d4ff;
+      font-size: 1.3em;
+      margin-bottom: 15px;
+    }
+
+    .process-step p {
+      color: #b8d4f1;
+      line-height: 1.6;
+    }
+
+    .measurement-demo {
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(26, 47, 74, 0.6) 100%);
+      padding: 40px;
+      border-radius: 15px;
+      margin: 40px 0;
+      border: 2px solid rgba(0, 212, 255, 0.3);
+      position: relative;
+      z-index: 2;
+    }
+
+    .measurement-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+    .measurement-item {
+      background: rgba(10, 22, 40, 0.8);
+      padding: 25px;
+      border-radius: 10px;
+      border-left: 4px solid #00d4ff;
+      transition: all 0.3s ease;
+    }
+
+    .measurement-item:hover {
+      border-left-width: 8px;
+      transform: translateX(5px);
+      background: rgba(10, 22, 40, 1);
+    }
+
+    .measurement-item h4 {
+      color: #00d4ff;
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    .measurement-value {
+      font-size: 2em;
+      color: #00ff88;
+      font-weight: bold;
+      text-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+      animation: value-update 3s infinite;
+    }
+
+    @keyframes value-update {
+
+      0%,
+      90%,
+      100% {
+        opacity: 1;
+      }
+
+      95% {
+        opacity: 0.5;
+      }
+    }
+
+    .code-block {
+      background: rgba(0, 0, 0, 0.5);
+      padding: 25px;
+      border-radius: 10px;
+      border: 1px solid rgba(0, 212, 255, 0.3);
+      margin: 20px 0;
+      overflow-x: auto;
+      position: relative;
+      z-index: 2;
+    }
+
+    .code-block code {
+      color: #00ff88;
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      text-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+    }
+
+    .api-endpoint {
+      background: linear-gradient(90deg, rgba(0, 212, 255, 0.2) 0%, transparent 100%);
+      padding: 15px;
+      border-left: 4px solid #00d4ff;
+      margin: 15px 0;
+      border-radius: 5px;
+      font-family: 'Courier New', monospace;
+      color: #00d4ff;
+      position: relative;
+      z-index: 2;
+    }
+
+    .feature-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #00d4ff, #0088ff);
+      color: #ffffff;
+      padding: 8px 20px;
+      border-radius: 20px;
+      margin: 5px;
+      font-size: 0.9em;
+      font-weight: bold;
+      box-shadow: 0 4px 15px rgba(0, 212, 255, 0.4);
+      animation: badge-float 3s infinite;
+    }
+
+    @keyframes badge-float {
+
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-5px);
+      }
+    }
+
+    .stats-container {
+      display: flex;
+      justify-content: space-around;
+      flex-wrap: wrap;
+      margin: 40px 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stat-box {
+      text-align: center;
+      padding: 30px;
+      min-width: 200px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(26, 47, 74, 0.8) 100%);
+      border-radius: 15px;
+      border: 2px solid rgba(0, 212, 255, 0.4);
+      margin: 10px;
+      transition: all 0.3s ease;
+    }
+
+    .stat-box:hover {
+      transform: scale(1.1);
+      border-color: #00d4ff;
+      box-shadow: 0 0 40px rgba(0, 212, 255, 0.5);
+    }
+
+    .stat-number {
+      font-size: 3em;
+      color: #00d4ff;
+      font-weight: bold;
+      text-shadow: 0 0 20px rgba(0, 212, 255, 0.8);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .stat-label {
+      color: #8ec5fc;
+      font-size: 1.1em;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #1a2f4a 0%, #0a1628 100%);
+      border-top: 2px solid #00d4ff;
+      margin-top: 60px;
+      position: relative;
+      z-index: 2;
+    }
+
+    footer p {
+      color: #8ec5fc;
+      font-size: 1.1em;
+    }
+
+    .neural-network {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.1;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5em;
+      }
+
+      h2 {
+        font-size: 1.8em;
+      }
+
+      .tech-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .process-flow {
+        flex-direction: column;
+      }
+    }
+
+    /* CÓDIGO CSS */
+
+    .floating-eye-button {
+      /* Posición Fija: Es crucial para que "flote" */
+      position: fixed;
+
+      /* Posicionamiento en la esquina inferior derecha */
+      bottom: 20px;
+      /* Separación del borde inferior */
+      right: 20px;
+      /* Separación del borde derecho */
+
+      /* Estilo del Botón */
+      background-color: #00d4ff;
+      /* Un azul cian futurista */
+      color: white;
+      /* Color del ojo/ícono */
+      width: 60px;
+      /* Tamaño del botón */
+      height: 60px;
+      border-radius: 50%;
+      /* Para hacerlo un círculo perfecto */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      /* Tamaño del ícono */
+
+      /* Sombra y Elevación (Efecto Profesional) */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+
+      /* Transición Suave para efectos de :hover */
+      transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+
+      /* Asegura que esté por encima de otros elementos */
+      z-index: 1000;
+    }
+
+    /* Efecto al pasar el ratón (Hover) */
+    .floating-eye-button:hover {
+      background-color: #00b0d1;
+      /* Un tono más oscuro al interactuar */
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+      /* Sombra más pronunciada */
+      transform: scale(1.05);
+      /* Ligeramente más grande */
+    }
+
+    /* Opcional: Para móvil, hacerlo un poco más pequeño */
+    @media (max-width: 600px) {
+      .floating-eye-button {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+        bottom: 15px;
+        right: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="scanner-line"></div>
+  <div class="particles" id="particles"></div>
+  <canvas class="neural-network" id="neural"></canvas>
+
+  <header>
+    <div class="header-glow"></div>
+    <h1>AURION BIOMETRIC ENGINE</h1>
+    <p class="subtitle">SISTEMA AVANZADO DE INFORMACION DE RECONOCIMIENTO Y ANÁLISIS FACIAL</p>
+
+    <div class="face-scan">
+      <div class="measurement-points">
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+        <div class="point"></div>
+      </div>
+    </div>
+
+    <div class="stats-container">
+      <div class="stat-box">
+        <span class="stat-number">99.8%</span>
+        <span class="stat-label">Precisión</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">&lt;50ms</span>
+        <span class="stat-label">Latencia</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">128</span>
+        <span class="stat-label">Puntos Faciales</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">360°</span>
+        <span class="stat-label">Detección</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <section class="section">
+      <h2>🧠 MOTORES DE RECONOCIMIENTO FACIAL</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>Seguridad Aeroportuaria</h3>
+          <p>Verificación de identidad en fronteras, boarding gates y zonas de seguridad nacional.</p>
+          <span class="feature-badge">Border Control</span>
+          <span class="feature-badge">E-Gates</span>
+          <span class="feature-badge">Watchlist Screening</span>
+        </div>
+        <div class="tech-card">
+          <h3>Banca y Fintech</h3>
+          <p>Autenticación de clientes para transacciones, onboarding digital y prevención de fraude.</p>
+          <span class="feature-badge">KYC/AML</span>
+          <span class="feature-badge">Mobile Banking</span>
+          <span class="feature-badge">ATM Authentication</span>
+        </div>
+        <div class="tech-card">
+          <h3>Retail Analytics</h3>
+          <p>Análisis de comportamiento de clientes, prevención de hurtos y marketing personalizado.</p>
+          <span class="feature-badge">Customer Analytics</span>
+          <span class="feature-badge">Loss Prevention</span>
+          <span class="feature-badge">VIP Services</span>
+        </div>
+        <div class="tech-card">
+          <h3>Smart Cities</h3>
+          <p>Vigilancia urbana inteligente, búsqueda de personas desaparecidas y seguridad pública.</p>
+          <span class="feature-badge">Video Surveillance</span>
+          <span class="feature-badge">Missing Persons</span>
+          <span class="feature-badge">Event Security</span>
+        </div>
+        <div class="tech-card">
+          <h3>Healthcare</h3>
+          <p>Identificación de pacientes, control de acceso a historiales médicos y seguridad hospitalaria.</p>
+          <span class="feature-badge">Patient ID</span>
+          <span class="feature-badge">Medical Records</span>
+          <span class="feature-badge">Pharmacy Security</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>💻 EJEMPLO DE IMPLEMENTACIÓN COMPLETA</h2>
+      <div class="code-block">
+        <code>
+import cv2<br>
+import numpy as np<br>
+import tensorflow as tf<br>
+from mtcnn import MTCNN<br>
+import face_recognition<br>
+from deepface import DeepFace<br>
+import dlib<br>
+from scipy.spatial.distance import cosine, euclidean
+</code>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>🌐 ARQUITECTURA DE DEPLOYMENT</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>Cloud Architecture</h3>
+          <p><strong>Infraestructura escalable</strong> en la nube para procesamiento masivo.</p>
+          <div class="code-block">
+            <code># Docker Compose para deployment
+version: '3.8'
+services:
+  aurion-api:<br>
+    image: aurion/biometric-engine:latest
+    ports:
+      - "8000:8000"<br>
+    environment:
+      - MODEL_TYPE=facenet512
+      - GPU_ENABLED=true<br>
+    volumes:
+      - ./models:/app/models
+      - ./db:/app/database<br>
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]</code>
+          </div>
+        </div>
+
+        <div class="tech-card">
+          <h3>Edge Computing</h3>
+          <p><strong>Procesamiento local</strong> en dispositivos edge para baja latencia.</p>
+          <ul>
+            <li><strong>NVIDIA Jetson:</strong> GPU embebida para inferencia</li>
+            <li><strong>Intel NUC + Movidius:</strong> VPU especializada</li>
+            <li><strong>Raspberry Pi + Coral:</strong> Edge TPU de Google</li>
+            <li><strong>Mobile (iOS/Android):</strong> CoreML / TensorFlow Lite</li>
+          </ul>
+        </div>
+
+        <div class="tech-card">
+          <h3>API REST</h3>
+          <p><strong>Endpoints RESTful</strong> para integración de aplicaciones.</p>
+          <div class="api-endpoint">POST /api/v1/detect</div>
+          <div class="api-endpoint">POST /api/v1/enroll</div>
+          <div class="api-endpoint">POST /api/v1/verify</div>
+          <div class="api-endpoint">POST /api/v1/identify</div>
+          <div class="api-endpoint">POST /api/v1/analyze</div>
+          <div class="api-endpoint">GET /api/v1/health</div>
+        </div>
+
+        <div class="tech-card">
+          <h3>Database Design</h3>
+          <p><strong>Almacenamiento optimizado</strong> para búsquedas de alta velocidad.</p>
+          <ul>
+            <li><strong>PostgreSQL + pgvector:</strong> Vector similarity search</li>
+            <li><strong>Milvus:</strong> Vector database especializado</li>
+            <li><strong>FAISS:</strong> Facebook AI Similarity Search (in-memory)</li>
+            <li><strong>Elasticsearch:</strong> Full-text y metadata search</li>
+            <li><strong>Redis:</strong> Caché de embeddings frecuentes</li>
+          </ul>
+        </div>
+
+        <div class="tech-card">
+          <h3>Load Balancing</h3>
+          <p><strong>Distribución de carga</strong> para alta disponibilidad.</p>
+          <ul>
+            <li>NGINX reverse proxy con health checks</li>
+            <li>Kubernetes orchestration con auto-scaling</li>
+            <li>Horizontal scaling de workers de inferencia</li>
+            <li>Request queuing con RabbitMQ/Kafka</li>
+            <li>GPU pooling para maximizar utilización</li>
+          </ul>
+        </div>
+
+        <div class="tech-card">
+          <h3>Monitoring & Logging</h3>
+          <p><strong>Observabilidad completa</strong> del sistema en producción.</p>
+          <ul>
+            <li><strong>Prometheus + Grafana:</strong> Métricas en tiempo real</li>
+            <li><strong>ELK Stack:</strong> Logs centralizados y análisis</li>
+            <li><strong>Jaeger:</strong> Distributed tracing</li>
+            <li><strong>Sentry:</strong> Error tracking y alertas</li>
+            <li><strong>Custom dashboards:</strong> KPIs biométricos</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>🔐 SEGURIDAD Y CUMPLIMIENTO</h2>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>Encriptación</h3>
+          <p>Protección de datos biométricos en reposo y en tránsito.</p>
+          <ul>
+            <li><strong>AES-256:</strong> Encriptación de embeddings en BD</li>
+            <li><strong>TLS 1.3:</strong> Comunicaciones seguras</li>
+            <li><strong>HSM integration:</strong> Gestión de claves en hardware</li>
+            <li><strong>Homomorphic encryption:</strong> Procesamiento encriptado</li>
+          </ul>
+        </div>
+
+        <div class="tech-card">
+          <h3>Privacy Protection</h3>
+          <p>Técnicas para proteger privacidad de usuarios.</p>
+          <ul>
+            <li><strong>Template protection:</strong> Transformaciones irreversibles</li>
+            <li><strong>Federated learning:</strong> Entrenamiento sin datos centralizados</li>
+            <li><strong>Differential privacy:</strong> Noise injection en agregaciones</li>
+            <li><strong>Cancelable biometrics:</strong> Templates revocables</li>
+          </ul>
+        </div>
+
+        <div class="tech-card">
+          <h3>Compliance</h3>
+          <p>Cumplimiento de regulaciones internacionales.</p>
+          <span class="feature-badge">GDPR</span>
+          <span class="feature-badge">CCPA</span>
+          <span class="feature-badge">BIPA</span>
+          <span class="feature-badge">ISO 27001</span>
+          <span class="feature-badge">SOC 2</span>
+          <span class="feature-badge">NIST</span>
+        </div>
+
+        <div class="tech-card">
+          <h3>Audit Trail</h3>
+          <p>Trazabilidad completa de operaciones biométricas.</p>
+          <ul>
+            <li>Logging de todos los accesos y verificaciones</li>
+            <li>Timestamps inmutables (blockchain opcional)</li>
+            <li>User consent tracking</li>
+            <li>Data retention policies automatizadas</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>📊 MÉTRICAS DE RENDIMIENTO</h2>
+      <div class="measurement-demo">
+        <h3 style="color: #00d4ff; margin-bottom: 30px;">KPIs del Sistema Biométrico</h3>
+        <div class="measurement-grid">
+          <div class="measurement-item">
+            <h4>FAR (False Accept Rate)</h4>
+            <div class="measurement-value">0.01%</div>
+            <p style="color: #8ec5fc;">Tasa de aceptaciones falsas. Crítico para seguridad.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>FRR (False Reject Rate)</h4>
+            <div class="measurement-value">0.5%</div>
+            <p style="color: #8ec5fc;">Tasa de rechazos falsos. Impacta experiencia de usuario.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>EER (Equal Error Rate)</h4>
+            <div class="measurement-value">0.2%</div>
+            <p style="color: #8ec5fc;">Punto donde FAR = FRR. Métrica de balance óptimo.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>TAR @ FAR=0.1%</h4>
+            <div class="measurement-value">99.8%</div>
+            <p style="color: #8ec5fc;">True Accept Rate con FAR fijo. Estándar NIST.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>Throughput</h4>
+            <div class="measurement-value">1200/s</div>
+            <p style="color: #8ec5fc;">Rostros procesados por segundo en GPU V100.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>Latencia Media</h4>
+            <div class="measurement-value">45ms</div>
+            <p style="color: #8ec5fc;">Tiempo de respuesta end-to-end para verificación.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>Availability</h4>
+            <div class="measurement-value">99.99%</div>
+            <p style="color: #8ec5fc;">Uptime del sistema. SLA enterprise-grade.</p>
+          </div>
+          <div class="measurement-item">
+            <h4>Escalabilidad</h4>
+            <div class="measurement-value">100M+</div>
+            <p style="color: #8ec5fc;">Identidades soportadas con búsqueda sub-segundo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="section">
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3><span class="tech-icon">A</span>Aurion Neural Core</h3>
+        <p><strong>Motor principal de deep learning</strong> con arquitecturas CNN y transformers para análisis facial
+          en tiempo real.</p>
+        <ul>
+          <li>Redes neuronales convolucionales profundas (50+ capas)</li>
+          <li>Arquitectura FaceNet y ArcFace optimizada</li>
+          <li>Transfer learning con datasets CASIA-WebFace y VGGFace2</li>
+          <li>Procesamiento paralelo en GPU/TPU</li>
+          <li>Inferencia en edge computing</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">D</span>Dlib Face Recognition</h3>
+        <p><strong>Biblioteca C++ de alto rendimiento</strong> con bindings Python para detección y landmarks faciales.
+        </p>
+        <ul>
+          <li>68 puntos de referencia faciales (facial landmarks)</li>
+          <li>Modelo HOG + SVM para detección de rostros</li>
+          <li>CNN de 5 puntos para alineación facial</li>
+          <li>Descriptores de 128 dimensiones</li>
+          <li>Reconocimiento en tiempo real a 30+ FPS</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">O</span>OpenCV DNN Module</h3>
+        <p><strong>Framework de visión por computadora</strong> con módulos de deep neural networks.</p>
+        <ul>
+          <li>Caffe, TensorFlow y PyTorch model support</li>
+          <li>Detectores: Haar Cascades, LBP, DNN</li>
+          <li>Face recognition con eigenfaces y fisherfaces</li>
+          <li>Optimización CUDA y OpenCL</li>
+          <li>Cross-platform (Windows, Linux, macOS, Android, iOS)</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">F</span>FaceNet (Google)</h3>
+        <p><strong>Sistema de embeddings faciales</strong> que mapea rostros a espacios vectoriales euclidianos.</p>
+        <ul>
+          <li>Triplet loss para aprendizaje métrico</li>
+          <li>Embeddings de 128/512 dimensiones</li>
+          <li>Inception-ResNet v1/v2 arquitecturas</li>
+          <li>Precisión del 99.63% en LFW dataset</li>
+          <li>One-shot learning capabilities</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">A</span>ArcFace & CosFace</h3>
+        <p><strong>Funciones de pérdida angular</strong> para maximizar la separación entre clases faciales.</p>
+        <ul>
+          <li>Additive Angular Margin Loss (ArcFace)</li>
+          <li>Large Margin Cosine Loss (CosFace)</li>
+          <li>ResNet-50/100 backbones</li>
+          <li>State-of-the-art accuracy (99.8%+ en LFW)</li>
+          <li>Escalabilidad a millones de identidades</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">M</span>MediaPipe Face Mesh</h3>
+        <p><strong>Framework de Google</strong> para detección de malla facial 3D en tiempo real.</p>
+        <ul>
+          <li>468 puntos de referencia 3D</li>
+          <li>Optimizado para dispositivos móviles</li>
+          <li>Tracking facial multi-persona</li>
+          <li>Estimación de pose y geometría 3D</li>
+          <li>TensorFlow Lite para edge deployment</li>
+        </ul>
+      </div>
+    </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>📚 BIBLIOTECAS Y FRAMEWORKS PROFESIONALES</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3><span class="tech-icon">T</span>TensorFlow & Keras</h3>
+        <p>Framework principal para entrenamiento de modelos de reconocimiento facial con GPU acceleration.</p>
+        <div class="code-block">
+          <code>import tensorflow as tf
+from tensorflow.keras.applications import InceptionResNetV2
+
+model = InceptionResNetV2(
+weights='imagenet',
+include_top=False,
+pooling='avg'
+)
+
+# Face embedding extraction
+embedding = model.predict(face_img)</code>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">P</span>PyTorch & Torchvision</h3>
+        <p>Framework de investigación para desarrollo de arquitecturas custom de reconocimiento facial.</p>
+        <div class="code-block">
+          <code>import torch
+import torchvision.models as models
+
+# ResNet backbone para face recognition
+backbone = models.resnet50(pretrained=True)
+backbone.fc = torch.nn.Linear(2048, 512)
+
+# Training con triplet loss
+triplet_loss = torch.nn.TripletMarginLoss()</code>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">F</span>Face Recognition (Python)</h3>
+        <p>Biblioteca simplificada construida sobre dlib con API intuitiva para reconocimiento facial.</p>
+        <div class="code-block">
+          <code>import face_recognition
+
+# Load y encode rostros conocidos
+known_face = face_recognition.load_image_file("person.jpg")
+encoding = face_recognition.face_encodings(known_face)[0]
+
+# Comparar rostros
+matches = face_recognition.compare_faces(
+[encoding], unknown_encoding, tolerance=0.6
+)</code>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">I</span>InsightFace</h3>
+        <p>Suite completa de herramientas de análisis facial con modelos pre-entrenados state-of-the-art.</p>
+        <ul>
+          <li>RetinaFace para detección ultra-precisa</li>
+          <li>ArcFace para reconocimiento facial</li>
+          <li>Análisis de atributos (edad, género, emoción)</li>
+          <li>Modelos optimizados para producción</li>
+          <li>MXNet backend para alto rendimiento</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">D</span>DeepFace</h3>
+        <p>Framework híbrido que integra múltiples modelos de reconocimiento facial (VGG-Face, Facenet, OpenFace,
+          DeepID).</p>
+        <div class="code-block">
+          <code>from deepface import DeepFace
+
+# Verificación facial con múltiples modelos
+result = DeepFace.verify(
+img1_path="img1.jpg",
+img2_path="img2.jpg",
+model_name='Facenet512',
+distance_metric='cosine'
+)</code>
+        </div>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">S</span>MTCNN (Multi-task CNN)</h3>
+        <p>Red neuronal para detección de rostros y localización de landmarks en cascada.</p>
+        <ul>
+          <li>Detección multi-escala de rostros</li>
+          <li>Localización de 5 puntos faciales clave</li>
+          <li>Clasificación de poses faciales</li>
+          <li>Bounding box refinement</li>
+          <li>Implementaciones en TensorFlow y PyTorch</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>🔧 APIs Y SERVICIOS CLOUD PROFESIONALES</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3><span class="tech-icon">A</span>Amazon Rekognition</h3>
+        <p><strong>Servicio AWS de análisis de imágenes y video</strong> con capacidades avanzadas de reconocimiento
+          facial.</p>
+        <div class="api-endpoint">POST https://rekognition.us-east-1.amazonaws.com/</div>
+        <ul>
+          <li>Detección y análisis facial en tiempo real</li>
+          <li>Comparación de rostros (similarity matching)</li>
+          <li>Búsqueda facial en colecciones masivas</li>
+          <li>Detección de emociones y atributos (edad, género, gafas)</li>
+          <li>Face liveness detection (anti-spoofing)</li>
+          <li>Indexación de millones de rostros</li>
+          <li>Integración con AWS Lambda y S3</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">M</span>Microsoft Azure Face API</h3>
+        <p><strong>Cognitive Services de Microsoft</strong> para detección, reconocimiento y análisis facial.</p>
+        <div class="api-endpoint">POST https://[region].api.cognitive.microsoft.com/face/v1.0/detect</div>
+        <ul>
+          <li>Detección de hasta 100 rostros por imagen</li>
+          <li>27 atributos faciales detectables</li>
+          <li>Face grouping y person identification</li>
+          <li>Verification (1:1) e Identification (1:N)</li>
+          <li>Face landmarks de 27 puntos</li>
+          <li>Análisis de expresiones faciales</li>
+          <li>SDK para .NET, Python, Java, JavaScript</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">G</span>Google Cloud Vision API</h3>
+        <p><strong>API de Machine Learning</strong> para detección y análisis facial avanzado con modelos de Google.</p>
+        <div class="api-endpoint">POST https://vision.googleapis.com/v1/images:annotate</div>
+        <ul>
+          <li>Face detection con bounding boxes</li>
+          <li>Detección de emociones (joy, sorrow, anger, surprise)</li>
+          <li>Landmarks faciales detallados</li>
+          <li>Estimación de ángulos de cabeza (roll, pan, tilt)</li>
+          <li>Detección de headwear y oclusiones</li>
+          <li>Confidence scores para cada atributo</li>
+          <li>Batch processing de múltiples imágenes</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">F</span>Face++ (Megvii)</h3>
+        <p><strong>Plataforma china líder</strong> en reconocimiento facial con APIs RESTful de alta precisión.</p>
+        <div class="api-endpoint">POST https://api-us.faceplusplus.com/facepp/v3/detect</div>
+        <ul>
+          <li>106 puntos de referencia facial</li>
+          <li>Análisis de atributos: edad, género, etnia, emoción</li>
+          <li>Face comparison y search</li>
+          <li>Beauty score y face quality assessment</li>
+          <li>Dense facial landmarks (1000+ puntos)</li>
+          <li>3D face modeling</li>
+          <li>Liveness detection avanzado</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">K</span>Kairos Face Recognition</h3>
+        <p><strong>API especializada</strong> en verificación e identificación facial para aplicaciones enterprise.</p>
+        <div class="api-endpoint">POST https://api.kairos.com/detect</div>
+        <ul>
+          <li>Enroll, verify y recognize endpoints</li>
+          <li>Gallery management para grupos de rostros</li>
+          <li>Detección de múltiples rostros</li>
+          <li>Análisis de atributos demográficos</li>
+          <li>Face landmarks y bounding boxes</li>
+          <li>Emotion detection</li>
+          <li>SDKs para iOS, Android, JavaScript</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">I</span>IBM Watson Visual Recognition</h3>
+        <p><strong>Servicio de IBM Cloud</strong> para análisis facial y clasificación de imágenes con IA.</p>
+        <div class="api-endpoint">POST https://api.us-south.visual-recognition.watson.cloud.ibm.com/v3/detect_faces
+        </div>
+        <ul>
+          <li>Face detection con age range estimation</li>
+          <li>Gender classification</li>
+          <li>Celebrity recognition</li>
+          <li>Custom model training</li>
+          <li>Core ML integration para iOS</li>
+          <li>TensorFlow integration</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>🎯 PROCESO DE MEDICIÓN Y ANÁLISIS FACIAL</h2>
+    <div class="process-flow">
+      <div class="process-step">
+        <div class="step-number">1</div>
+        <h4>Captura</h4>
+        <p>Adquisición de imagen/video mediante cámaras RGB, IR o depth sensors. Preprocesamiento con normalización,
+          reducción de ruido y mejora de contraste.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">2</div>
+        <h4>Detección</h4>
+        <p>Localización de rostros usando detectores CNN (MTCNN, RetinaFace). Cálculo de bounding boxes y confidence
+          scores. Filtrado de detecciones falsas.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">3</div>
+        <h4>Alineación</h4>
+        <p>Detección de landmarks faciales (ojos, nariz, boca). Transformación afín para normalizar pose. Corrección de
+          rotación, escala y traslación.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">4</div>
+        <h4>Extracción</h4>
+        <p>Generación de embeddings mediante redes neuronales profundas. Vectores de 128-512 dimensiones que representan
+          características únicas del rostro.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">5</div>
+        <h4>Comparación</h4>
+        <p>Cálculo de similitud usando distancia euclidiana o coseno. Threshold optimization para balance entre FAR y
+          FRR. Decision scoring.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">6</div>
+        <h4>Verificación</h4>
+        <p>Matching 1:1 o búsqueda 1:N en base de datos. Verificación de liveness (anti-spoofing). Generación de
+          resultado final con confidence score.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>📏 MEDICIONES Y CARACTERÍSTICAS FACIALES</h2>
+    <div class="measurement-demo">
+      <h3 style="color: #00d4ff; margin-bottom: 30px;">Puntos de Medición Biométrica</h3>
+      <div class="measurement-grid">
+        <div class="measurement-item">
+          <h4>Distancia Interocular</h4>
+          <div class="measurement-value">62.5mm</div>
+          <p style="color: #8ec5fc;">Separación entre pupilas. Métrica crítica para normalización facial.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Ancho Facial</h4>
+          <div class="measurement-value">140mm</div>
+          <p style="color: #8ec5fc;">Distancia entre puntos cigomáticos. Indica estructura ósea.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Altura Facial</h4>
+          <div class="measurement-value">185mm</div>
+          <p style="color: #8ec5fc;">Desde línea capilar hasta mentón. Proporciones faciales.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Ángulo Nasal</h4>
+          <div class="measurement-value">34.2°</div>
+          <p style="color: #8ec5fc;">Inclinación del puente nasal. Característica discriminativa.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Ancho de Boca</h4>
+          <div class="measurement-value">48mm</div>
+          <p style="color: #8ec5fc;">Distancia entre comisuras labiales. Rasgo expresivo único.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Contorno Mandibular</h4>
+          <div class="measurement-value">112°</div>
+          <p style="color: #8ec5fc;">Ángulo de la mandíbula. Forma facial distintiva.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Simetría Facial</h4>
+          <div class="measurement-value">94.7%</div>
+          <p style="color: #8ec5fc;">Balance entre hemicara izquierda y derecha.</p>
+        </div>
+        <div class="measurement-item">
+          <h4>Profundidad Orbital</h4>
+          <div class="measurement-value">18.3mm</div>
+          <p style="color: #8ec5fc;">Distancia 3D de cuenca ocular. Requiere depth sensing.</p>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="color: #00d4ff; margin: 40px 0 20px 0;">🔍 Métodos de Comparación Facial</h3>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3>Distancia Euclidiana</h3>
+        <div class="code-block">
+          <code>import numpy as np
+
+def euclidean_distance(emb1, emb2):
+return np.linalg.norm(emb1 - emb2)
+
+# Threshold típico: 0.6-1.0
+distance = euclidean_distance(face1_emb, face2_emb)
+is_match = distance < 0.8</code>
+        </div>
+        <p style="color: #b8d4f1; margin-top: 15px;">Medida de similitud en espacio vectorial. Usado en FaceNet y
+          sistemas métricos.</p>
+      </div>
+
+      <div class="tech-card">
+        <h3>Similitud Coseno</h3>
+        <div class="code-block">
+          <code>from scipy.spatial.distance import cosine
+
+def cosine_similarity(emb1, emb2):
+return 1 - cosine(emb1, emb2)
+
+# Threshold típico: 0.4-0.6
+similarity = cosine_similarity(face1_emb, face2_emb)
+is_match = similarity > 0.5</code>
+        </div>
+        <p style="color: #b8d4f1; margin-top: 15px;">Mide ángulo entre vectores. Robusto a variaciones de iluminación y
+          escala.</p>
+      </div>
+
+      <div class="tech-card">
+        <h3>Chi-Square Distance</h3>
+        <div class="code-block">
+          <code>def chi_square_distance(hist1, hist2):
+return 0.5 * np.sum(
+((hist1 - hist2) ** 2) / (hist1 + hist2 + 1e-10)
+)
+
+# Para histogramas de características
+distance = chi_square_distance(hist1, hist2)</code>
+        </div>
+        <p style="color: #b8d4f1; margin-top: 15px;">Usado en comparación de histogramas de texturas y patrones
+          faciales.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>🛠️ SOFTWARE Y HERRAMIENTAS PROFESIONALES</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3><span class="tech-icon">C</span>CCTV & Video Analytics</h3>
+        <p><strong>Sistemas de vigilancia</strong> con reconocimiento facial en tiempo real para seguridad.</p>
+        <ul>
+          <li><strong>Milestone XProtect:</strong> VMS con integración de analytics facial</li>
+          <li><strong>Genetec Security Center:</strong> Plataforma unificada con face recognition</li>
+          <li><strong>Avigilon:</strong> Cámaras HD con AI y facial recognition</li>
+          <li><strong>Nx Witness:</strong> VMS open platform con plugins de facial analysis</li>
+          <li><strong>ZoneMinder:</strong> Sistema open-source con módulos ML</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">B</span>Biometric SDKs</h3>
+        <p><strong>Kits de desarrollo</strong> para integración de biometría facial en aplicaciones.</p>
+        <ul>
+          <li><strong>Neurotechnology VeriLook:</strong> SDK multiplataforma de reconocimiento facial</li>
+          <li><strong>Innovatrics IFace:</strong> Suite completa con liveness detection</li>
+          <li><strong>Aware Knomi:</strong> Biometric authentication framework</li>
+          <li><strong>ID R&D IDLive Face:</strong> Anti-spoofing especializado</li>
+          <li><strong>Cognitec FaceVACS:</strong> Sistema enterprise de alto rendimiento</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">D</span>Datasets Profesionales</h3>
+        <p><strong>Conjuntos de datos</strong> masivos para entrenamiento y evaluación de modelos.</p>
+        <ul>
+          <li><strong>LFW (Labeled Faces in the Wild):</strong> 13,000+ imágenes, benchmark estándar</li>
+          <li><strong>CelebA:</strong> 200K+ imágenes de celebridades con 40 atributos</li>
+          <li><strong>VGGFace2:</strong> 3.31M imágenes de 9,131 identidades</li>
+          <li><strong>MS-Celeb-1M:</strong> 10M imágenes de 100K celebridades</li>
+          <li><strong>CASIA-WebFace:</strong> 500K imágenes de 10,575 sujetos</li>
+          <li><strong>MegaFace:</strong> 1M+ rostros para evaluación a gran escala</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">A</span>Annotation Tools</h3>
+        <p><strong>Herramientas de etiquetado</strong> para preparación de datasets de entrenamiento.</p>
+        <ul>
+          <li><strong>LabelImg:</strong> Anotación de bounding boxes para detección</li>
+          <li><strong>CVAT (Computer Vision Annotation Tool):</strong> Plataforma web completa</li>
+          <li><strong>VGG Image Annotator (VIA):</strong> Tool ligero para landmarks</li>
+          <li><strong>Labelbox:</strong> Plataforma empresarial con AI-assist</li>
+          <li><strong>SuperAnnotate:</strong> Anotación colaborativa avanzada</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">T</span>Testing & Benchmarking</h3>
+        <p><strong>Herramientas de evaluación</strong> para medir precisión y rendimiento de sistemas.</p>
+        <ul>
+          <li><strong>NIST FRVT:</strong> Face Recognition Vendor Test (estándar oro)</li>
+          <li><strong>PyTest + unittest:</strong> Testing automatizado de modelos</li>
+          <li><strong>MLflow:</strong> Tracking de experimentos y métricas</li>
+          <li><strong>TensorBoard:</strong> Visualización de entrenamiento</li>
+          <li><strong>Weights & Biases:</strong> Plataforma MLOps completa</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3><span class="tech-icon">O</span>Optimization Tools</h3>
+        <p><strong>Frameworks de optimización</strong> para deployment eficiente en producción.</p>
+        <ul>
+          <li><strong>ONNX Runtime:</strong> Inferencia cross-platform optimizada</li>
+          <li><strong>TensorRT (NVIDIA):</strong> Aceleración GPU para inferencia</li>
+          <li><strong>OpenVINO (Intel):</strong> Optimización para CPUs Intel</li>
+          <li><strong>TensorFlow Lite:</strong> Deployment en dispositivos móviles</li>
+          <li><strong>CoreML (Apple):</strong> Optimización para ecosistema iOS</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>🔬 TÉCNICAS AVANZADAS DE ANÁLISIS</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3>Detección de Vivacidad (Liveness)</h3>
+        <p>Técnicas anti-spoofing para prevenir ataques con fotos, videos o máscaras.</p>
+        <span class="feature-badge">Análisis de Textura</span>
+        <span class="feature-badge">Detección de Profundidad</span>
+        <span class="feature-badge">Challenge-Response</span>
+        <span class="feature-badge">Análisis de Movimiento</span>
+        <ul style="margin-top: 20px;">
+          <li><strong>Passive liveness:</strong> Análisis de moiré patterns y reflexiones</li>
+          <li><strong>Active liveness:</strong> Detección de parpadeo y movimientos</li>
+          <li><strong>3D liveness:</strong> Depth mapping con cámaras estructuradas</li>
+          <li><strong>IR liveness:</strong> Análisis de temperatura facial</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Análisis de Atributos Faciales</h3>
+        <p>Extracción de características demográficas y expresivas del rostro.</p>
+        <span class="feature-badge">Edad</span>
+        <span class="feature-badge">Género</span>
+        <span class="feature-badge">Etnia</span>
+        <span class="feature-badge">Emoción</span>
+        <span class="feature-badge">Accesorios</span>
+        <ul style="margin-top: 20px;">
+          <li><strong>Age estimation:</strong> Regresión de edad con CNNs especializadas</li>
+          <li><strong>Gender classification:</strong> Clasificación binaria o espectro</li>
+          <li><strong>Emotion detection:</strong> 7 emociones básicas (Ekman)</li>
+          <li><strong>Accessories:</strong> Detección de gafas, barba, maquillaje</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Reconocimiento 3D</h3>
+        <p>Análisis facial tridimensional para mayor precisión y robustez.</p>
+        <div class="code-block">
+          <code># Extracción de geometría 3D
+import open3d as o3d
+
+# Point cloud processing
+pcd = o3d.io.read_point_cloud("face.ply")
+mesh = o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd)
+
+# 3D face alignment
+aligned_mesh = align_3d_face(mesh)</code>
+        </div>
+        <ul style="margin-top: 15px;">
+          <li>Inmune a cambios de iluminación</li>
+          <li>Resistente a variaciones de pose</li>
+          <li>Mayor precisión en identificación</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Face Morphing Detection</h3>
+        <p>Detección de rostros morfados (mezcla de múltiples identidades).</p>
+        <ul>
+          <li><strong>Análisis de frecuencias:</strong> Detección de artifacts en espectro</li>
+          <li><strong>Deep learning:</strong> Clasificadores CNN para morphing</li>
+          <li><strong>Landmark consistency:</strong> Análisis de coherencia geométrica</li>
+          <li><strong>Texture analysis:</strong> Detección de anomalías en patrones</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Face Super-Resolution</h3>
+        <p>Mejora de resolución de imágenes faciales de baja calidad.</p>
+        <div class="code-block">
+          <code># Super-resolution con GANs
+from models import ESRGAN
+
+model = ESRGAN(scale_factor=4)
+high_res_face = model.upscale(low_res_face)
+
+# Mejora de 64x64 a 256x256 con detalles preservados</code>
+        </div>
+        <ul style="margin-top: 15px;">
+          <li>Útil para CCTV y cámaras de baja resolución</li>
+          <li>Preserva características biométricas</li>
+          <li>Implementado con GANs y transformers</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Cross-Age Face Recognition</h3>
+        <p>Reconocimiento robusto a pesar del envejecimiento facial.</p>
+        <ul>
+          <li><strong>Age-invariant features:</strong> Embeddings robustos al envejecimiento</li>
+          <li><strong>Age progression:</strong> Síntesis de rostros envejecidos</li>
+          <li><strong>Age regression:</strong> Rejuvenecimiento facial sintético</li>
+          <li><strong>Temporal consistency:</strong> Tracking longitudinal de identidades</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>📋 DOCUMENTACIÓN Y ESTÁNDARES</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3>ISO/IEC Standards</h3>
+        <p><strong>Estándares internacionales</strong> para sistemas biométricos faciales.</p>
+        <ul>
+          <li><strong>ISO/IEC 19794-5:</strong> Face image data interchange format</li>
+          <li><strong>ISO/IEC 29794-5:</strong> Face image quality standards</li>
+          <li><strong>ISO/IEC 30107:</strong> Presentation attack detection</li>
+          <li><strong>ISO/IEC 2382-37:</strong> Biometric vocabulary</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>NIST Documentation</h3>
+        <p><strong>Guías del NIST</strong> (National Institute of Standards and Technology).</p>
+        <ul>
+          <li><strong>NIST SP 800-76:</strong> Biometric specifications for PIV</li>
+          <li><strong>FRVT Reports:</strong> Face Recognition Vendor Test results</li>
+          <li><strong>NIST IR 8280:</strong> Face recognition accuracy with masks</li>
+          <li><strong>Best Practices:</strong> Guidelines para deployment</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Academic Papers</h3>
+        <p><strong>Papers fundamentales</strong> en reconocimiento facial.</p>
+        <ul>
+          <li><strong>FaceNet (2015):</strong> "A Unified Embedding for Face Recognition"</li>
+          <li><strong>DeepFace (2014):</strong> "Closing the Gap to Human-Level Performance"</li>
+          <li><strong>ArcFace (2019):</strong> "Additive Angular Margin Loss"</li>
+          <li><strong>RetinaFace (2020):</strong> "Single-stage Dense Face Localisation"</li>
+        </ul>
+      </div>
+
+      <div class="tech-card">
+        <h3>Ethics & Privacy</h3>
+        <p><strong>Consideraciones éticas</strong> y normativas de privacidad.</p>
+        <ul>
+          <li><strong>GDPR:</strong> General Data Protection Regulation (EU)</li>
+          <li><strong>BIPA:</strong> Biometric Information Privacy Act (Illinois)</li>
+          <li><strong>CCPA:</strong> California Consumer Privacy Act</li>
+          <li><strong>IEEE Standards:</strong> Ethical AI guidelines</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>⚡ ESPECIFICACIONES TÉCNICAS AURION</h2>
+    <div class="stats-container">
+      <div class="stat-box">
+        <span class="stat-number">128</span>
+        <span class="stat-label">Puntos Faciales</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">512D</span>
+        <span class="stat-label">Vector Embedding</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">30 FPS</span>
+        <span class="stat-label">Procesamiento</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-number">10M+</span>
+        <span class="stat-label">Rostros Indexados</span>
+      </div>
+    </div>
+
+    <div class="measurement-demo" style="margin-top: 40px;">
+      <h3 style="color: #00d4ff; margin-bottom: 25px;">Capacidades del Sistema</h3>
+      <div class="tech-grid">
+        <div class="tech-card">
+          <h3>Velocidad</h3>
+          <ul>
+            <li>Detección facial: &lt;20ms</li>
+            <li>Extracción de embeddings: &lt;50ms</li>
+            <li>Comparación 1:1: &lt;5ms</li>
+            <li>Búsqueda 1:N (1M rostros): &lt;500ms</li>
+            <li>Throughput: 1000+ rostros/segundo</li>
+          </ul>
+        </div>
+        <div class="tech-card">
+          <h3>Precisión</h3>
+          <ul>
+            <li>TAR @ FAR=0.1%: 99.8%</li>
+            <li>TAR @ FAR=0.01%: 99.5%</li>
+            <li>Rank-1 accuracy: 99.9%</li>
+            <li>LFW accuracy: 99.85%</li>
+            <li>MegaFace Challenge: Top 5</li>
+          </ul>
+        </div>
+        <div class="tech-card">
+          <h3>Robustez</h3>
+          <ul>
+            <li>Variación de pose: ±90°</li>
+            <li>Variación de iluminación: 10-10000 lux</li>
+            <li>Oclusión parcial: hasta 40%</li>
+            <li>Resolución mínima: 80x80 píxeles</li>
+            <li>Envejecimiento: 20+ años</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>🚀 CASOS DE USO PROFESIONALES</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <h3>Microsoft Azure Face API</h3>
+        <p>Servicio en la nube para detección, identificación y verificación de rostros en aplicaciones y servicios.</p>
+        <a href="https://azure.microsoft.com/es-es/products/ai-services/face/" target="_blank">
+          <span class="feature-badge">Ver Proyecto</span>
+        </a>
+        <span class="feature-badge">Cloud Service</span>
+        <span class="feature-badge">Identification</span>
+        <span class="feature-badge">Verification</span>
+      </div>
+
+      <div class="tech-card">
+        <h3>AWS Rekognition</h3>
+        <p>Análisis de imágenes y videos basado en aprendizaje profundo para reconocimiento facial y detección de
+          objetos.</p>
+        <a href="https://aws.amazon.com/es/rekognition/" target="_blank">
+          <span class="feature-badge">Ver Proyecto</span>
+        </a>
+        <span class="feature-badge">Deep Learning</span>
+        <span class="feature-badge">Video Analysis</span>
+        <span class="feature-badge">Security</span>
+      </div>
+
+      <div class="tech-card">
+        <h3>NEC NeoFace Express</h3>
+        <p>Software de reconocimiento facial ultrarrápido utilizado en seguridad pública, aeropuertos y fronteras.</p>
+        <a href="https://www.nec.com/en/global/prod/biometrics/index.html" target="_blank">
+          <span class="feature-badge">Ver Proyecto</span>
+        </a>
+        <span class="feature-badge">Ultra-Fast</span>
+        <span class="feature-badge">Public Security</span>
+        <span class="feature-badge">Border Control</span>
+      </div>
+
+      <div class="tech-card">
+        <h3>Aurion Biometric Engine</h3>
+        <p>Sistemas de Verificacion de Rasgos Faciales y Prediccion.</p>
+        <a href="analisis.html" target="_blank">
+          <span class="feature-badge">Ver Proyecto</span>
+        </a>
+        <span class="feature-badge">Time & Attendance</span>
+        <span class="feature-badge">VIP Recognition</span>
+      </div>
+  </section>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <a href="analisis.html" target="_blank" class="floating-eye-button" title="Ir al Análisis">
+    <i class="fas fa-eye"></i>
+  </a>
+
+
+  <footer>
+    <p>© 2025 AURION BIOMETRIC ENGINE | Sistema Profesional de Información de Reconocimiento Facial de Última Generación
+    </p>
+    <p style="margin-top: 20px; color: #00d4ff;">Powered by Deep Learning • Computer Vision • Artificial Intelligence
+    </p>
+    <div style="margin-top: 30px;">
+      <span class="feature-badge">ISO 27001 Certified</span>
+      <span class="feature-badge">GDPR Compliant</span>
+      <span class="feature-badge">NIST Tested</span>
+      <span class="feature-badge">SOC 2 Type II</span>
+    </div>
+  </footer>
+
+  <script>
+    // Generar partículas animadas
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 50; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      particle.style.left = Math.random() * 100 + '%';
+      particle.style.animationDelay = Math.random() * 10 + 's';
+      particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+      particlesContainer.appendChild(particle);
+    }
+
+    // Red neuronal de fondo
+    const canvas = document.getElementById('neural');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    class Neuron {
+      constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+      }
+
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+
+        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+      }
+
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+        ctx.fill();
+      }
+    }
+
+    const neurons = [];
+    for (let i = 0; i < 80; i++) {
+      neurons.push(new Neuron());
+    }
+
+    function connectNeurons() {
+      for (let i = 0; i < neurons.length; i++) {
+        for (let j = i + 1; j < neurons.length; j++) {
+          const dx = neurons[i].x - neurons[j].x;
+          const dy = neurons[i].y - neurons[j].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < 150) {
+            ctx.beginPath();
+            ctx.moveTo(neurons[i].x, neurons[i].y);
+            ctx.lineTo(neurons[j].x, neurons[j].y);
+            ctx.strokeStyle = `rgba(0, 212, 255, ${1 - distance / 150})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      neurons.forEach(neuron => {
+        neuron.update();
+        neuron.draw();
+      });
+
+      connectNeurons();
+
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+
+    // Redimensionar canvas
+    window.addEventListener('resize', () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
+
+    // Animación de valores en mediciones
+    const measurementValues = document.querySelectorAll('.measurement-value');
+    setInterval(() => {
+      measurementValues.forEach(value => {
+        const current = parseFloat(value.textContent);
+        if (!isNaN(current)) {
+          const variation = (Math.random() - 0.5) * 0.1;
+          value.textContent = (current + variation).toFixed(1) + value.textContent.replace(/[\d.]/g, '');
+        }
+      });
+    }, 3000);
+
+    // Efecto hover en tarjetas
+    document.querySelectorAll('.tech-card').forEach(card => {
+      card.addEventListener('mouseenter', function () {
+        this.style.transform = 'translateY(-10px) scale(1.02)';
+      });
+      card.addEventListener('mouseleave', function () {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+  </script>
+</body>
+
+</html>
