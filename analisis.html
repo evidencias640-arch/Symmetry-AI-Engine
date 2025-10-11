@@ -1,9 +1,10 @@
+
 <!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SYMMETRY AI ENGINE PRO — Professional</title>
+  <title>Aurion Biometric Engine</title>
   <style>
     :root{ --bg:#06101a; --panel:#081425; --muted:#9aa4b2; --accent:#4ee1a1; --accent-2:#2ad6a3; --danger:#ff6b6b; --glass:rgba(255,255,255,0.04); --radius:14px; --gap:14px; --transition:.22s; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
     html,body{height:100%;margin:0;background:linear-gradient(180deg,#041018 0%, #061224 100%);color:#e6eef7}
@@ -85,7 +86,7 @@
 
   <div class="app" id="appRoot" style="visibility:hidden;opacity:0;transition:opacity .5s, visibility .5s">
     <nav class="sidebar card">
-      <div class="logo">SY</div>
+      <div class="logo">AE</div>
       <div class="side-controls">
         <div class="glow-wrap" id="startGlow" style="display:none;">
           <div class="glow-anim"></div>
@@ -95,7 +96,7 @@
         <button id="btnStop" class="btn secondary">Detener</button>
         <button id="infoBtn" class="informBtn">Ir a página informativa</button>
       </div>
-      <div style="margin-top:auto;font-size:12px;color:var(--muted)">v13.4 • Professional</div>
+      <div style="margin-top:auto;font-size:12px;color:var(--muted)">v1.0 • Professional</div>
     </nav>
 
     <main class="workspace">
@@ -216,6 +217,7 @@
 
   <!-- Dependencies -->
   <script src="face-api.min.js"></script>
+  <script src="animaciones.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
@@ -543,7 +545,7 @@
       const wrap = document.querySelector('.app'); statusText.textContent='Generando reporte...';
       professionPanel.style.display='block'; await new Promise(r=>setTimeout(r,120));
       const blob = await html2canvas(wrap, { scale: 1.4, useCORS:true }).then(c=> new Promise(r=> c.toBlob(r,'image/png')));
-      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='symmetry-analysis.png'; a.click(); statusText.textContent='Reporte descargado';
+      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='aurion-biometric-engine-analysis.png'; a.click(); statusText.textContent='Reporte descargado';
     }
 
     // === UI wiring & handlers ===
@@ -590,7 +592,7 @@
       setTimeout(()=>{ window.location.href = 'index.html'; }, 1200);
     });
 
-    console.info('Symmetry AI — interfaz lista. Nota: la nacionalidad y el estado civil se generan aleatoriamente según reglas (no se infieren del rostro).');
+    console.info('Aurion Biometric Engine es un sistema profesional de analisis.');
   </script>
 </body>
 </html>
