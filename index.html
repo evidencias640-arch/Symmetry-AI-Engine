@@ -5,10 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>SYMMETRY AI ENGINE PRO — Professional</title>
   <style>
-    :root{
-      --bg:#06101a; --panel:#081425; --muted:#9aa4b2; --accent:#4ee1a1; --accent-2:#2ad6a3; --danger:#ff6b6b; --glass:rgba(255,255,255,0.04);
-      --radius:14px; --gap:14px; --transition:.22s; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-    }
+    :root{ --bg:#06101a; --panel:#081425; --muted:#9aa4b2; --accent:#4ee1a1; --accent-2:#2ad6a3; --danger:#ff6b6b; --glass:rgba(255,255,255,0.04); --radius:14px; --gap:14px; --transition:.22s; font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
     html,body{height:100%;margin:0;background:linear-gradient(180deg,#041018 0%, #061224 100%);color:#e6eef7}
     .app{display:flex;gap:var(--gap);min-height:100vh;padding:18px;box-sizing:border-box}
 
@@ -17,79 +14,72 @@
     .logo{height:56px;width:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800}
     .side-controls{margin-top:16px;display:flex;flex-direction:column;gap:10px}
 
-    /* Workspace */
     main.workspace{flex:1;display:grid;grid-template-columns:1fr 380px;gap:var(--gap)}
     .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:12px;box-shadow:0 10px 50px rgba(2,6,23,0.6);backdrop-filter: blur(6px)}
 
-    /* Live area */
-    #live-scan-view{display:flex;flex-direction:column;gap:12px}
     .video-wrap{position:relative;border-radius:12px;overflow:hidden;background:var(--panel);min-height:460px;display:flex;align-items:center;justify-content:center}
     video#inputVideo{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block}
     canvas#overlayCanvas{position:absolute;left:0;top:0;pointer-events:none}
 
-    /* HUD */
     .hud{position:absolute;left:12px;top:12px;background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(255,255,255,0.02));padding:10px;border-radius:10px;font-size:13px;color:var(--muted)}
     .hud strong{color:#fff}
 
-    /* Controls */
     .controls{display:flex;gap:10px;align-items:center}
     .btn{background:linear-gradient(90deg,var(--accent), var(--accent-2));border:none;padding:10px 14px;border-radius:12px;color:#062222;font-weight:700;cursor:pointer;transition:transform var(--transition), box-shadow .25s}
     .btn.secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
     .btn:active{transform:translateY(1px)}
     .btn.disabled{opacity:0.45;pointer-events:none}
 
-    /* glowing highlight for Start when models loaded */
     .glow-wrap{position:relative}
     .glow-anim{position:absolute;inset:-6px;border-radius:12px;box-shadow:0 0 0 0 rgba(78,225,161,0.0);animation:glow 1.8s infinite;pointer-events:none}
     @keyframes glow{0%{box-shadow:0 0 0 0 rgba(78,225,161,0.12)}50%{box-shadow:0 0 40px 20px rgba(78,225,161,0.08)}100%{box-shadow:0 0 0 0 rgba(78,225,161,0.0)}}
     .arrow{position:absolute;right:-46px;top:6px;font-size:20px;color:var(--accent);transform:translateX(0);animation:arrowIn .9s ease-in-out .3s both}
     @keyframes arrowIn{0%{opacity:0;transform:translateX(-8px)}100%{opacity:1;transform:translateX(0)}}
 
-    /* Metrics */
     .metrics{display:flex;flex-direction:column;gap:12px}
-    .metric-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);font-size:14px}
+    .metric-item{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);font-size:14px}
     .metric-value{font-weight:800;color:#fff}
 
-    /* Capture photo style */
     .freeze-frame{position:relative;border-radius:12px;overflow:hidden;box-shadow:0 20px 50px rgba(2,6,23,0.7) inset}
     .freeze-frame .photo-frame{border:6px solid rgba(255,255,255,0.04);display:block}
 
-    /* Professional analysis panel */
     .analysis{margin-top:10px;display:flex;flex-direction:column;gap:10px}
     .analysis .section{background:rgba(255,255,255,0.02);padding:12px;border-radius:10px}
     .analysis .heading{display:flex;justify-content:space-between;align-items:center}
 
-        /* Consent modal */
-        .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6));z-index:60}
+    .modal{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(0deg, rgba(2,6,23,0.6), rgba(2,6,23,0.6));z-index:60}
     .modal .box{width:min(760px,92%);padding:20px;border-radius:14px;background:linear-gradient(180deg,#07101a,#061224);box-shadow:0 20px 80px rgba(0,0,0,0.7)}
     .small{font-size:13px;color:var(--muted)}
 
-    /* Time warp scan overlay */
     .scan-line{position:absolute;left:0;top:0;height:100%;width:6px;background:linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.18), rgba(255,255,255,0.06));pointer-events:none;mix-blend-mode:screen;transform:translateX(-100%);}
     .scan-line.anim{animation:scan 1.2s linear forwards}
     @keyframes scan{to{transform:translateX(100%)}}
 
-    /* export button */
     .export-row{display:flex;gap:10px;align-items:center;justify-content:flex-end}
 
-    /* Responsive */
+    /* neon analysis button */
+    .btn.neon{background:linear-gradient(90deg,#7dffb7,#33ffc0);color:#04241f;box-shadow:0 8px 40px rgba(62,255,175,0.18),0 0 18px rgba(62,255,175,0.14) !important;border:0}
+
+    /* progress bar */
+    .progress-wrap{height:10px;background:rgba(255,255,255,0.04);border-radius:999px;overflow:hidden}
+    .progress-bar{height:100%;width:0;background:linear-gradient(90deg,#7dffb7,#33ffc0);transition:width .2s}
+
     @media (max-width:1100px){ main.workspace{grid-template-columns:1fr} nav.sidebar{flex-direction:row;gap:8px;height:auto;width:100%} .app{flex-direction:column;padding:12px} .video-wrap{min-height:380px} }
   </style>
 </head>
 <body>
 
-    <!-- Consent Modal -->
-<div id="consentModal" class="modal">
+  <!-- Consent Modal -->
+  <div id="consentModal" class="modal">
     <div class="box">
-    <h3>Consentimiento para captura facial</h3>
-    <p class="small">Este demo procesa imágenes faciales localmente en tu navegador para calcular métricas de simetría y generar un reporte. No enviamos imágenes a servidores externos. Al continuar autorizas el uso de tu cámara para esta sesión.</p>
-    <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
-    <button id="decline" class="btn secondary">Cancelar</button>
-    <button id="accept" class="btn">Aceptar y continuar</button>
+      <h3>Consentimiento para captura facial</h3>
+      <p class="small">Este demo procesa imágenes faciales localmente en tu navegador para calcular métricas de simetría y generar un reporte. No enviamos imágenes a servidores externos. Al continuar autorizas el uso de tu cámara para esta sesión.</p>
+      <div style="display:flex;gap:10px;margin-top:12px;justify-content:flex-end">
+        <button id="decline" class="btn secondary">Cancelar</button>
+        <button id="accept" class="btn">Aceptar y continuar</button>
+      </div>
     </div>
-    </div>
-    </div> 
-
+  </div>
 
   <div class="app">
     <nav class="sidebar card">
@@ -135,10 +125,17 @@
           </div>
         </div>
 
+        <!-- capture preview -->
         <div id="capturePreview" style="margin-top:10px;display:none">
           <div class="freeze-frame" id="freezeWrap">
-            <img id="freezeImg" class="photo-frame" src="" alt="captura" style="width:100%;height:auto;display:block" />
-            <div style="position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;font-size:13px;color:var(--muted)">Foto lista • <strong id="captureNote">Pulsa Análisis profesional</strong></div>
+            <img id="freezeImg" class="photo-frame" src="" alt="captura" style="width:100%;height:auto;display:block;filter:none;transition:filter .2s, transform .2s" />
+            <div style="position:absolute;left:12px;bottom:12px;background:rgba(0,0,0,0.4);padding:8px;border-radius:8px;font-size:13px;color:var(--muted)">
+              Foto lista • <strong id="captureNote">Pulsa Análisis profesional</strong>
+            </div>
+            <div style="position:absolute;right:12px;bottom:12px;display:flex;gap:8px;">
+              <button id="analysisBtn" class="btn neon" style="display:none">Análisis profesional</button>
+              <button id="newRecBtn" class="btn secondary" style="display:none">Nuevo reconocimiento</button>
+            </div>
           </div>
         </div>
 
@@ -146,9 +143,15 @@
           <div class="section">
             <div class="heading"><strong>Análisis profesional</strong><button id="closeAnalysis" class="btn secondary">Cerrar</button></div>
             <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap">
-              <div style="flex:1;min-width:160px"><div class="small">Edad</div><div id="ageVal" class="metric-value">--</div></div>
-              <div style="flex:1;min-width:160px"><div class="small">Género</div><div id="genderVal" class="metric-value">--</div></div>
-              <div style="flex:1;min-width:160px"><div class="small">Emoción dominante</div><div id="emotionVal" class="metric-value">--</div></div>
+              <div style="flex:1;min-width:140px">
+                <div class="small">Edad</div><div id="ageVal" class="metric-value">--</div>
+              </div>
+              <div style="flex:1;min-width:140px">
+                <div class="small">Género</div><div id="genderVal" class="metric-value">--</div>
+              </div>
+              <div style="flex:1;min-width:140px">
+                <div class="small">Emoción dominante</div><div id="emotionVal" class="metric-value">--</div>
+              </div>
             </div>
           </div>
 
@@ -158,8 +161,21 @@
           </div>
 
           <div class="section">
-            <strong>Observaciones (no forenses)</strong>
-            <p class="small" style="color:var(--muted)">No se hacen inferencias sobre nacionalidad ni estado civil a partir de la imagen — esas inferencias no son fiables ni éticamente correctas. Si quieres recomendaciones de carrera o contexto cultural, proporciona información voluntaria y el sistema sugerirá opciones basadas en datos no biométricos.</p>
+            <strong>Observaciones</strong>
+            <p class="small" style="color:var(--muted)">Nota: por razones éticas y de confiabilidad NO se infiere la nacionalidad ni el estado civil a partir de una imagen. Si deseas, puedes usar las opciones de simulación marcadas como <strong>SIMULADO</strong>.</p>
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+              <div style="flex:1;min-width:140px">
+                <div class="small">NACIONALIDAD</div>
+                <div id="nationalityVal" class="metric-value">NO INFERIBLE</div>
+                <button id="simNationality" class="btn secondary" style="margin-top:6px">Simular nacionalidad</button>
+              </div>
+              <div style="flex:1;min-width:140px">
+                <div class="small">ESTADO CIVIL</div>
+                <div id="maritalVal" class="metric-value">NO INFERIBLE</div>
+                <button id="simMarital" class="btn secondary" style="margin-top:6px">Simular estado civil</button>
+              </div>
+            </div>
           </div>
 
           <div class="section">
@@ -172,10 +188,14 @@
               <div class="small">Sugerencia de carrera (basada en edad y expresión — aproximada)</div>
               <div id="careerSuggestion" style="font-weight:800;margin-top:6px">--</div>
             </div>
-            <div class="export-row">
-              <button id="downloadAnalysis" class="btn">Descargar resultado</button>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+              <div class="progress-wrap" style="width:200px"><div id="analysisProgress" class="progress-bar"></div></div>
+              <div class="export-row">
+                <button id="downloadAnalysis" class="btn">Descargar resultado</button>
+              </div>
             </div>
           </div>
+
         </div>
 
       </section>
@@ -187,7 +207,7 @@
         <div class="metric-item"><div>Confianza</div><div class="metric-value" id="confVal">--</div></div>
         <div style="height:12px"></div>
         <div style="font-size:13px;color:var(--muted)">Notas</div>
-        <div class="small" style="color:var(--muted);margin-top:6px">Sistema demo — evita usar para decisiones sensibles. Respeta privacidad y consentimiento.</div>
+        <div class="small" style="color:var(--muted);margin-top:6px">Respeta privacidad y consentimiento.</div>
       </aside>
     </main>
   </div>
@@ -197,7 +217,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
   <script>
-    // Configuration & DOM refs
+    // --- DOM refs ---
     const MODELS_URL = 'models';
     const video = document.getElementById('inputVideo');
     const canvas = document.getElementById('overlayCanvas');
@@ -208,7 +228,6 @@
     const fpsEl = document.getElementById('fps');
     const latEl = document.getElementById('lat');
 
-    const startArea = document.getElementById('startArea');
     const startButtonPrimary = document.getElementById('startButtonPrimary');
     const startGlow = document.getElementById('startGlow');
 
@@ -222,6 +241,8 @@
     const capturePreview = document.getElementById('capturePreview');
     const freezeImg = document.getElementById('freezeImg');
     const captureNote = document.getElementById('captureNote');
+    const analysisBtn = document.getElementById('analysisBtn');
+    const newRecBtn = document.getElementById('newRecBtn');
 
     const professionPanel = document.getElementById('professionAnalysis');
     const ageVal = document.getElementById('ageVal');
@@ -230,21 +251,29 @@
     const expressionsBreakdown = document.getElementById('expressionsBreakdown');
     const envSuggestion = document.getElementById('envSuggestion');
     const careerSuggestion = document.getElementById('careerSuggestion');
-
     const downloadAnalysis = document.getElementById('downloadAnalysis');
     const closeAnalysis = document.getElementById('closeAnalysis');
 
+    const nationalityVal = document.getElementById('nationalityVal');
+    const maritalVal = document.getElementById('maritalVal');
+    const simNationalityBtn = document.getElementById('simNationality');
+    const simMaritalBtn = document.getElementById('simMarital');
+
+    const analysisProgress = document.getElementById('analysisProgress');
+
+    // state
     let modelsLoaded = false;
     let streaming = false;
     let detectInterval = null;
-    let stableFrames = 0; // count frames with confident detection
+    let stableFrames = 0;
     let lastTs = performance.now(), frameCount = 0;
+    let currentStreamTracks = [];
 
-    function centroid(points){ if(!points || points.length===0) return {x:0,y:0}; const sum = points.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0}); return { x: sum.x/points.length, y: sum.y/points.length }; }
+    // helpers
+    function centroid(points){ if(!points||points.length===0) return {x:0,y:0}; const sum = points.reduce((a,b)=>({x:a.x+b.x,y:a.y+b.y}),{x:0,y:0}); return {x:sum.x/points.length,y:sum.y/points.length}; }
+    function ensureCanvasSize(){ const rect = video.getBoundingClientRect(); canvas.width = Math.round(rect.width); canvas.height = Math.round(rect.height); canvas.style.width = rect.width+'px'; canvas.style.height = rect.height+'px'; }
 
-    function ensureCanvasSize(){ const rect = video.getBoundingClientRect(); canvas.width = Math.round(rect.width); canvas.height = Math.round(rect.height); canvas.style.width = rect.width + 'px'; canvas.style.height = rect.height + 'px'; }
-
-    // Load models with progress visual
+    // === Load models (with progress bar) ===
     async function loadModels(){
       startButtonPrimary.textContent = 'Cargando modelos...';
       let loaded = 0; const total = 4; const bar = document.getElementById('modelsBar');
@@ -255,169 +284,282 @@
           faceapi.nets.ageGenderNet.loadFromUri(MODELS_URL).then(()=>{loaded++; bar.style.width = Math.round((loaded/total)*100)+'%'}),
           faceapi.nets.faceExpressionNet.loadFromUri(MODELS_URL).then(()=>{loaded++; bar.style.width = Math.round((loaded/total)*100)+'%'}),
         ];
-        // await in sequence to animate bar smoothly
         for(const t of tasks) await t;
-        modelsLoaded = true; startButtonPrimary.textContent = 'Iniciar cámara'; startButtonPrimary.classList.remove('disabled');
-        // show glow and arrow to indicate user can press
-        startGlow.style.display = 'block';
-        statusText.textContent = 'Modelos listos';
-      }catch(err){ console.error('Error cargando modelos',err); startButtonPrimary.textContent='Error'; alert('No se pudieron cargar los modelos. Verifica ./models'); }
+        modelsLoaded = true; startButtonPrimary.textContent='Iniciar cámara'; startButtonPrimary.classList.remove('disabled');
+        startGlow.style.display='block'; statusText.textContent='Modelos listos';
+      }catch(err){ console.error(err); startButtonPrimary.textContent='Error'; alert('No se pudieron cargar los modelos. Verifica la carpeta models.'); }
     }
 
+    // === Camera control ===
     async function startCamera(){
-      if(!modelsLoaded){ alert('Espera a que los modelos terminen de cargar.'); return; }
+      if(!modelsLoaded){ alert('Espera a que carguen los modelos.'); return; }
       try{
-        const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}}, audio:false});
-        video.srcObject = stream; await video.play(); ensureCanvasSize(); streaming = true; statusText.textContent = 'En vivo'; startDetectionLoop();
-        // disable start glow
-        startGlow.style.display = 'none';
-        captureBtn.disabled = false; exportBtn.disabled = false;
+        const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1280},height:{ideal:720}},audio:false});
+        video.srcObject = stream; currentStreamTracks = stream.getTracks();
+        await video.play(); ensureCanvasSize(); streaming=true; statusText.textContent='En vivo';
+        startDetectionLoop();
+        startGlow.style.display='none';
+        captureBtn.disabled=false; exportBtn.disabled=false;
       }catch(e){ console.error(e); alert('No se pudo acceder a la cámara. Verifica permisos.'); statusText.textContent='Permiso denegado'; }
     }
 
-    function stopCamera(){ streaming = false; statusText.textContent = 'Detenido'; if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); video.srcObject=null } clearInterval(detectInterval); detectInterval=null; ctx.clearRect(0,0,canvas.width,canvas.height); }
+    function stopCameraCompletely(){
+      streaming=false; statusText.textContent='Detenido';
+      if(video.srcObject){ video.srcObject.getTracks().forEach(t=>t.stop()); video.srcObject=null; }
+      if(currentStreamTracks && currentStreamTracks.length){ currentStreamTracks.forEach(t=>t.stop()); currentStreamTracks=[]; }
+      clearInterval(detectInterval); detectInterval=null; ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
 
     function tinyOpts(size=256){ return new faceapi.TinyFaceDetectorOptions({inputSize:size,scoreThreshold:0.45}); }
 
-    // detection loop with readiness detection
-    async function startDetectionLoop(){ if(detectInterval) clearInterval(detectInterval); detectInterval = setInterval(async ()=>{
-      if(!streaming) return; const t0 = performance.now(); const detection = await faceapi.detectSingleFace(video, tinyOpts(320)).withFaceLandmarks(true).withFaceExpressions(); const t1 = performance.now(); const latency = Math.round(t1-t0); latEl.textContent = latency;
-      // FPS
-      frameCount++; if(performance.now()-lastTs>1000){ fpsEl.textContent = frameCount; frameCount=0; lastTs = performance.now(); }
-      ensureCanvasSize(); ctx.clearRect(0,0,canvas.width,canvas.height);
-      if(detection && detection.landmarks){
-        const displaySize = {width:canvas.width, height:canvas.height}; const resized = faceapi.resizeResults(detection, displaySize);
-        // draw box and landmarks
-        ctx.lineWidth = 2; ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#4ee1a1'; const box = resized.detection.box; ctx.strokeRect(box.x, box.y, box.width, box.height);
-        ctx.fillStyle = 'rgba(255,255,255,0.9)'; for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.2,0,Math.PI*2); ctx.fill(); }
+    // === Detection loop ===
+    async function startDetectionLoop(){
+      if(detectInterval) clearInterval(detectInterval);
+      detectInterval = setInterval(async ()=>{
+        if(!streaming) return;
+        const t0 = performance.now();
+        const detection = await faceapi.detectSingleFace(video, tinyOpts(320)).withFaceLandmarks(true).withFaceExpressions();
+        const t1 = performance.now();
+        latEl.textContent = Math.round(t1-t0);
+        frameCount++; if(performance.now()-lastTs>1000){ fpsEl.textContent = frameCount; frameCount=0; lastTs=performance.now(); }
+        ensureCanvasSize(); ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        // compute metrics
-        const nose = centroid(resized.landmarks.getNose()); const mouth = centroid(resized.landmarks.getMouth()); const dx = Math.abs(mouth.x - nose.x); const norm = Math.max(1, box.width); const isfScore = Math.max(0,100 - (dx / norm) * 250);
-        const leftEye = centroid(resized.landmarks.getLeftEye()); const rightEye = centroid(resized.landmarks.getRightEye()); const distEyes = Math.hypot(leftEye.x-rightEye.x,leftEye.y-rightEye.y); const distMouthNose = Math.hypot(mouth.x-nose.x,mouth.y-nose.y)||1; const ipbScore = Math.max(0, Math.min(200,(distEyes/distMouthNose)*10));
-        // emotions
-        const expr = resized.expressions || {}; let dominant='neutral', conf=0; for(const k in expr){ if(expr[k]>conf){conf=expr[k]; dominant=k;} }
-        isfEl.textContent = Math.round(isfScore)+' / 100'; ipbEl.textContent = Math.round(ipbScore*10)/10; confEl.textContent = Math.round(conf*100)+'%';
+        if(detection && detection.landmarks){
+          const displaySize = {width:canvas.width,height:canvas.height};
+          const resized = faceapi.resizeResults(detection, displaySize);
+          const box = resized.detection.box;
+          ctx.lineWidth=2; ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#4ee1a1'; ctx.strokeRect(box.x,box.y,box.width,box.height);
+          ctx.fillStyle='rgba(255,255,255,0.9)'; for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.2,0,Math.PI*2); ctx.fill(); }
 
-        // readiness: require high confidence for several consecutive frames
-        if(conf > 0.7){ stableFrames++; } else { stableFrames = 0; }
-        if(stableFrames >= 6){ // stable for ~6*interval ms
-          statusText.textContent = 'Listo para capturar'; captureBtn.classList.remove('secondary'); captureBtn.classList.remove('disabled'); captureBtn.disabled = false;
+          // metrics
+          const nose = centroid(resized.landmarks.getNose());
+          const mouth = centroid(resized.landmarks.getMouth());
+          const dx = Math.abs(mouth.x-nose.x); const norm = Math.max(1, box.width);
+          const isfScore = Math.max(0,100 - (dx/norm)*250);
+          const leftEye = centroid(resized.landmarks.getLeftEye()); const rightEye = centroid(resized.landmarks.getRightEye());
+          const distEyes = Math.hypot(leftEye.x-rightEye.x,leftEye.y-rightEye.y);
+          const distMouthNose = Math.hypot(mouth.x-nose.x,mouth.y-nose.y)||1;
+          const ipbScore = Math.max(0, Math.min(200,(distEyes/distMouthNose)*10));
+
+          const expr = resized.expressions || {}; let dominant='neutral', conf=0; for(const k in expr){ if(expr[k]>conf){conf=expr[k]; dominant=k;} }
+          isfEl.textContent = Math.round(isfScore) + ' / 100'; ipbEl.textContent = Math.round(ipbScore*10)/10; confEl.textContent = Math.round(conf*100)+'%';
+
+          // readiness
+          if(conf > 0.7) stableFrames++; else stableFrames=0;
+          if(stableFrames >= 6){ statusText.textContent='Listo para capturar'; captureBtn.classList.remove('disabled'); captureBtn.disabled=false; } else { statusText.textContent='Analizando...'; captureBtn.classList.add('disabled'); captureBtn.disabled=true; }
         } else {
-          statusText.textContent = 'Analizando...'; captureBtn.classList.add('disabled'); captureBtn.disabled = true;
+          statusText.textContent='Buscando rostro...'; isfEl.textContent='--'; ipbEl.textContent='--'; confEl.textContent='--'; stableFrames=0; captureBtn.classList.add('disabled'); captureBtn.disabled=true;
         }
-      } else {
-        statusText.textContent = 'Buscando rostro...'; isfEl.textContent='--'; ipbEl.textContent='--'; confEl.textContent='--'; stableFrames=0; captureBtn.classList.add('disabled'); captureBtn.disabled=true;
-      }
-    }, 140); }
-
-    // Time-warp style scan overlay animation during professional analysis
-    function playScanAnim(){ scanLine.classList.remove('anim'); void scanLine.offsetWidth; scanLine.classList.add('anim'); }
-
-    // Capture snapshot and freeze frame
-    async function captureSnapshot(){ if(!streaming){ alert('La cámara no está activa.'); return; }
-      // draw video frame to offscreen keeping original resolution
-      const off = document.createElement('canvas'); off.width = video.videoWidth; off.height = video.videoHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(video,0,0,off.width,off.height);
-      // convert to dataURL and show freeze
-      const dataUrl = off.toDataURL('image/png'); freezeImg.src = dataUrl; capturePreview.style.display = 'block'; captureNote.textContent = 'Foto tomada. Pulsa Análisis profesional';
-      // stop live overlay but keep camera stream active for re-analysis if needed
-      // visually freeze overlay
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      statusText.textContent = 'Foto tomada';
+      }, 140);
     }
 
-    // Professional analysis (heavier models already loaded): runs on the captured image
-    async function runProfessionalAnalysis(){ if(!freezeImg.src){ alert('No hay foto capturada.'); return; }
-      professionPanel.style.display = 'block'; playScanAnim(); statusText.textContent = 'Analizando profesionalmente...';
-      // draw captured image into offscreen with larger size for more accurate age/gender
-      const img = new Image(); img.src = freezeImg.src; await img.decode(); const off = document.createElement('canvas'); off.width = img.naturalWidth; off.height = img.naturalHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(img,0,0);
-      // run detection with larger input size
-      const det = await faceapi.detectSingleFace(off, tinyOpts(512)).withFaceLandmarks(true).withAgeAndGender().withFaceExpressions();
-      if(!det){ alert('No se detectó rostro en la imagen.'); statusText.textContent='Listo'; return; }
-      // resize results to our display for drawing metrics
-      const display = { width: canvas.width, height: canvas.height };
-      const resized = faceapi.resizeResults(det, display);
-      // draw final overlays onto canvas (box + landmarks)
-      ctx.clearRect(0,0,canvas.width,canvas.height); ctx.lineWidth=2; ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#4ee1a1'; const box=resized.detection.box; ctx.strokeRect(box.x,box.y,box.width,box.height);
-      ctx.fillStyle='rgba(255,255,255,0.95)'; for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.6,0,Math.PI*2); ctx.fill(); }
+    // === Capture snapshot: STOP live and show freeze ===
+    async function captureSnapshot(){
+      if(!streaming){ alert('La cámara no está activa.'); return; }
+      // draw frame to offscreen canvas
+      const off = document.createElement('canvas'); off.width = video.videoWidth; off.height = video.videoHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(video,0,0,off.width,off.height);
+      const dataUrl = off.toDataURL('image/png');
+      // stop camera and hide live
+      stopCameraCompletely();
+      // hide video and overlay visually
+      video.style.display='none'; canvas.style.display='none';
+      // show capture
+      freezeImg.src = dataUrl; capturePreview.style.display='block';
+      // show analysis button neon and new recognition
+      analysisBtn.style.display='inline-block'; newRecBtn.style.display='inline-block'; analysisBtn.disabled=false;
+      captureNote.textContent = 'Foto tomada. Pulsa Análisis profesional';
+      statusText.textContent='Foto tomada';
+    }
 
-      // metrics
-      const nose = centroid(resized.landmarks.getNose()); const mouth = centroid(resized.landmarks.getMouth()); const dx = Math.abs(mouth.x-nose.x); const norm = Math.max(1,box.width); const isfScore = Math.max(0,100 - (dx/norm)*250);
-      isfEl.textContent = Math.round(isfScore)+' / 100';
-      ageVal.textContent = det.age?Math.round(det.age):'--'; genderVal.textContent = det.gender||'--';
-      // expressions
-      const expr = det.expressions || {}; let dom='neutral', conf=0; expressionsBreakdown.innerHTML='';
-      for(const k in expr){ const v = Math.round(expr[k]*100); const item = document.createElement('div'); item.style.minWidth='120px'; item.style.padding='6px'; item.style.borderRadius='8px'; item.style.background='rgba(255,255,255,0.02)'; item.innerHTML = `<div style="font-weight:700">${k}</div><div style="color:var(--muted)">${v}%</div>`; expressionsBreakdown.appendChild(item); if(expr[k]>conf){conf=expr[k]; dom=k;} }
-      emotionVal.textContent = dom + ' • ' + Math.round(conf*100)+'%';
+    // === Analysis animation & progress ===
+    function playScanAnim(){ scanLine.classList.remove('anim'); void scanLine.offsetWidth; scanLine.classList.add('anim'); }
+    function applyDynamicFilters(percent){
+      // percent 0-100 -> apply filters to freezeImg for visual effect
+      const blur = Math.min(6, (100-percent)/20);
+      const hue = Math.round((percent/100)*120); // shift hue from 0 to 120
+      freezeImg.style.filter = `blur(${blur}px) saturate(${1 + percent/200}) hue-rotate(${hue}deg)`;
+      // small transform jitter
+      freezeImg.style.transform = `scale(${1 - percent/2000})`;
+    }
 
-      // environment heuristic: sample central horizontal band colors and decide
-      const bandY = Math.floor(off.height*0.45); const bandH = Math.floor(off.height*0.1); const bandData = offCtx.getImageData(0,bandY,off.width,bandH).data; let r=0,g=0,b=0,count=0; for(let i=0;i<bandData.length;i+=4){ r+=bandData[i]; g+=bandData[i+1]; b+=bandData[i+2]; count++; } r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
-      // simple color rules
-      const suggestion = (r>150 && g>150 && b>150)?'Niebla / nieve posible': (b>g && b>r)?'Cielo / playa / laguna probable': (g>r && g>b)?'Zona vegetal (selva/campo) probable': (r>g && r>b)?'Atardecer / desierto / suelo árido posible':'Indeterminado';
-      envSuggestion.textContent = suggestion + ` (color promedio RGB: ${r},${g},${b})`;
+    // utility to generate simulated values
+    function randomFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 
-      // career suggestion heuristic (non-sensitive): based on age range and dominant emotion
-      const age = det.age?Math.round(det.age):null; let career='Sugerencia genérica: Exploración';
-      if(age){ if(age<18) career='Exploración académica / STEM / Artes'; else if(age<30) career='Tecnología, Diseño o Emprendimiento'; else if(age<50) career='Liderazgo, Gestión o Especialidad técnica'; else career='Consultoría, Mentoría o Investigación'; }
-      // tune with emotion
-      if(dom==='happy' || dom==='surprised') career += ' — Perfil orientado a roles creativos/sociales';
-      if(dom==='neutral' || dom==='sad') career += ' — Perfil orientado a análisis y detalle';
-      careerSuggestion.textContent = career;
+    // === Professional analysis (with progress & animations) ===
+    async function runProfessionalAnalysis(){
+      if(!freezeImg.src){ alert('No hay foto capturada.'); return; }
+      professionPanel.style.display='block';
+      statusText.textContent='Analizando profesionalmente...';
+      analysisProgress.style.width='0%'; let percent=0;
+      // play periodic scan animations
+      const scanInterval = setInterval(()=>{ playScanAnim(); }, 900);
+
+      // simulate progressive analysis but execute real detection in parallel
+      const img = new Image(); img.src = freezeImg.src; await img.decode();
+      const off = document.createElement('canvas'); off.width = img.naturalWidth; off.height = img.naturalHeight; const offCtx = off.getContext('2d'); offCtx.drawImage(img,0,0);
+
+      // start detection (heavy)
+      const detPromise = faceapi.detectSingleFace(off, tinyOpts(512)).withFaceLandmarks(true).withAgeAndGender().withFaceExpressions();
+
+      // animate progress to 100% while detection runs (min 1.5s)
+      const progressTimer = setInterval(()=> {
+        percent += Math.max(2, Math.ceil((100-percent)/12));
+        if(percent>100) percent=100;
+        analysisProgress.style.width = percent+'%';
+        applyDynamicFilters(percent);
+      }, 120);
+
+      const det = await detPromise; // await real detection
+      // ensure progress reaches 100% visually
+      let finalizeTimer = setInterval(()=>{
+        if(percent < 100){ percent += 6; analysisProgress.style.width = percent+'%'; applyDynamicFilters(percent); }
+        else { clearInterval(finalizeTimer); clearInterval(progressTimer); clearInterval(scanInterval); freezeImg.style.filter='none'; freezeImg.style.transform='none'; analysisProgress.style.width='100%'; onAnalysisComplete(det); }
+      },120);
+    }
+
+    // called when analysis done (det may be null)
+    function onAnalysisComplete(det){
+      // draw overlays on small canvas area (reuse existing canvas)
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      canvas.style.display='block'; // keep overlay visible on top of frozen photo
+      // draw detection results if available
+      if(det){
+        const display = { width: canvas.width, height: canvas.height };
+        const resized = faceapi.resizeResults(det, display);
+        const box = resized.detection.box;
+        ctx.lineWidth=3; ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()||'#4ee1a1';
+        ctx.strokeRect(box.x,box.y,box.width,box.height);
+        ctx.fillStyle='rgba(255,255,255,0.95)';
+        for(const p of resized.landmarks.positions){ ctx.beginPath(); ctx.arc(p.x,p.y,1.8,0,Math.PI*2); ctx.fill(); }
+        // metrics
+        const nose = centroid(resized.landmarks.getNose()); const mouth=centroid(resized.landmarks.getMouth());
+        const dx = Math.abs(mouth.x-nose.x); const norm=Math.max(1,box.width); const isfScore = Math.max(0,100 - (dx/norm)*250);
+        isfEl.textContent = Math.round(isfScore)+' / 100';
+        ageVal.textContent = det.age?Math.round(det.age):'--';
+        genderVal.textContent = det.gender||'--';
+        // expressions breakdown
+        expressionsBreakdown.innerHTML='';
+        const expr = det.expressions || {}; let dom='neutral', conf=0;
+        for(const k in expr){ const v=Math.round(expr[k]*100); const item=document.createElement('div'); item.style.minWidth='120px'; item.style.padding='6px'; item.style.borderRadius='8px'; item.style.background='rgba(255,255,255,0.02)'; item.innerHTML=`<div style="font-weight:700">${k}</div><div style="color:var(--muted)">${v}%</div>`; expressionsBreakdown.appendChild(item); if(expr[k]>conf){conf=expr[k]; dom=k;} }
+        emotionVal.textContent = dom + ' • ' + Math.round(conf*100)+'%';
+        // environment heuristic
+        const bandY = Math.floor(offToImageHeight(freezeImg)*0.45); // helper below not needed exactly; do simple average color from off canvas
+        // use off canvas sampling:
+        // (we already have the off canvas in runProfessionalAnalysis, but since this is modular we sample here too)
+        // We'll approximate environment from center area of the current image element
+        const tmp = document.createElement('canvas'); tmp.width = freezeImg.naturalWidth; tmp.height = freezeImg.naturalHeight;
+        const tctx = tmp.getContext('2d'); tctx.drawImage(freezeImg,0,0);
+        const bandH = Math.max(2, Math.floor(tmp.height*0.1));
+        let bandData = null;
+        try { bandData = tctx.getImageData(0, Math.floor(tmp.height*0.45), tmp.width, bandH).data; } catch(e){ bandData = null; }
+        if(bandData){
+          let r=0,g=0,b=0,count=0;
+          for(let i=0;i<bandData.length;i+=4){ r+=bandData[i]; g+=bandData[i+1]; b+=bandData[i+2]; count++; }
+          r=Math.round(r/count); g=Math.round(g/count); b=Math.round(b/count);
+          const suggestion = (r>150 && g>150 && b>150)?'Niebla / nieve posible': (b>g && b>r)?'Cielo / playa / laguna probable': (g>r && g>b)?'Zona vegetal (selva/campo) probable': (r>g && r>b)?'Atardecer / desierto / suelo árido posible':'Indeterminado';
+          envSuggestion.textContent = suggestion + ` (color promedio RGB: ${r},${g},${b})`;
+        } else {
+          envSuggestion.textContent = 'Indeterminado';
+        }
+        // career suggestion
+        const age = det.age?Math.round(det.age):null; let career='Sugerencia genérica: Exploración';
+        if(age){ if(age<18) career='Exploración académica / STEM / Artes'; else if(age<30) career='Tecnología, Diseño o Emprendimiento'; else if(age<50) career='Liderazgo, Gestión o Especialidad técnica'; else career='Consultoría, Mentoría o Investigación'; }
+        const domLower = (dom||'').toLowerCase();
+        if(domLower==='happy' || domLower==='surprised') career += ' — Perfil orientado a roles creativos/sociales';
+        if(domLower==='neutral' || domLower==='sad') career += ' — Perfil orientado a análisis y detalle';
+        careerSuggestion.textContent = career;
+      } else {
+        // no detection
+        ageVal.textContent='--'; genderVal.textContent='--'; emotionVal.textContent='--'; expressionsBreakdown.innerHTML='No se detectó rostro en la captura.';
+        envSuggestion.textContent='Indeterminado';
+        careerSuggestion.textContent='No disponible';
+      }
+
+      // set the nationality/marital placeholders to NO INFERIBLE
+      nationalityVal.textContent = 'NO INFERIBLE';
+      maritalVal.textContent = 'NO INFERIBLE';
 
       statusText.textContent = 'Análisis completado';
     }
 
-    // export analysis: generate image with overlay and a result panel
+    // helper to approximate original image height (safe fallback)
+    function offToImageHeight(img){ return img.naturalHeight || img.height || 720; }
+
+    // === Export function ===
     async function exportAnalysisReport(){
       const wrap = document.querySelector('.app'); statusText.textContent='Generando reporte...';
-      // ensure professional panel visible
-      professionPanel.style.display = 'block'; await new Promise(r=>setTimeout(r,120));
+      professionPanel.style.display='block'; await new Promise(r=>setTimeout(r,120));
       const blob = await html2canvas(wrap, { scale: 1.4, useCORS:true }).then(c=> new Promise(r=> c.toBlob(r,'image/png')));
-      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'symmetry-analysis.png'; a.click(); statusText.textContent='Reporte descargado';
+      const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='symmetry-analysis.png'; a.click(); statusText.textContent='Reporte descargado';
     }
 
-    // UI wiring
+    // === Simulate nationality / marital ===
+    const nationalityPool = ['Colombiana','Mexicana','Argentina','Peruana','Chilena','Española','Estadounidense','Italiana','Brasilera','Venezolana'];
+    const maritalPool = ['Soltero/a','Casado/a','En noviazgo'];
+
+    simNationalityBtn.addEventListener('click', ()=> {
+      const val = randomFrom(nationalityPool);
+      nationalityVal.textContent = val + ' (SIMULADO)';
+      nationalityVal.style.color = '#ffd'; // slight highlight
+    });
+
+    simMaritalBtn.addEventListener('click', ()=> {
+      const val = randomFrom(maritalPool);
+      maritalVal.textContent = val + ' (SIMULADO)';
+      maritalVal.style.color = '#ffd';
+    });
+
+    // === UI wiring ===
     startButtonPrimary.addEventListener('click', ()=>{ if(!modelsLoaded){ loadModels(); } else { startCamera(); } });
-    // also wiring glow start (secondary visible)
     document.getElementById('btnStart')?.addEventListener('click', ()=>{ if(modelsLoaded) startCamera(); });
-    document.getElementById('btnStop').addEventListener('click', ()=>stopCamera());
-    captureBtn.addEventListener('click', ()=>{ captureSnapshot(); });
-    exportBtn.addEventListener('click', ()=>{ exportAnalysisReport(); });
+    document.getElementById('btnStop').addEventListener('click', ()=> stopCameraCompletely() );
+    captureBtn.addEventListener('click', ()=> captureSnapshot() );
+    exportBtn.addEventListener('click', ()=> exportAnalysisReport() );
 
-    // when user clicks professional analysis button text area (captureNote), run analysis
-    captureNote.addEventListener('click', ()=>{ runProfessionalAnalysis(); });
-    downloadAnalysis.addEventListener('click', ()=>exportAnalysisReport());
-    closeAnalysis.addEventListener('click', ()=>{ professionPanel.style.display='none'; statusText.textContent='Listo'; });
+    // analysis btn (neon) triggers heavy analysis
+    analysisBtn.addEventListener('click', ()=> { analysisBtn.disabled=true; runProfessionalAnalysis(); analysisBtn.style.display='none'; });
 
-    // resize handling
+    newRecBtn.addEventListener('click', ()=>{
+      // clear capture and results, restart live
+      capturePreview.style.display='none';
+      professionPanel.style.display='none';
+      freezeImg.src = '';
+      nationalityVal.textContent = 'NO INFERIBLE'; maritalVal.textContent='NO INFERIBLE';
+      // show video again and restart camera
+      video.style.display='block'; canvas.style.display='block';
+      startCamera();
+      newRecBtn.style.display='none';
+      analysisBtn.style.display='none';
+      analysisProgress.style.width='0%';
+      statusText.textContent='En vivo';
+    });
+
+    captureNote.addEventListener('click', ()=> { if(!analysisBtn.style.display || analysisBtn.style.display!=='none') { /* click to hint user */ } });
+
+    downloadAnalysis.addEventListener('click', ()=> exportAnalysisReport());
+    closeAnalysis.addEventListener('click', ()=> { professionPanel.style.display='none'; statusText.textContent='Listo'; });
+
     window.addEventListener('resize', ()=>{ if(streaming) ensureCanvasSize(); });
 
-    // initial
-    startButtonPrimary.textContent = 'Cargar modelos'; startButtonPrimary.classList.add('disabled'); statusText.textContent='Esperando carga de modelos';
-    // show startGlow once models loaded (handled inside loadModels)
+    // initial UI state
+    startButtonPrimary.textContent='Cargar modelos'; startButtonPrimary.classList.add('disabled'); statusText.textContent='Esperando carga de modelos';
 
-// Consent modal
-document.getElementById('accept').addEventListener('click', () => {
-  // Oculta el modal y comienza la carga de modelos
-  document.getElementById('consentModal').style.display = 'none';
-  loadModels();
-});
+    // === Consent modal wiring ===
+    document.getElementById('accept').addEventListener('click', ()=> {
+      document.getElementById('consentModal').style.display='none';
+      // begin loading models automatically
+      loadModels();
+    });
 
-document.getElementById('decline').addEventListener('click', () => {
-  // Muestra mensaje de permiso denegado y redirige
-  document.getElementById('consentModal').style.display = 'none';
+    document.getElementById('decline').addEventListener('click', ()=> {
+      document.getElementById('consentModal').style.display='none';
+      const hudStatus = document.getElementById('statusText');
+      if(hudStatus) hudStatus.textContent = 'Permiso no otorgado';
+      setTimeout(()=>{ window.location.href = 'index.html'; }, 1400);
+    });
 
-  // Si tienes un elemento de HUD donde se muestra el estado:
-  const hudStatus = document.getElementById('statusText');
-  if (hudStatus) hudStatus.textContent = 'Permiso no otorgado';
-
-  // Espera un momento para mostrar el mensaje y luego redirige
-  setTimeout(() => {
-    window.location.href = 'index.html';
-  }, 1500);
-});
-
-
-    // caution note: we will not attempt to infer nationality or marital status from facial images — unethical and unreliable.
+    // small safety note in console
+    console.info('Symmetry AI — interfaz lista. Nota: nacionalidad y estado civil NO son inferibles de forma fiable; se ofrecen simulaciones si lo deseas.');
   </script>
 </body>
 </html>
